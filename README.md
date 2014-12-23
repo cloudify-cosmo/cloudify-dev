@@ -28,11 +28,11 @@ We will go through:
 
 ## Repository Breakdown
 
-Cloudify is a complex system that consists of many parts, as such, several repositories are involved:
+Cloudify is a complex system that consists of many parts and as such, several repositories are involved:
 
 - [Cloudify CLI](https://github.com/cloudify-cosmo/cloudify-cli): Command Line Interface for running local cloudify commands, as well as interacting with the Cloudify Manager.
 <br><br>
-- [Cloudify Manager](https://github.com/cloudify-cosmo/cloudify-manager): This repo contains all components that eventually constitute as the Cloudify Manager machine.
+- [Cloudify Manager](https://github.com/cloudify-cosmo/cloudify-manager): This repo contains all components that eventually constitute the Cloudify Manager machine.
 <br><br>
 - [Cloudify Rest Client](https://github.com/cloudify-cosmo/cloudify-rest-client): Python API for communicating with the Cloudify Manager's REST server.
 <br><br>
