@@ -227,6 +227,8 @@ Now lets make sure this worked, to do that we will try to run some unit tests fr
 Traverse that **module** as following: cloudify-cli-->cloudify_cli-->tests-->commands, now right click the *test_blueprints.py* file.
 Notice it should should give you the option to run tests in this file using *Nosetests*
 
+If you don't see the option to run the test using *Nosetests*, try restarting IntelliJ.
+
 ![Test Blueprints](images/test_blueprints.png)
 
 The execution will be very quick, if you see something like this, your done! :)
