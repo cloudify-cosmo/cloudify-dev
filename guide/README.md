@@ -187,10 +187,10 @@ Now add the virtualenv as an additional Python SDK, as seen in the images: <br><
 ![Python SDK 2](images/python_sdk2.png) <br><br>
 ![Python SDK 3](images/python_sdk3.png) <br><br>
 
-Once you apply and the process is finished, you should see your new SDK on the list. Now lets make this SDK the default project SDK: <br><br>
+Once you apply and the process is finished, you should see your new SDK on the list. Now lets make this SDK the default project SDK: <br>
 Go to File --> Project Structure. On the left hand pane, click **Project** under the **Project Settings** section.<br>
 
-![Project SDK](project_sdk.png)
+![Project SDK](images/project_sdk.png)
 
 Apply the changes. <br><br>
 Next up is to import the code. In intellij, each source code project is called a **module**, and a collection of *modules** is called a project (Yeah, go figure...).
