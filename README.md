@@ -116,6 +116,10 @@ All system tests are located in a dedicated repository called [cloudify-system-t
 These tests run a full blown cloudify installation on various environments.
 They are triggered by an internal mechanism at the end of the day.
 
+## Code Style
+
+Every project that includes python code, goes through a process of Code style enforcements using [flake8](http://flake8.readthedocs.org/en/2.2.3/)
+
 ## Documentation
 
 Each repository should contain README files that document it from a developer's perspective. <br>
