@@ -137,20 +137,26 @@ cloudify-script-plugin (1.2a1, /home/elip/dev/src/cloudify-cosmo/cloudify-script
 cloudify-workflows (3.2a1)
 ```
 
-## Step 7: Installing nose and mock
+## Step 7: Installing nose, testtools, and mock
 
 These packages are only test dependencies and are therefore not installed during the installation phase.
-That's ok, its just two packages, lets install them manually.
+That's ok, its just three packages, lets install them manually.
 Like we mentioned, *nose* is the framework we use to run our tests:
 
 ```
 ~/dev/src/cloudify-cosmo$ pip install nose
 ```
 
-And *mock* is a python mocking framework we also use:
+*mock* is a python mocking framework we also use:
 
 ```
 ~/dev/src/cloudify-cosmo$ pip install mock
+```
+
+And *testtools* is the base testing framework we use. It does not come packed with python:
+
+```
+~/dev/src/cloudify-cosmo$ pip install testtools
 ```
 
 ## Step 8: Running unit tests
