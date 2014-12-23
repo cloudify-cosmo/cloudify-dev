@@ -1,0 +1,64 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+VAGRANTFILE_API_VERSION = '2'
+
+username = ENV['USER']
+
+if not ENV.key?('MANAGER_BLUEPRINTS_BRANCH')
+  raise 'MANAGER_BLUEPRINTS_BRANCH environment variable is not set. Use it to specify which version a the manager blueprint you wish to bootstrap with.'
+end
+if not ENV.key?('CLOUDIFY_SOURCE_FOLDER')
+  raise 'CLOUDIFY_SOURCE_FOLDER environment variable is not set. This must be the root folder of all your cloudify source code projects.'
+end
+
+cloudify_manager_blueprints_branch = ENV['MANAGER_BLUEPRINTS_BRANCH']
+cloudify_source_folder = ENV['CLOUDIFY_SOURCE_FOLDER']
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+
+  config.vm.define 'dev' do |dev|
+
+    dev.vm.provider :virtualbox do |vb|
+      vb.customize ['modifyvm', :id, '--natdnshostresolver1', "on"]
+      vb.customize ['modifyvm', :id, '--natdnsproxy1', 'on']
+      vb.memory = 4096
+      vb.cpus = 2
+    end
+
+    dev.vm.synced_folder "/home/#{username}/.vagrant.d", "/home/vagrant/.vagrant.d"
+    dev.vm.synced_folder "#{cloudify_source_folder}", "/home/vagrant/cloudify"
+    dev.vm.box = 'hashicorp/precise64'
+    dev.vm.provision "shell" do |s|
+      s.path = "provision.sh"
+      s.args = "development #{cloudify_manager_blueprints_branch}"
+      s.privileged = false
+    end
+    dev.vm.network "private_network", type: "dhcp"
+    dev.vm.hostname = 'manager-dev'
+
+  end
+
+  config.vm.define 'prod' do |prod|
+
+    prod.vm.provider :virtualbox do |vb|
+      vb.customize ['modifyvm', :id, '--natdnshostresolver1', "on"]
+      vb.customize ['modifyvm', :id, '--natdnsproxy1', 'on']
+      vb.memory = 4096
+      vb.cpus = 2
+    end
+
+    prod.vm.synced_folder "/home/#{username}/.vagrant.d", "/home/vagrant/.vagrant.d"
+    prod.vm.synced_folder "#{cloudify_source_folder}", "/home/vagrant/cloudify"
+    prod.vm.box = 'hashicorp/precise64'
+    prod.vm.provision "shell" do |s|
+      s.path = "provision.sh"
+      s.args = "production #{cloudify_manager_blueprints_branch}"
+      s.privileged = false
+    end
+    prod.vm.network "private_network", type: "dhcp"
+    prod.vm.hostname = 'manager-prod'
+
+  end
+
+end
