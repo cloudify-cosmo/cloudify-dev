@@ -124,8 +124,7 @@ Every project that includes python code, goes through a process of Code style en
 
 Each repository should contain README files that document it from a developer's perspective. <br>
 
-Product documentation is located at [http://getcloudify.org](http://getcloudify.org).
-See [here](htpp://github.com/cloudify-cosmo/getcloudify.org) how you can contribute documentation. <br><br>
+Product documentation is located at [http://getcloudify.org](http://getcloudify.org). See [here](htpp://github.com/cloudify-cosmo/getcloudify.org) how you can contribute documentation. <br><br>
 **Note that documentation is an integral part of many features/bugs.**
 
 ## Setup and maintain your environment: Step by Step Walk-through
