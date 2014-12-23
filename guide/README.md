@@ -86,7 +86,7 @@ now lets activate this env:
 ~/dev/venvs$ source cloudify-cosmo/bin/activate
 ```
 
-from this point on (until you deactivate the virtualenv or exist the shell),
+from this point on (until you deactivate the virtualenv or exit the shell),
 all python packages will by installed under this virtualenv, i.e, inside ```~/dev/venvs/cloudify-cosmo/lib/python2.7/site-packages```
 
 ## Step 5: Installing cloudify sources
@@ -179,13 +179,12 @@ To do so, follow the instructions [Here](https://github.com/cloudify-cosmo/cloud
 ## Step 10 (optional): IDE setup
 
 This section only refers to [Intellij IDE](https://www.jetbrains.com/idea/), which is the recommended IDE in our opinion. <br>
-The first thing you need to do is install the [Intellij Python Plugin](https://plugins.jetbrains.com/plugin/?idea&pluginId=631), you can install it directly from Intellij. <br>
-
-- Create a new empty project and give it a name (maybe cloudify-cosmo?)
+The first thing you need to do is install the [Intellij Python Plugin](https://plugins.jetbrains.com/plugin/?idea&pluginId=631), you can install it directly from Intellij.
+Once the plugin installation finishes, create a new empty project and give it a name (maybe cloudify-cosmo?)
 
 ![Empty Project](images/empty_project.png)
 
-- Setup your project you work with the virtualenv we created
+Lets setup your project to work with the virtualenv we created
 
 Go to File --> Project Structure. On the left hand pane, click **SDKs** under the **Platform Settings** section.<br>
 Now add the virtualenv as an additional Python SDK, as seen in the images: <br><br>
