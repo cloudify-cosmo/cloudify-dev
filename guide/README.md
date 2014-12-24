@@ -9,7 +9,7 @@ Setup and Maintain your environment: Step by Step Walk-through
 We recommend reading a bit about this tool and understanding its features. Installing it is easy:
 
 ```
-~$ wget https://bootstrap.pypa.io/get-pip.py && sudo python get-pip.py
+~$ curl --silent --show-error --retry 5 https://bootstrap.pypa.io/get-pip.py | sudo python
 ```
 
 Verify its installed by running:
