@@ -61,7 +61,8 @@ We use [Travis](https://travis-ci.org/) as the CI system, it serves two purposes
 - Run tests and code style checks for each repository.
 - Upload python packages to [PyPi](https://pypi.python.org/pypi), the central python packages repository.
 
-The PyPi release process is described [Here](guides/pypi-release), its best if you familiarize yourself with it, especially if you will creating new cloudify repositories.
+The PyPi release process is described [Here](guides/pypi-release), its good if you familiarize yourself with it,
+especially for creating new cloudify repositories.
 
 
 ## Version control
