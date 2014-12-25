@@ -58,8 +58,11 @@ Every feature/bug should be associated with an issue
 
 We use [Travis](https://travis-ci.org/) as the CI system, it serves two purposes:
 
-- Run tests and code style checks for each repository
+- Run tests and code style checks for each repository.
 - Upload python packages to [PyPi](https://pypi.python.org/pypi), the central python packages repository.
+
+The PyPi release process is described [Here](guides/pypi-release), its best if you familiarize yourself with it, especially if you will creating new cloudify repositories.
+
 
 ## Version control
 
@@ -129,4 +132,4 @@ Product documentation is located at [http://getcloudify.org](http://getcloudify.
 
 ## Setup and maintain your environment: Step by Step Walk-through
 
-[Proceed Here](guide)
+[Proceed Here](guides/dev-environment)
