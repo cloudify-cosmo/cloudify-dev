@@ -5,7 +5,7 @@ This document describes Cloudify's release process to PyPi and information about
 The process is based on Travis.CI [deploy functionality](http://docs.travis-ci.com/user/deployment/).
 This allows us to deploy to public PyPi repository very easily after unit test passed successfully and certain conditions were met.
 
-![](https://raw.githubusercontent.com/cloudify-cosmo/cloudify-dev/Developer-Guides/pypi_release/images/pypi_flow.png)
+![](images/pypi_flow.png)
 
 ### Trigger
 At the end of each milestone we trigger deploy by creating branch called `pypi-release`.
