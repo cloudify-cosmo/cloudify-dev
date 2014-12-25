@@ -15,7 +15,6 @@
 
 import os
 
-
 REPOSITORIES = [
     'cloudify-cli',
     'cloudify-manager',

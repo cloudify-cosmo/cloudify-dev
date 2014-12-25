@@ -60,3 +60,9 @@ docs/_build/
 .qbcache/
 
 .noseids
+
+# cfy
+.cloudify/
+
+# vagrant
+*.vagrant/

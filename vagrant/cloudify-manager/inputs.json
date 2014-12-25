@@ -1,0 +1,6 @@
+{
+    "public_ip": "INJECTED_IP",
+    "private_ip": "INJECTED_IP",
+    "ssh_user": "vagrant",
+    "ssh_key_filename": "/home/vagrant/.vagrant.d/insecure_private_key"
+}
