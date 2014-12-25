@@ -1,4 +1,1 @@
-cloudify-dev
-============
-
-Contains development guides and scripts.
+Please refer to the [Wiki](https://github.com/cloudify-cosmo/cloudify-dev/wiki) site for detailed documentation.
