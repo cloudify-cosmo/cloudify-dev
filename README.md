@@ -1,7 +1,3 @@
-Welcome to the cloudify-dev wiki!
-
-![Logo](https://raw.githubusercontent.com/cloudify-cosmo/getcloudify.org/master/img/CloudifyBanner2.png)
-
 # Welcome, developer!
 
 We are glad you decided to join our community! <br>
