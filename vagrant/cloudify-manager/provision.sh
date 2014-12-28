@@ -32,6 +32,13 @@ function _install_cfy() {
 
 }
 
+function modify_bashrc() {
+
+    echo "cd /home/vagrant/cli-work" >> ~/.bashrc
+    echo "source /home/vagrant/cli-env/bin/activate" >> ~/.bashrc
+
+}
+
 function _uninstall_cfy() {
 
     rm -rf /home/vagrant/cli-env
@@ -70,6 +77,7 @@ function development() {
     _install_prerequisites
     _install_cfy
     _bootstrap
+    modify_bashrc
     cd /home/vagrant/cli-work
     cfy dev --tasks-file /home/vagrant/cloudify/cloudify-dev/tasks/tasks.py --task setup-dev-env
 }
