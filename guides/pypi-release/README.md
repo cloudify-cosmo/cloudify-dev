@@ -97,7 +97,7 @@ after_deploy:
 ```
 
 Note that you might want to set the condition if running with a test matrix.
-For example, if you have multiple TOX environments, you may want to set your condition to: $TOX_ENV = py27 so a deployment will only happen under the Python2.7 environment and not twice or more.
+For example, if you have multiple TOX environments, you may want to set your condition to: `$TOX_ENV = py27` so that a deployment will only happen under the Python2.7 environment and not twice or more.
 
 ### Add encrypted credentials
 
