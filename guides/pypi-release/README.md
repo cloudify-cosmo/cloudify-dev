@@ -78,7 +78,7 @@ password: {{your_password}}
 ```
 Now register your package:
 
-* `python setup.py register -r pypi` for test PyPi
+* `python setup.py register -r pypitest` for test PyPi
 * `python setup.py register -r pypi` for official PyPi
 
 
