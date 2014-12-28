@@ -9,7 +9,7 @@ This Vagrantfile allows you to have a fully functioning manager with just one co
 Both VM's use the [Simple Manager Blueprint](https://github.com/cloudify-cosmo/cloudify-manager-blueprints/tree/master/simple) to simply (get it?) bootstrap cloudify on an existing machine.
 In our case, this machine is an *ubuntu precise64* provisioned by vagrant, using the virtualbox provider.
 
-# The *prod* VM
+## The *prod* VM
 
 All this VM does is bootstrap the manager. You cannot change neither the code nor the packages running on the manager. To start it just run:
 
@@ -17,7 +17,7 @@ All this VM does is bootstrap the manager. You cannot change neither the code no
 vagrant up prod
 ```
 
-# The *dev* VM
+## The *dev* VM
 
 This VM does exactly what the *prod* VM does, but it also executes the *setup-dev-env* task on the newly started manager.
 You can read about this task [Here](https://github.com/cloudify-cosmo/cloudify-dev/blob/master/tasks), but basically, it allows you to easily make changes to your code and apply them to the manager. To start the VM just run:
