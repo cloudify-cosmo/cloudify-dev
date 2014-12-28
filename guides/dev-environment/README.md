@@ -176,11 +176,12 @@ To do so, follow the instructions [Here](https://github.com/cloudify-cosmo/cloud
 ## Step 10 (optional): IDE setup
 
 This section only refers to [Intellij IDE](https://www.jetbrains.com/idea/), which is the recommended IDE in our opinion. <br>
-The first thing you need to do is install the [Intellij Python Plugin](https://plugins.jetbrains.com/plugin/?idea&pluginId=631), you can install it directly from Intellij.
 
-**Tip** <br><br>
+**Tip** <br>
 You can create a desktop shortcut to easily startup intellij by creating a desktop entry: <br><br>
 ![Desktop Entry](images/desktop_entry.png) <br>
+
+The first thing you need to do is install the [Intellij Python Plugin](https://plugins.jetbrains.com/plugin/?idea&pluginId=631), you can install it directly from Intellij.
 Once the plugin installation finishes, create a new empty project and give it a name (maybe cloudify-cosmo?)
 
 ![Empty Project](images/empty_project.png)
