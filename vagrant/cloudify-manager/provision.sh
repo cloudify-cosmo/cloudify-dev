@@ -19,7 +19,6 @@ function _install_prerequisites() {
     sudo python get-pip.py
     sudo pip install virtualenv
     sudo rm -rf ~/.cache
-
 }
 
 function _install_cfy() {
@@ -29,23 +28,19 @@ function _install_cfy() {
     curl --silent --show-error --retry 5 "https://raw.githubusercontent.com/cloudify-cosmo/cloudify-cli/${CLI_TAG}/dev-requirements.txt" -o dev-requirements.txt
     pip install -r dev-requirements.txt "https://github.com/cloudify-cosmo/cloudify-cli/archive/${CLI_TAG}.zip"
     rm dev-requirements.txt
-
 }
 
-function modify_bashrc() {
+function _modify_bashrc() {
 
     echo "cd /home/vagrant/cli-work" >> ~/.bashrc
     echo "source /home/vagrant/cli-env/bin/activate" >> ~/.bashrc
-
 }
 
 function _uninstall_cfy() {
 
     rm -rf /home/vagrant/cli-env
     rm -rf /home/vagrant/cli-work
-
 }
-
 
 function _bootstrap() {
 
@@ -74,16 +69,18 @@ function _bootstrap() {
 }
 
 function development() {
+
     _install_prerequisites
     _install_cfy
     _bootstrap
-    modify_bashrc
+    _modify_bashrc
     cd /home/vagrant/cli-work
     cfy dev --tasks-file /home/vagrant/cloudify/cloudify-dev/tasks/tasks.py --task setup-dev-env
 }
 
 
 function production() {
+
     _install_prerequisites
     _install_cfy
     _bootstrap
