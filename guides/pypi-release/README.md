@@ -39,13 +39,20 @@ install:
 script:
   - ...
 deploy:
-  provider: pypi
+- provider: pypi
   server: https://pypi.python.org/pypi
   on:
     branch: pypi-release
-    condition: ...
-  user:
+  condition: ...
+  user: cloudify-maint
+  password:
     secure: ...
+- provider: pypi
+  server: https://pypitest.python.org/pypi
+  on:
+    branch: pypi-test
+  condition: ...
+  user: cloudify-maint
   password:
     secure: ...
 after_deploy:
@@ -67,12 +74,12 @@ index-servers =
 
 [pypi]
 repository: https://pypi.python.org/pypi
-username: {{your_username}}
+username: cloudify-admin
 password: {{your_password}}
 
 [pypitest]
 repository: https://testpypi.python.org/pypi
-username: {{your_username}}
+username: cloudify-admin
 password: {{your_password}}
 ```
 Now register your package:
@@ -106,6 +113,8 @@ Using Travis CLI run the following commands:
 * `travis encrypt --add deploy.password` - to add password
 
 After this, you should see the user & password configurations as encrypted strings.
+
+NOTE: Travis CLI is a [ruby gem](https://rubygems.org/gems/travis). Install it with: `gem install travis` 
 
 ### Config QuickBuild
 
