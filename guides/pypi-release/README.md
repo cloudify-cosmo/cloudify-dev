@@ -61,17 +61,17 @@ after_deploy:
 Place your PyPi credentials in ~/.pypirc config:
 
 ```
-[distutils] # this tells distutils what package indexes you can push to
+[distutils]
 index-servers =
-    pypi # the live PyPI
-    pypitest # test PyPI
+    pypi
+    pypitest
 
-[pypi] # authentication details for live PyPI
+[pypi]
 repository: https://pypi.python.org/pypi
 username: {{your_username}}
 password: {{your_password}}
 
-[pypitest] # authentication details for test PyPI
+[pypitest]
 repository: https://testpypi.python.org/pypi
 username: {{your_username}}
 password: {{your_password}}
