@@ -137,7 +137,7 @@ cloudify-workflows (3.2a1)
 ## Step 7: Installing nose, testtools, and mock
 
 These packages are only test dependencies and are therefore not installed during the installation phase.
-That's ok, its just three packages, lets install them manually.
+That's ok, its just three packages, lets install them manually. <br><br>
 Like we mentioned, *nose* is the framework we use to run our tests:
 
 ```
@@ -177,6 +177,10 @@ To do so, follow the instructions [Here](https://github.com/cloudify-cosmo/cloud
 
 This section only refers to [Intellij IDE](https://www.jetbrains.com/idea/), which is the recommended IDE in our opinion. <br>
 The first thing you need to do is install the [Intellij Python Plugin](https://plugins.jetbrains.com/plugin/?idea&pluginId=631), you can install it directly from Intellij.
+
+**Tip** <br><br>
+You can create a desktop shortcut to easily startup intellij by creating a desktop entry: <br><br>
+![Desktop Entry](images/desktop_entry.png) <br>
 Once the plugin installation finishes, create a new empty project and give it a name (maybe cloudify-cosmo?)
 
 ![Empty Project](images/empty_project.png)
