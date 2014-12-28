@@ -11,8 +11,7 @@ In our case, this machine is an *ubuntu precise64* provisioned by vagrant, using
 
 # The *prod* VM
 
-All this VM does is bootstrap the manager. You cannot change neither the code nor the packages running on the manager. <br>
-To start it just run:
+All this VM does is bootstrap the manager. You cannot change neither the code nor the packages running on the manager. To start it just run:
 
 ```bash
 vagrant up prod
@@ -21,8 +20,7 @@ vagrant up prod
 # The *dev* VM
 
 This VM does exactly what the *prod* VM does, but it also executes the *setup-dev-env* task on the newly started manager.
-You can read about this task [Here](asd), but basically, it allows you to easily make changes to your code and apply them to the manager.<br>
-To start the VM just run:
+You can read about this task [Here](asd), but basically, it allows you to easily make changes to your code and apply them to the manager. To start the VM just run:
 
 ```bash
 vagrant up dev
