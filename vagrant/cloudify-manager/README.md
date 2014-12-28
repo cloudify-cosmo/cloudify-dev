@@ -11,7 +11,7 @@ In our case, this machine is an *ubuntu precise64* provisioned by vagrant, using
 
 # The *prod* VM
 
-All this VM does is bootstrap the manager. You cannot change the neither the code nor the packages running on the manager. <br>
+All this VM does is bootstrap the manager. You cannot change neither the code nor the packages running on the manager. <br>
 To start it just run:
 
 ```bash
