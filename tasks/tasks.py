@@ -15,8 +15,10 @@
 
 # flake8: noqa
 
+import json
 from contextlib import contextmanager
 from os.path import dirname
+from StringIO import StringIO
 from fabric.api import *
 from fabric.contrib import files
 
@@ -32,20 +34,19 @@ WORKER_INSTALLER = 'cloudify-manager/plugins/agent-installer/worker_installer'
 PLUGIN_INSTALLER = 'cloudify-manager/plugins/plugin-installer/plugin_installer'
 W_WORKER_INSTALLER = 'cloudify-manager/plugins/windows-agent-installer/windows_agent_installer'
 W_PLUGIN_INSTALLER = 'cloudify-manager/plugins/windows-plugin-installer/windows_plugin_installer'
-RIEMANN_CONTROLLER  = 'cloudify-manager/plugins/riemann-controller/riemann_controller'
+RIEMANN_CONTROLLER = 'cloudify-manager/plugins/riemann-controller/riemann_controller'
 SCRIPT_RUNNER = 'cloudify-script-plugin/script_runner'
 SYSTEM_WORKFLOWS = 'cloudify-manager/workflows/cloudify_system_workflows'
 DSL_PARSER = 'cloudify-dsl-parser/dsl_parser'
 CLOUDIFY_COMMON = 'cloudify-plugins-common/cloudify'
 REST_CLIENT = 'cloudify-rest-client/cloudify_rest_client'
 AMQP_INFLUXDB = 'cloudify-amqp-influxdb/amqp_influxdb'
-PACKAGER_UBUNTU = 'cloudify-packager'
+PACKAGER = 'cloudify-packager'
 
 # agent package details
 VIRTUALENV_PACKAGE = '/home/vagrant/package'
 VIRTUALENV_PARENT = '{0}/linux'.format(VIRTUALENV_PACKAGE)
 VIRTUALENV_PATH = '{0}/env'.format(VIRTUALENV_PARENT)
-AGENT_PACKAGE_PATH = '/opt/manager/resources/packages/agents/Ubuntu-agent.tar.gz'
 
 VIRTUALENV_PATH_MANAGER = '/opt/celery/cloudify.management__worker/env'
 VIRTUALENV_PATH_CELERY_MANAGER = '/opt/celery/cloudify.management__worker/env'
@@ -65,13 +66,13 @@ AGENT_PACKAGES = [
 ]
 
 AGENT_DEPENDENCIES = [
-    'celery==3.0.24',
+    'celery==3.0.24'
     'pyzmq==14.3.1',
 ]
 
 # links to host machine source code for the agent virtualenv
 AGENT_LINKS = {
-    '{}/lib/python2.7/site-packages'.format(VIRTUALENV_PATH): {
+    '{0}/lib/python2.7/site-packages'.format(VIRTUALENV_PATH): {
         'cloudify': CLOUDIFY_COMMON,
         'cloudify_rest_client': REST_CLIENT,
         'plugin_installer': PLUGIN_INSTALLER,
@@ -101,32 +102,11 @@ MANAGER_CELERY_PACKAGES = [
     ]
 ]
 
-# links to host machine source code for the rest-service
-# and celery management virtualenvs
-MANAGER_LINKS = {
-    '/opt/manager/resources/packages': {
-        # we link to the same dir holding both ubuntu templates and scripts
-        'scripts': '{}/package-configuration/ubuntu-agent'.format(PACKAGER_UBUNTU),
-        'templates': '{}/package-configuration/ubuntu-agent'.format(PACKAGER_UBUNTU)
-    },
-    '/opt/manager': {
-        'cloudify-manager-{}'.format(MANAGER_BRANCH): CLOUDIFY_MANAGER,
-    },
-    '/opt/manager/lib/python2.7/site-packages': {
-        'dsl_parser': DSL_PARSER,
-        'manager_rest': MANAGER_REST,
-        'amqp_influxdb': AMQP_INFLUXDB,
-    },
-    '/opt/celery/cloudify.management__worker/env': {
-        'cloudify-manager-{}'.format(MANAGER_BRANCH): CLOUDIFY_MANAGER,
-    },
-    '/opt/celery/cloudify.management__worker/env/lib/python2.7/site-packages': {
-        'cloudify': CLOUDIFY_COMMON,
-        'plugin_installer': PLUGIN_INSTALLER,
-        'worker_installer': WORKER_INSTALLER,
-        'riemann_controller': RIEMANN_CONTROLLER,
-        'cloudify_rest_client': REST_CLIENT,
-        'cloudify_system_workflows': SYSTEM_WORKFLOWS,
+MANAGER_RESOURCES_LINKS = {
+    '/opt/manager/resources/': {
+        'packages/scripts': '{0}/package-configuration/ubuntu-agent'.format(PACKAGER),
+        'packages/templates': '{0}/package-configuration/ubuntu-agent'.format(PACKAGER),
+        'cloudify': '{0}/resources/rest-service/cloudify'.format(CLOUDIFY_MANAGER)
     }
 }
 
@@ -140,77 +120,94 @@ managed_services = [
 ]
 
 
-def setup_dev_env(link_manager=True, create_package=True):
-    _stop_services()
-    _update_agent_package(create_package)
-    _update_and_link_manager(link_manager)
-    _start_services()
+def setup_dev_env(link_manager=True):
+    link_source(link_manager)
+    update_agent_package()
+    restart_services()
 
 
-def restart():
-    _stop_services()
-    _start_services()
+def link_source(link_manager=True):
+    _validate_source_path()
+    if link_manager:
+        if not files.exists(MANAGER_PACKAGES_INSTALLED_INDICATOR):
+            with virtualenv(VIRTUALENV_PATH_MANAGER):
+                for package_name in MANAGER_PACKAGES:
+                    _pip_install('-e {0}/{1}'.format(CODE_BASE, package_name))
+            with virtualenv(VIRTUALENV_PATH_CELERY_MANAGER):
+                for package_name in MANAGER_CELERY_PACKAGES:
+                    _pip_install('-e {0}/{1}'.format(CODE_BASE, package_name))
+            run('touch {}'.format(MANAGER_PACKAGES_INSTALLED_INDICATOR))
+        _link(MANAGER_RESOURCES_LINKS)
 
 
-def _stop_services():
+def update_agent_package():
+    if files.exists(VIRTUALENV_PARENT):
+        run('rm -rf {0}'.format(VIRTUALENV_PARENT))
+    run('mkdir -p {0}'.format(VIRTUALENV_PARENT))
+    run('virtualenv {0}'.format(VIRTUALENV_PATH))
+    with virtualenv(VIRTUALENV_PATH):
+        for dependency in AGENT_DEPENDENCIES:
+            _pip_install(dependency)
+        for package_name in AGENT_PACKAGES:
+            _pip_install('{0}/{1}'.format(CODE_BASE, package_name))
+    _link(AGENT_LINKS)
+    run('tar czf package.tar.gz package --dereference')
+    agent_package_path = '/opt/manager/resources/packages/agents/Ubuntu-{0}-agent.tar.gz' \
+        .format(get_distribution_codename())
+    sudo('cp package.tar.gz {0}'.format(agent_package_path))
+    run('rm package.tar.gz')
+
+
+def restart_services():
+    stop_services()
+    start_services()
+
+
+def stop_services():
     for service in managed_services:
         sudo('stop {}'.format(service))
 
 
-def _start_services():
+def start_services():
     for service in managed_services[::-1]:
         sudo('start {}'.format(service))
-
-
-def _update_and_link_manager(link_manager):
-    if link_manager:
-        if not files.exists(MANAGER_PACKAGES_INSTALLED_INDICATOR):
-            with virtualenv(VIRTUALENV_PATH_MANAGER):
-                for package in MANAGER_PACKAGES:
-                    _pip_install('{}/{}'.format(CODE_BASE, package))
-            with virtualenv(VIRTUALENV_PATH_CELERY_MANAGER):
-                for package in MANAGER_CELERY_PACKAGES:
-                    _pip_install('{}/{}'.format(CODE_BASE, package))
-            run('touch {}'.format(MANAGER_PACKAGES_INSTALLED_INDICATOR))
-        _link(MANAGER_LINKS)
-
-
-def _update_agent_package(create_package):
-    if create_package:
-        if not files.exists(VIRTUALENV_PARENT):
-            run('mkdir -p {0}'.format(VIRTUALENV_PARENT))
-            run('virtualenv {0}'.format(VIRTUALENV_PATH))
-            with virtualenv(VIRTUALENV_PATH):
-                for dependency in AGENT_DEPENDENCIES:
-                    _pip_install(dependency)
-                for package in AGENT_PACKAGES:
-                    _pip_install('{}/{}'.format(CODE_BASE, package))
-            _link(AGENT_LINKS)
-        run('tar czf package.tar.gz package --dereference')
-        sudo('cp package.tar.gz {}'.format(AGENT_PACKAGE_PATH))
 
 
 def _link(links):
     for base, sublinks in links.items():
         for sublink, target in sublinks.items():
-            source = '{}/{}'.format(base, sublink)
-            target = '{}/{}'.format(CODE_BASE, target)
+            source = '{0}/{1}'.format(base, sublink)
+            target = '{0}/{1}'.format(CODE_BASE, target)
             if files.is_link(source):
                 continue
             run(' && '.join([
-                'sudo rm -rf {}'.format(source),
-                'cd $(dirname {})'.format(source),
-                'sudo ln -s {} $(basename {})'.format(target, source)
+                'sudo rm -rf {0}'.format(source),
+                'cd $(dirname {0})'.format(source),
+                'sudo ln -s {0} $(basename {1})'.format(target, source)
                 ]))
 
 
 def _pip_install(python_package):
-    run('pip install {}'.format(python_package))
+    run('pip install {0}'.format(python_package))
+
+
+def _validate_source_path():
+    pass
+
+
+def get_distribution_codename():
+    stdout = StringIO()
+    run('python -c "import platform, json, sys; '
+        'sys.stdout.write(\'DISTROOPEN{0}DISTROCLOSE\\n\''
+        '.format(json.dumps(platform.dist())))"', stdout=stdout)
+    stdout = stdout.getvalue()
+    jsonres = stdout[stdout.find("DISTROOPEN") + 10:stdout.find("DISTROCLOSE")]
+    return json.loads(jsonres)[2]
 
 
 @contextmanager
 def virtualenv(virtual_env_path):
-    with prefix('source {}/bin/activate'.format(virtual_env_path)):
+    with prefix('source {0}/bin/activate'.format(virtual_env_path)):
         yield
 
 

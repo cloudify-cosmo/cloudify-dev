@@ -32,6 +32,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     dev.vm.provision "shell" do |s|
       s.path = "provision.sh"
       s.args = "development #{cloudify_manager_blueprints_branch}"
+      s.privileged = false
     end
     dev.vm.network "private_network", type: "dhcp"
     dev.vm.hostname = 'manager-dev'
@@ -53,6 +54,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     prod.vm.provision "shell" do |s|
       s.path = "provision.sh"
       s.args = "production #{cloudify_manager_blueprints_branch}"
+      s.privileged = false
     end
     prod.vm.network "private_network", type: "dhcp"
     prod.vm.hostname = 'manager-prod'

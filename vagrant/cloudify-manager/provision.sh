@@ -18,6 +18,7 @@ function _install_prerequisites() {
     wget https://bootstrap.pypa.io/get-pip.py
     sudo python get-pip.py
     sudo pip install virtualenv
+    sudo rm -rf ~/.cache
 
 }
 
@@ -27,6 +28,14 @@ function _install_cfy() {
     source /home/vagrant/cli-env/bin/activate
     curl --silent --show-error --retry 5 "https://raw.githubusercontent.com/cloudify-cosmo/cloudify-cli/${CLI_TAG}/dev-requirements.txt" -o dev-requirements.txt
     pip install -r dev-requirements.txt "https://github.com/cloudify-cosmo/cloudify-cli/archive/${CLI_TAG}.zip"
+    rm dev-requirements.txt
+
+}
+
+function _uninstall_cfy() {
+
+    rm -rf /home/vagrant/cli-env
+    rm -rf /home/vagrant/cli-work
 
 }
 
@@ -70,6 +79,7 @@ function production() {
     _install_prerequisites
     _install_cfy
     _bootstrap
+    _uninstall_cfy
 }
 
 ${EXECUTION_ENV}
