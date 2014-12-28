@@ -1,20 +1,19 @@
-This document describes Cloudify packages release process to PyPi.
-And information about how to add additional repositories to the process.
+This document describes Cloudify's packages release process to PyPi
+and information about how to add additional repositories to the process.
 
 ## Release flow
 
-The process is based on Travis CI [Deploy Mechanism](http://docs.travis-ci.com/user/deployment/).
+The process is based on Travis CI's [Deploy Mechanism](http://docs.travis-ci.com/user/deployment/).
 This allows us to deploy packages to a public PyPi repository very easily.
-The deployment only takes place if the unit test passed successfully, and certain conditions were met.
+The deployment only takes place if the unit tests passed successfully, and certain conditions were met.
 
 ![PyPi Flow](images/pypi_flow.png)
 
 ### Trigger
 
-At the end of each milestone we trigger deploy by creating branch called `pypi-release`.
-After the packages is deployed successfully, we delete the branch.
-We trigger with a branch and not a tag because currently Travis has a [known bug](https://github.com/travis-ci/travis-ci/issues/1675) that doesn't allow choosing a specific
-tag as a release trigger.
+At the end of each milestone we trigger a deployment by creating a branch called `pypi-release`.
+After the package is deployed successfully, we delete the branch.
+We trigger with a branch and not a tag because currently Travis has a [known bug](https://github.com/travis-ci/travis-ci/issues/1675) which doesn't allow choosing a specific tag as a release trigger.
 
 ### Credentials
 
@@ -24,10 +23,10 @@ You will need to use the [Travis command line](https://github.com/travis-ci/trav
 
 ### Post deploy
 
-A post deploy script runs after deploy (`travis-utils`) and verifies that the latest sdist is indeed the version that's currently located on PyPi.
+A post deploy script runs after a deployment was done (`travis-utils`) and verifies that the latest sdist is indeed the version that's currently located in PyPi.
 This is done because Travis seem to ignore [Certain failures](https://github.com/travis-ci/travis-ci/issues/3058) during the deploy process to PyPi.
 
-See the following reference `.travis.yml` which includes all the flow steps described above:
+See the following reference `.travis.yml` which includes all of the flow steps described above:
 
 ```yaml
 language: python
@@ -97,8 +96,8 @@ after_deploy:
   - python travis-utils/validate_pypi.py -v || exit 1
 ```
 
-Note that you might want to set the condition if running with test matrix.
-For example, if you have multiple TOX environment, you may want to set your condition to: $TOX_ENV = py27 so deploy will only happen under Python2.7 environment and not twice or more.
+Note that you might want to set the condition if running with a test matrix.
+For example, if you have multiple TOX environments, you may want to set your condition to: `$TOX_ENV = py27` so that a deployment will only happen under the Python2.7 environment and not twice or more.
 
 ### Add encrypted credentials
 
@@ -106,7 +105,7 @@ Using Travis CLI run the following commands:
 * `travis encrypt --add deploy.user` - to add username
 * `travis encrypt --add deploy.password` - to add password
 
-After this, you should see user & password configurations with encrypted string.
+After this, you should see the user & password configurations as encrypted strings.
 
 ### Config QuickBuild
 
