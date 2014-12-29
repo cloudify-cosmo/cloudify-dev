@@ -44,7 +44,7 @@ deploy:
   on:
     branch: pypi-release
   condition: ...
-  user: cloudify-maint
+  user: cosmo-maint
   password:
     secure: ...
 - provider: pypi
@@ -52,7 +52,7 @@ deploy:
   on:
     branch: pypi-test
   condition: ...
-  user: cloudify-maint
+  user: cosmo-maint
   password:
     secure: ...
 after_deploy:
@@ -74,12 +74,12 @@ index-servers =
 
 [pypi]
 repository: https://pypi.python.org/pypi
-username: cloudify-admin
+username: cosmo-admin
 password: {{your_password}}
 
 [pypitest]
 repository: https://testpypi.python.org/pypi
-username: cloudify-admin
+username: cosmo-admin
 password: {{your_password}}
 ```
 Now register your package:
@@ -93,11 +93,20 @@ Now register your package:
 add the following to your `.travis.yml`:
 ```
 deploy:
-  provider: pypi
+- provider: pypi
   server: https://pypi.python.org/pypi
   on:
     branch: pypi-release
-    condition: ...
+  condition: ...
+  user: cosmo-maint
+  password:
+- provider: pypi
+  server: https://pypitest.python.org/pypi
+  on:
+    branch: pypi-test
+  condition: ...
+  user: cosmo-maint
+  password:
 after_deploy:
   - git clone https://github.com/cloudify-cosmo/travis-utils.git
   - python travis-utils/validate_pypi.py -v || exit 1
@@ -107,14 +116,12 @@ Note that you might want to set the condition if running with a test matrix.
 For example, if you have multiple TOX environments, you may want to set your condition to: `$TOX_ENV = py27` so that a deployment will only happen under the Python2.7 environment and not twice or more.
 
 ### Add encrypted credentials
+Using Travis CLI run `travis encrypt` - when prompted, enter the password and press Ctrl-D.
+Next copy the `secure` key and it's value and place it in `.travis.yml` under `password` key (see reference above).
 
-Using Travis CLI run the following commands:
-* `travis encrypt --add deploy.user` - to add username
-* `travis encrypt --add deploy.password` - to add password
+You'll need to do this twice, once for Pypi and once for TestPypi.
 
-After this, you should see the user & password configurations as encrypted strings.
-
-NOTE: Travis CLI is a [ruby gem](https://rubygems.org/gems/travis). Install it with: `gem install travis` 
+**NOTE:** Travis CLI is a [ruby gem](https://rubygems.org/gems/travis). Install it with: `gem install travis` 
 
 ### Config QuickBuild
 
