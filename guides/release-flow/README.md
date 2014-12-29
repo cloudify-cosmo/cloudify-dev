@@ -1,5 +1,8 @@
 # Cloudify Release Flow
 
+Sequence Diamong goes here..
+
+
 ## Builds
 
 ### Cloning Repositories
@@ -45,3 +48,5 @@ Upload agents and docker images to S3
 ## Alerting
 
 Emails, Flowdock, etc...
+
+## Patches
