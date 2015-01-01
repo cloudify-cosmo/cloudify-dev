@@ -205,7 +205,10 @@ def _validate_source_path():
     all_packages.extend(MANAGER_CELERY_PACKAGES)
     missing_projects = []
     for package_name in all_packages:
-        directory = package_name[:package_name.find('/')]
+        if '/' in package_name:
+            directory = package_name[:package_name.find('/')]
+        else:
+            directory = package_name
         if directory not in cloudify_projects:
             missing_projects.append(directory)
     if missing_projects:
