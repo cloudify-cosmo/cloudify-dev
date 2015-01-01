@@ -199,7 +199,10 @@ def _validate_source_path():
     stdout = StringIO()
     run('ls -l {0}'.format(CODE_BASE), stdout=stdout)
     cloudify_projects = stdout.getvalue()
-    all_packages = AGENT_PACKAGES.extend(MANAGER_PACKAGES).extend(MANAGER_CELERY_PACKAGES)
+    all_packages = []
+    all_packages.extend(AGENT_PACKAGES)
+    all_packages.extend(MANAGER_PACKAGES)
+    all_packages.extend(MANAGER_CELERY_PACKAGES)
     missing_projects = []
     for package_name in all_packages:
         directory = package_name[:package_name.find('/')]
