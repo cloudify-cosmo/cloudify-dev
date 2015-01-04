@@ -19,7 +19,6 @@ import json
 import os
 import sys
 from contextlib import contextmanager
-from os.path import dirname
 from StringIO import StringIO
 from fabric.api import *
 from fabric.contrib import files
@@ -31,78 +30,55 @@ CODE_BASE = '/home/vagrant/cloudify'
 
 # path to different cloudify components relative to 'CODE_BASE'
 CLOUDIFY_MANAGER = 'cloudify-manager'
-MANAGER_REST = 'cloudify-manager/rest-service/manager_rest'
-WORKER_INSTALLER = 'cloudify-manager/plugins/agent-installer/worker_installer'
-PLUGIN_INSTALLER = 'cloudify-manager/plugins/plugin-installer/plugin_installer'
-W_WORKER_INSTALLER = 'cloudify-manager/plugins/windows-agent-installer/windows_agent_installer'
-W_PLUGIN_INSTALLER = 'cloudify-manager/plugins/windows-plugin-installer/windows_plugin_installer'
-RIEMANN_CONTROLLER = 'cloudify-manager/plugins/riemann-controller/riemann_controller'
-SCRIPT_RUNNER = 'cloudify-script-plugin/script_runner'
-SYSTEM_WORKFLOWS = 'cloudify-manager/workflows/cloudify_system_workflows'
-DSL_PARSER = 'cloudify-dsl-parser/dsl_parser'
-CLOUDIFY_COMMON = 'cloudify-plugins-common/cloudify'
-REST_CLIENT = 'cloudify-rest-client/cloudify_rest_client'
-AMQP_INFLUXDB = 'cloudify-amqp-influxdb/amqp_influxdb'
 PACKAGER = 'cloudify-packager'
 
-# agent package details
-VIRTUALENV_PACKAGE = '/home/vagrant/package'
-VIRTUALENV_PARENT = '{0}/linux'.format(VIRTUALENV_PACKAGE)
-VIRTUALENV_PATH = '{0}/env'.format(VIRTUALENV_PARENT)
+# agent package creation paths
+AGENT_VIRTUALENV_PACKAGE = '/home/vagrant/package'
+AGENT_VIRTUALENV_PARENT = '{0}/linux'.format(AGENT_VIRTUALENV_PACKAGE)
+AGENT_VIRTUALENV_PATH = '{0}/env'.format(AGENT_VIRTUALENV_PARENT)
 
-VIRTUALENV_PATH_MANAGER = '/opt/celery/cloudify.management__worker/env'
+VIRTUALENV_PATH_MANAGER = '/opt/manager/'
 VIRTUALENV_PATH_CELERY_MANAGER = '/opt/celery/cloudify.management__worker/env'
 MANAGER_PACKAGES_INSTALLED_INDICATOR = '/home/vagrant/manager_packages_installed'
 
-# packages to install (in this order) for the agent package virtual env
+
+# packages that need to be installed under the rest service
+# virtualenv, relative to the CODE_BASE
+MANAGER_REST_PACKAGES = [
+    ('cloudify-dsl-parser', 'cloudify-dsl-parser'),
+    ('cloudify-manager/rest-service', 'cloudify-rest-service'),
+    ('cloudify-amqp-influxdb', 'cloudify-amqp-influxdb')
+]
+
+# packages that need to be installed under the management worker
+# virtualenv, relative to the CODE_BASE
+MANAGEMENT_WORKER_PACKAGES = [
+    ('cloudify-rest-client', 'cloudify-rest-client'),
+    ('cloudify-plugins-common', 'cloudify-plugins-common'),
+    ('cloudify-manager/plugins/agent-installer', 'cloudify-agent-installer-plugin'),
+    ('cloudify-manager/plugins/plugin-installer', 'cloudify-plugin-installer-plugin'),
+    ('cloudify-manager/plugins/riemann-controller', 'cloudify-riemann-controller-plugin'),
+    ('cloudify-manager/workflows', 'cloudify-workflows')
+]
+
+
+# packages to install (in this order) for the agent package virtualenv
 AGENT_PACKAGES = [
-    dirname(package) for package in [
-        REST_CLIENT,
-        CLOUDIFY_COMMON,
-        WORKER_INSTALLER,
-        PLUGIN_INSTALLER,
-        W_WORKER_INSTALLER,
-        W_PLUGIN_INSTALLER,
-        SCRIPT_RUNNER,
-    ]
+    ('cloudify-rest-client', 'cloudify-rest-client'),
+    ('cloudify-plugins-common', 'cloudify-plugins-common'),
+    ('cloudify-manager/plugins/agent-installer', 'cloudify-agent-installer-plugin'),
+    ('cloudify-manager/plugins/plugin-installer', 'cloudify-plugin-installer-plugin'),
+    ('cloudify-manager/plugins/windows-agent-installer', 'cloudify-windows-agent-installer-plugin'),
+    ('cloudify-manager/plugins/windows-plugin-installer', 'cloudify-windows-plugin-installer-plugin'),
+    ('cloudify-script-plugin', 'cloudify-script-plugin')
 ]
 
-MANAGER_PACKAGES = [
-    dirname(package) for package in [
-        DSL_PARSER,
-        MANAGER_REST,
-        AMQP_INFLUXDB,
-        ]
-]
-
-MANAGER_CELERY_PACKAGES = [
-    dirname(package) for package in [
-        REST_CLIENT,
-        CLOUDIFY_COMMON,
-        PLUGIN_INSTALLER,
-        WORKER_INSTALLER,
-        RIEMANN_CONTROLLER,
-        SYSTEM_WORKFLOWS,
-        ]
-]
 
 AGENT_DEPENDENCIES = [
-    'celery==3.0.24'
-    'pyzmq==14.3.1',
+    'celery==3.0.24',
+    'pyzmq==14.3.1'
 ]
 
-# links to host machine source code for the agent virtualenv
-AGENT_LINKS = {
-    '{0}/lib/python2.7/site-packages'.format(VIRTUALENV_PATH): {
-        'cloudify': CLOUDIFY_COMMON,
-        'cloudify_rest_client': REST_CLIENT,
-        'plugin_installer': PLUGIN_INSTALLER,
-        'worker_installer': WORKER_INSTALLER,
-        'windows_agent_installer': W_WORKER_INSTALLER,
-        'windows_plugin_installer': W_PLUGIN_INSTALLER,
-        'script_runner': SCRIPT_RUNNER,
-    }
-}
 
 MANAGER_RESOURCES_LINKS = {
     '/opt/manager/resources/': {
@@ -114,7 +90,7 @@ MANAGER_RESOURCES_LINKS = {
 
 # services to stop (and start in reverse order) when starting (and ending)
 # setup_env task
-managed_services = [
+MANAGED_SERVICES = [
     'manager',
     'celeryd-cloudify-management',
     'amqpflux',
@@ -122,40 +98,49 @@ managed_services = [
 ]
 
 
-def setup_dev_env(link_manager=True):
-    _validate_source_path()
-    link_source(link_manager)
+def setup_dev_env():
+    _validate_sources_path()
+    link_manager_sources()
+    link_manager_resources()
     update_agent_package()
     restart_services()
 
 
-def link_source(link_manager=True):
-    _validate_source_path()
-    if link_manager:
-        if not files.exists(MANAGER_PACKAGES_INSTALLED_INDICATOR):
-            with virtualenv(VIRTUALENV_PATH_MANAGER):
-                for package_name in MANAGER_PACKAGES:
-                    _pip_install('-e {0}/{1}'.format(CODE_BASE, package_name))
-            with virtualenv(VIRTUALENV_PATH_CELERY_MANAGER):
-                for package_name in MANAGER_CELERY_PACKAGES:
-                    _pip_install('-e {0}/{1}'.format(CODE_BASE, package_name))
-            run('touch {}'.format(MANAGER_PACKAGES_INSTALLED_INDICATOR))
-        _link(MANAGER_RESOURCES_LINKS)
+def link_manager_sources():
+    if not files.exists(MANAGER_PACKAGES_INSTALLED_INDICATOR):
+        with virtualenv(VIRTUALENV_PATH_MANAGER):
+            for package_tuple in MANAGER_REST_PACKAGES:
+                package_path = package_tuple[0]
+                package_name = package_tuple[1]
+                _pip_uninstall(package_name, use_sudo=True)
+                _pip_install('-e {0}/{1}'.format(CODE_BASE, package_path),
+                             use_sudo=True)
+        with virtualenv(VIRTUALENV_PATH_CELERY_MANAGER):
+            for package_tuple in MANAGEMENT_WORKER_PACKAGES:
+                package_path = package_tuple[0]
+                package_name = package_tuple[1]
+                _pip_uninstall(package_name, use_sudo=True)
+                _pip_install('-e {0}/{1}'.format(CODE_BASE, package_path),
+                             use_sudo=True)
+        run('touch {}'.format(MANAGER_PACKAGES_INSTALLED_INDICATOR))
+
+
+def link_manager_resources():
+    _link(MANAGER_RESOURCES_LINKS)
 
 
 def update_agent_package():
-    _validate_source_path()
-    if files.exists(VIRTUALENV_PARENT):
-        run('rm -rf {0}'.format(VIRTUALENV_PARENT))
-    run('mkdir -p {0}'.format(VIRTUALENV_PARENT))
-    run('virtualenv {0}'.format(VIRTUALENV_PATH))
-    with virtualenv(VIRTUALENV_PATH):
+    if files.exists(AGENT_VIRTUALENV_PARENT):
+        run('rm -rf {0}'.format(AGENT_VIRTUALENV_PARENT))
+    run('mkdir -p {0}'.format(AGENT_VIRTUALENV_PARENT))
+    run('virtualenv {0}'.format(AGENT_VIRTUALENV_PATH))
+    with virtualenv(AGENT_VIRTUALENV_PATH):
         for dependency in AGENT_DEPENDENCIES:
             _pip_install(dependency)
-        for package_name in AGENT_PACKAGES:
-            _pip_install('{0}/{1}'.format(CODE_BASE, package_name))
-    _link(AGENT_LINKS)
-    run('tar czf package.tar.gz package --dereference')
+        for package_tuple in AGENT_PACKAGES:
+            package_path = package_tuple[0]
+            _pip_install('{0}/{1}'.format(CODE_BASE, package_path))
+    run('tar czf package.tar.gz package')
     agent_package_path = '/opt/manager/resources/packages/agents/Ubuntu-{0}-agent.tar.gz' \
         .format(get_distribution_codename())
     sudo('cp package.tar.gz {0}'.format(agent_package_path))
@@ -168,12 +153,12 @@ def restart_services():
 
 
 def stop_services():
-    for service in managed_services:
+    for service in MANAGED_SERVICES:
         sudo('stop {}'.format(service))
 
 
 def start_services():
-    for service in managed_services[::-1]:
+    for service in MANAGED_SERVICES[::-1]:
         sudo('start {}'.format(service))
 
 
@@ -191,18 +176,28 @@ def _link(links):
                 ]))
 
 
-def _pip_install(python_package):
-    run('pip install {0}'.format(python_package))
+def _pip_install(python_package, use_sudo=False):
+    if use_sudo:
+        run('sudo pip install {0}'.format(python_package))
+    else:
+        run('pip install {0}'.format(python_package))
 
 
-def _validate_source_path():
+def _pip_uninstall(python_package, use_sudo=False):
+    if use_sudo:
+        run('sudo pip uninstall -y {0}'.format(python_package))
+    else:
+        run('pip uninstall -y {0}'.format(python_package))
+
+
+def _validate_sources_path():
     stdout = StringIO()
     run('ls -l {0}'.format(CODE_BASE), stdout=stdout)
     cloudify_projects = stdout.getvalue()
     all_packages = []
-    all_packages.extend(AGENT_PACKAGES)
-    all_packages.extend(MANAGER_PACKAGES)
-    all_packages.extend(MANAGER_CELERY_PACKAGES)
+    all_packages.extend(get_packages_paths(AGENT_PACKAGES))
+    all_packages.extend(get_packages_paths(MANAGER_REST_PACKAGES))
+    all_packages.extend(get_packages_paths(MANAGEMENT_WORKER_PACKAGES))
     missing_projects = []
     for package_name in all_packages:
         if '/' in package_name:
@@ -212,10 +207,17 @@ def _validate_source_path():
         if directory not in cloudify_projects:
             missing_projects.append(directory)
     if missing_projects:
-        print '\e[31mCannot link source. Missing projects detected on host machine: {0}'\
+        print 'Cannot link source. Missing projects detected on host machine: {0}'\
             .format(os.linesep.join(missing_projects))
-        print '\e[31mMake sure you have all the necessary projects cloned and accessible'
+        print 'Make sure you have all the necessary projects cloned and accessible'
         sys.exit(1)
+
+
+def get_packages_paths(package_tuples):
+    paths = []
+    for t in package_tuples:
+        paths.append(t[0])
+    return paths
 
 
 def get_distribution_codename():

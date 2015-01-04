@@ -3,8 +3,6 @@
 
 VAGRANTFILE_API_VERSION = '2'
 
-username = ENV['USER']
-
 if not ENV.key?('MANAGER_BLUEPRINTS_BRANCH')
   raise 'MANAGER_BLUEPRINTS_BRANCH environment variable is not set. Use it to specify which version a the manager blueprint you wish to bootstrap with.'
 end
@@ -26,7 +24,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       vb.cpus = 2
     end
 
-    dev.vm.synced_folder "/home/#{username}/.vagrant.d", "/home/vagrant/.vagrant.d"
     dev.vm.synced_folder "#{cloudify_source_folder}", "/home/vagrant/cloudify"
     dev.vm.box = 'hashicorp/precise64'
     dev.vm.provision "shell" do |s|
@@ -48,7 +45,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       vb.cpus = 2
     end
 
-    prod.vm.synced_folder "/home/#{username}/.vagrant.d", "/home/vagrant/.vagrant.d"
     prod.vm.synced_folder "#{cloudify_source_folder}", "/home/vagrant/cloudify"
     prod.vm.box = 'hashicorp/precise64'
     prod.vm.provision "shell" do |s|
