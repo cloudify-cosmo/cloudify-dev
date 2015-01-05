@@ -1,0 +1,6 @@
+public_ip: INJECTED_IP
+private_ip: INJECTED_IP
+ssh_user: vagrant
+ssh_key_filename: /vagrant/.vagrant/machines/INJECTED_MACHINE_NAME/virtualbox/private_key
+agents_user: vagrant
+resources_prefix: ''

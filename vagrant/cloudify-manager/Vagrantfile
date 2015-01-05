@@ -3,57 +3,89 @@
 
 VAGRANTFILE_API_VERSION = '2'
 
+# Fallback to master
 if not ENV.key?('MANAGER_BLUEPRINTS_BRANCH')
-  raise 'MANAGER_BLUEPRINTS_BRANCH environment variable is not set. Use it to specify which version a the manager blueprint you wish to bootstrap with.'
+  ENV['MANAGER_BLUEPRINTS_BRANCH'] = 'master'
 end
+
+# Fallback to relative path
 if not ENV.key?('CLOUDIFY_SOURCE_FOLDER')
-  raise 'CLOUDIFY_SOURCE_FOLDER environment variable is not set. This must be the root folder of all your cloudify source code projects.'
+  ENV['CLOUDIFY_SOURCE_FOLDER'] = '../../../'
 end
+
+# Fallback to manager blueprints branch
+if not ENV.key?('CLI_BRANCH')
+  ENV['CLI_BRANCH'] = ENV['MANAGER_BLUEPRINTS_BRANCH']
+end
+
 
 cloudify_manager_blueprints_branch = ENV['MANAGER_BLUEPRINTS_BRANCH']
 cloudify_source_folder = ENV['CLOUDIFY_SOURCE_FOLDER']
+cloudify_cli_branch = ENV['CLI_BRANCH']
+use_tarzan = 'NO'
+if ENV.key?('USE_TARZAN')
+  use_tarzan = 'YES'
+end
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
-  config.vm.define 'dev' do |dev|
+  config.vm.define 'dev_packages', autostart: false do |dev_packages|
 
-    dev.vm.provider :virtualbox do |vb|
+    dev_packages.vm.provider :virtualbox do |vb|
       vb.customize ['modifyvm', :id, '--natdnshostresolver1', "on"]
       vb.customize ['modifyvm', :id, '--natdnsproxy1', 'on']
       vb.memory = 4096
       vb.cpus = 2
     end
 
-    dev.vm.synced_folder "#{cloudify_source_folder}", "/home/vagrant/cloudify"
-    dev.vm.box = 'hashicorp/precise64'
-    dev.vm.provision "shell" do |s|
+    dev_packages.vm.synced_folder "#{cloudify_source_folder}", "/home/vagrant/cloudify"
+    dev_packages.vm.provision "shell" do |s|
       s.path = "provision.sh"
-      s.args = "development #{cloudify_manager_blueprints_branch}"
       s.privileged = false
+      s.args = "dev_packages #{cloudify_manager_blueprints_branch} #{cloudify_cli_branch} #{use_tarzan}"
     end
-    dev.vm.network "private_network", type: "dhcp"
-    dev.vm.hostname = 'manager-dev'
+    dev_packages.vm.hostname = 'manager-packages-dev'
+    dev_packages.vm.network "private_network", type: "dhcp"
 
   end
 
-  config.vm.define 'prod' do |prod|
+  config.vm.define 'prod_packages', autostart: false do |prod_packages|
 
-    prod.vm.provider :virtualbox do |vb|
+    prod_packages.vm.provider :virtualbox do |vb|
       vb.customize ['modifyvm', :id, '--natdnshostresolver1', "on"]
       vb.customize ['modifyvm', :id, '--natdnsproxy1', 'on']
       vb.memory = 4096
       vb.cpus = 2
     end
 
-    prod.vm.synced_folder "#{cloudify_source_folder}", "/home/vagrant/cloudify"
-    prod.vm.box = 'hashicorp/precise64'
-    prod.vm.provision "shell" do |s|
+    prod_packages.vm.box = 'hashicorp/precise64'
+    prod_packages.vm.provision "shell" do |s|
       s.path = "provision.sh"
-      s.args = "production #{cloudify_manager_blueprints_branch}"
       s.privileged = false
+      s.args = "prod_packages #{cloudify_manager_blueprints_branch} #{cloudify_cli_branch} #{use_tarzan}"
     end
-    prod.vm.network "private_network", type: "dhcp"
-    prod.vm.hostname = 'manager-prod'
+    prod_packages.vm.hostname = 'manager-packages-prod'
+    prod_packages.vm.network "private_network", type: "dhcp"
+
+  end
+
+  config.vm.define 'prod_docker', primary: true do |prod_docker|
+
+    prod_docker.vm.provider :virtualbox do |vb|
+      vb.customize ['modifyvm', :id, '--natdnshostresolver1', "on"]
+      vb.customize ['modifyvm', :id, '--natdnsproxy1', 'on']
+      vb.memory = 4096
+      vb.cpus = 2
+    end
+
+    prod_docker.vm.box = 'ubuntu/trusty64'
+    prod_docker.vm.provision "shell" do |s|
+      s.path = "provision.sh"
+      s.privileged = false
+      s.args = "prod_docker #{cloudify_manager_blueprints_branch} #{cloudify_cli_branch} #{use_tarzan}"
+    end
+    prod_docker.vm.hostname = 'manager-docker-prod'
+    prod_docker.vm.network "private_network", type: "dhcp"
 
   end
 

@@ -9,21 +9,47 @@ This Vagrantfile allows you to have a fully functioning manager with just one co
 Both VM's use the [Simple Manager Blueprint](https://github.com/cloudify-cosmo/cloudify-manager-blueprints/tree/master/simple) to simply (get it?) bootstrap cloudify on an existing machine.
 In our case, this machine is an *ubuntu precise64* provisioned by vagrant, using the virtualbox provider.
 
-## The *prod* VM
+## The *prod_docker* VM
 
-All this VM does is bootstrap the manager. You cannot change neither the code nor the packages running on the manager. To start it just run:
+All this VM does is bootstrap the manager using the the cloudify docker container. You cannot change neither the code nor the packages running on the manager. To start it just run:
 
 ```bash
-vagrant up prod
+vagrant up prod_docker
 ```
 
-## The *dev* VM
+or, since this is the default machine:
 
-This VM does exactly what the *prod* VM does, but it also executes the *setup-dev-env* task on the newly started manager.
+```bash
+vagrant up
+```
+
+**Note**
+
+There is currently an issue which prevents this process from being completely automated. To read more you can have a look at [JIRA](https://cloudifysource.atlassian.net/browse/CFY-1910).
+For now, if you see this error you need to run the following commands:
+
+```bash
+vagrant ssh prod_docker
+sudo docker rm cfy
+sudo docker run -t --volumes-from data -p 80:80 -p 5555:5555 -p 5672:5672 -p 53229:53229 -p 8100:8100 -p 9200:9200 -e MANAGEMENT_IP=172.28.128.4 --restart=always --name=cfy -d cloudify /sbin/my_init
+```
+
+
+## The *prod-packages* VM
+
+All this VM does is bootstrap the manager using the deb packages. You cannot change neither the code nor the packages running on the manager. To start it just run:
+
+```bash
+vagrant up prod-packages
+```
+
+## The *dev-packages* VM
+
+This VM does exactly what the *prod-packages* VM does, but it also executes the *setup-dev-env* task on the newly started manager.
 You can read about this task [Here](https://github.com/cloudify-cosmo/cloudify-dev/blob/master/tasks), but basically, it allows you to easily make changes to your code and apply them to the manager. To start the VM just run:
 
 ```bash
-vagrant up dev
+vagrant up dev-packages
 ```
 
 Now comes the nifty part. After you make changes to your code, **ssh into the vm by running `vagrant ssh dev`**.
@@ -43,9 +69,9 @@ cfy dev --tasks-file /home/vagrant/cloudify/cloudify-dev/tasks/tasks.py --task r
 
 **Note**
 
-Before you run the vagrant commands, some environment variables need to be set.
+There are some useful environment variables you can use:
 
 - MANAGER_BLUEPRINTS_BRANCH - The manager blueprint branch you want to use to bootstrap with.
 - CLOUDIFY_SOURCE_FOLDER - Path to a folder on your host that contains the cloudify source code projects.
-
-Vagrant will fail with an appropriate error message if any of these are not set.
+- CLI_BRANCH - The cli branch used to bootstrap. The default value will be the value set for MANAGER_BLUEPRINTS_BRANCH.
+- USE_TARZAN - Set this variable to any string to use local tarzan URL's instead of amazon s3 buckets.

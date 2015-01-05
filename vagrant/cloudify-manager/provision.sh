@@ -2,8 +2,10 @@
 
 EXECUTION_ENV=$1
 MANAGER_BLUEPRINTS_BRANCH=$2
-CLI_TAG=${MANAGER_BLUEPRINTS_BRANCH}
+CLI_BRANCH=$3
+USE_TARZAN=$4
 
+TARZAN_PREFIX="http:\/\/192.168.10.13\/builds\/GigaSpacesBuilds\/cloudify3"
 
 function _install_prerequisites() {
 
@@ -25,8 +27,9 @@ function _install_cfy() {
 
     virtualenv /home/vagrant/cli-env
     source /home/vagrant/cli-env/bin/activate
-    curl --silent --show-error --retry 5 "https://raw.githubusercontent.com/cloudify-cosmo/cloudify-cli/${CLI_TAG}/dev-requirements.txt" -o dev-requirements.txt
-    pip install -r dev-requirements.txt "https://github.com/cloudify-cosmo/cloudify-cli/archive/${CLI_TAG}.zip"
+    echo "Installing cloudify-cli from ${CLI_BRANCH} branch"
+    curl --show-error --retry 5 "https://raw.githubusercontent.com/cloudify-cosmo/cloudify-cli/${CLI_BRANCH}/dev-requirements.txt" -o dev-requirements.txt
+    pip install -r dev-requirements.txt "https://github.com/cloudify-cosmo/cloudify-cli/archive/${CLI_BRANCH}.zip"
     rm dev-requirements.txt
 }
 
@@ -44,6 +47,19 @@ function _uninstall_cfy() {
 
 function _bootstrap() {
 
+    machine_name=$1
+    docker=$2
+
+    blueprint_name="simple.yaml"
+    blueprint_url="https://raw.githubusercontent.com/cloudify-cosmo/cloudify-manager-blueprints/${MANAGER_BLUEPRINTS_BRANCH}/simple/simple.yaml"
+    if [ "${docker}" = true ]; then
+        blueprint_name="simple-docker.yaml"
+        blueprint_url="https://raw.githubusercontent.com/cloudify-cosmo/cloudify-manager-blueprints/${MANAGER_BLUEPRINTS_BRANCH}/simple/simple-docker.yaml"
+    fi
+
+    echo "Using blueprint url: ${blueprint_url}"
+    echo "Using blueprint name: ${blueprint_name}"
+
     # create the cli working directory
     mkdir /home/vagrant/cli-work
     cd /home/vagrant/cli-work
@@ -51,39 +67,55 @@ function _bootstrap() {
     cfy init
 
     # download the appropriate simple manager blueprint file
-    curl --silent --show-error --retry 5 "https://raw.githubusercontent.com/cloudify-cosmo/cloudify-manager-blueprints/${MANAGER_BLUEPRINTS_BRANCH}/simple/simple.yaml" -o simple.yaml
+    curl --silent --show-error --retry 5 "${blueprint_url}" -o ${blueprint_name}
+
+    # replace url to point to tarzan if specified
+    if [ "${USE_TARZAN}" = "YES" ]; then
+       sed -i "s/http:\/\/gigaspaces-repository-eu.s3.amazonaws.com\/org\/cloudify3/${TARZAN_PREFIX}/g" ${blueprint_name}
+    fi
 
     # copy the pre-made inputs to the cli working directory
-    cp /vagrant/inputs.json .
+    cp /vagrant/inputs.yaml .
 
     # extract machine IP
     IP=$(/sbin/ifconfig eth1 | grep 'inet addr:' | cut -d: -f2 | awk '{print $1}')
-
     # inject ip into the inputs file
-    sed -i "s/INJECTED_IP/${IP}/g" inputs.json
+    sed -i "s/INJECTED_IP/${IP}/g" inputs.yaml
 
-    cfy bootstrap --install-plugins -p simple.yaml -i inputs.json
+    # inject machine name (used for key path)
+    sed -i "s/INJECTED_MACHINE_NAME/${machine_name}/g" inputs.yaml
+
+    cfy bootstrap --install-plugins -p ${blueprint_name} -i inputs.yaml
 
     cfy status
 
 }
 
-function development() {
+function dev_packages() {
 
     _install_prerequisites
     _install_cfy
-    _bootstrap
+    _bootstrap dev_packages false
     _modify_bashrc
     cd /home/vagrant/cli-work
     cfy dev --tasks-file /home/vagrant/cloudify/cloudify-dev/tasks/tasks.py --task setup-dev-env
 }
 
 
-function production() {
+function prod_packages() {
 
     _install_prerequisites
     _install_cfy
-    _bootstrap
+    _bootstrap prod_packages false
+    _uninstall_cfy
+}
+
+
+function prod_docker() {
+
+    _install_prerequisites
+    _install_cfy
+    _bootstrap prod_docker true
     _uninstall_cfy
 }
 
