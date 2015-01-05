@@ -1,3 +1,37 @@
+# Cloudify Release Checklist
+
+- Docker Image(s)
+- Docker File(s)
+- Agent Packages
+    - Ubuntu Precise
+    - Ubuntu Trusty
+    - Centos Final
+    - Windows
+- UI
+- VagrantBox
+- All System Tests Passed
+- Uploads
+    - types.yaml
+    - plugin.yamls
+    -
+- PyPI
+    - REST Client
+    - Plugins Common
+    - DSL Parser
+    - Script Plugin
+    - Diamond Plugin
+    - Agent Packager
+- ReadTheDocs
+    - REST Client
+    - Plugins Common
+    - CLI
+- Documentation
+    - Verify latest.
+    - Verify website points to the new version
+- Alert
+    - Flowdock
+    - Mail
+
 # Cloudify Release Flow
 
 Sequence Diagram goes here..
@@ -18,12 +52,10 @@ Before creating the build, we need to set a branch for it.
 * Patch - X.Y-patchZ
 
 We set the SHA commit in environment variables and later use them in our Vagranfiles to create packages according to the tested commits.
-
 We configure the manager blueprint files with the URL's of the packages that we will be creating.
-
 We run the version-tool to change the versions in the different files.
-
 We then commit all of the changes to the relevant branch.
+
 
 ### Tagging
 
@@ -47,8 +79,8 @@ We then create the following:
 #### Agents
 
 We use our Vagrantfiles to load machines in Amazon. These machines are provisioned to create agent packages.
-We use the cloudify-agent-packager to create the agent tar files.
-We then copy the created tar file directly to S3 and Tarzan.
+We use the cloudify-agent-packager to create the agents' tar files.
+We then copy the created tar files directly to S3 and Tarzan.
 
 #### UI
 
@@ -56,6 +88,8 @@ To create the UI package from the cloudify-ui repository we run the build on the
 We then copy the created tar file directly to S3 and Tarzan.
 
 #### Dockerfiles
+
+Need to decide
 
 #### Docker Images
 
@@ -72,11 +106,11 @@ We then run the system tests based on all of the creater artifacts.
 
 ## PyPI Modules
 
-We currently manually run a pypi deploy after all systems tests have passed on a milestone/ga release.
+We currently manually run a PyPI deploy after all systems tests have passed on a milestone/ga release.
 
 ## Documentation
 
-FILL IN HERE
+Currently, there's no possible flow to update the documentation. It is updated manually and pushed. Once we move to a version-controlled documentation system, we'll be able to automatically build the specific version meant for release.
 In addition, the version tool updates versions in the documentation to match the new release.
 
 ## ReadTheDocs
@@ -90,5 +124,27 @@ Emails, Flowdock, etc...
 Upon release we send an email with all packages for that release.
 
 
-## Patches
+# Patch Releases
 
+- is the patch limited to single component or multiple component?
+    - if single component, release only the component (cloud plugin, for instance)
+    - if more then one, build and release everything
+    - Decision has to be per-case.
+- A patch is not per customer - may be used for multiple cases.
+- Patch should have a feature flag to enable/disable the functionality, if relevant/possible.
+- patches are for short term use. Next GA release should solve the problem in a standard way.
+- feature patches should be documented to indicate this branch updates a certain feature.
+- Patches will not be available in pypi. This fact must appear clearly in the patch release.
+- The patch release should include the list of built packages. It should also include links to github repos/branches if required.
+
+- patch should have a version/patch number. It should be in the version file of the modified packages. This needs a JIRA.
+- each built package should have meta-data indicating version/patch.
+- version should not change for each patch. This will break dependencies. Other users will also install if they see it.
+- patch number should be available in CLI and UI. This needs a JIRA
+- test-drive the patch testing policy. This should be tested soon.
+- the build should specify which branches to use, per repo.
+    - build should have a 'default' branch. It should be possible to enter a separate branch for particular repos.
+
+- Relating to the 3.1 GA sprint, the Early Access build was marked b85 all through the GA release. Build number must move forward.
+
+- plugin version dependencies - use >= or == for version numbers? This is an open issue
