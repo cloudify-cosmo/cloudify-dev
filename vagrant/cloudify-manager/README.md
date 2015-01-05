@@ -71,7 +71,8 @@ cfy dev --tasks-file /home/vagrant/cloudify/cloudify-dev/tasks/tasks.py --task r
 
 There are some useful environment variables you can use:
 
-- MANAGER_BLUEPRINTS_BRANCH - The manager blueprint branch you want to use to bootstrap with.
-- CLOUDIFY_SOURCE_FOLDER - Path to a folder on your host that contains the cloudify source code projects.
+- MANAGER_BLUEPRINTS_BRANCH - The manager blueprint branch you want to use to bootstrap with. Defaults to *master*
+- CLOUDIFY_SOURCE_FOLDER - Path to a folder on your host that contains the cloudify source code projects. If this is not specified,
+it assumes the sources are located next to the cloudify-dev project and constructs a relative path.
 - CLI_BRANCH - The cli branch used to bootstrap. The default value will be the value set for MANAGER_BLUEPRINTS_BRANCH.
 - USE_TARZAN - Set this variable to any string to use local tarzan URL's instead of amazon s3 buckets.
