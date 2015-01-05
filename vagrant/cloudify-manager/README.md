@@ -3,13 +3,13 @@ Cloudify Vagrant Manager
 
 When developing features that should be cloud agnostic, it can be very useful to use vagrant to spin up VM's. This way you don't have to worry about credentials and sporadic network issues.
 Plus, the configuration is much simpler and the launch time is significantly faster.
-This Vagrantfile allows you to have a fully functioning manager with just one command line. It contains two VM definitions.
+This Vagrantfile allows you to have a fully functioning manager with just one command line. It contains 3 VM definitions.
 <br>
 <br>
-Both VM's use the [Simple Manager Blueprint](https://github.com/cloudify-cosmo/cloudify-manager-blueprints/tree/master/simple) to simply (get it?) bootstrap cloudify on an existing machine.
-In our case, this machine is an *ubuntu precise64* provisioned by vagrant, using the virtualbox provider.
+All VM's use the [Simple Manager Blueprint](https://github.com/cloudify-cosmo/cloudify-manager-blueprints/tree/master/simple) to simply (get it?) bootstrap cloudify on an existing machine.
 
 ## The *prod_docker* VM
+
 
 All this VM does is bootstrap the manager using the the cloudify docker container. You cannot change neither the code nor the packages running on the manager. To start it just run:
 
