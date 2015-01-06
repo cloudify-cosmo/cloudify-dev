@@ -8,6 +8,8 @@ This Vagrantfile allows you to have a fully functioning manager with just one co
 <br>
 All VM's use the [Simple Manager Blueprint](https://github.com/cloudify-cosmo/cloudify-manager-blueprints/tree/master/simple) to simply (get it?) bootstrap cloudify on an existing machine.
 
+**Important: This vagrant environment requires vagrant version 1.7.1 and above**
+
 ## The *prod_docker* VM
 
 

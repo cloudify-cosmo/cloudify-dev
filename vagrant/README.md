@@ -6,4 +6,4 @@ This directory contains various vagrant files written by our developers that you
 ## Requirements
 
 - [Virtualbox](https://www.virtualbox.org/wiki/Downloads)
-- [Vagrant](https://www.vagrantup.com/downloads)
+- [Vagrant 1.7.1+](https://www.vagrantup.com/downloads)
