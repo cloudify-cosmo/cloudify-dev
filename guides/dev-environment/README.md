@@ -86,6 +86,48 @@ now lets activate this env:
 from this point on (until you deactivate the virtualenv or exit the shell),
 all python packages will by installed under this virtualenv, i.e, inside ```~/dev/venvs/cloudify-cosmo/lib/python2.7/site-packages```
 
+
+### Step 4.1: Installing Python2.6 (Optional)
+
+It's most likely that the built-in version of python on your system will be Python2.7 and above.
+However, code that may run on an agent machine (as opposed to the management machine) must support Python2.6 as well. We enforce this by having our CI system run the tests
+in multiple python environment. Only when the tests in all environments pass, the build is considered successful.
+Therefore, it may be useful to have these multiple environments available on your dev box.
+Following are institutions on how to achieve this with an Ubuntu Distribution:
+
+*If you are not using Ubuntu, you should lookup how its done on your system and add the steps to this guide :)*
+
+First install python2.6
+
+```bash
+sudo add-apt-repository ppa:fkrull/deadsnakes
+sudo apt-get update
+sudo apt-get install python2.6
+```
+
+verify this worked by running
+
+```bash
+python2.6 --version
+```
+
+Next we need to install the python2.6-dev package:
+
+```bash
+sudo apt-get install python2.6-dev
+```
+
+Now, the best way to use this new python version is by creating a new virtualenv from it. for example:
+
+```bash
+virtualenv -p /usr/bin/python2.6 cloudify-cosmo-2.6
+source cloudify-cosmo-2.6/bin/activate
+```
+
+That's it! you now have a full python2.6 environment to validate your code with.
+
+You can checkout [this](http://bhfsteve.blogspot.co.il/2012/05/run-multiple-python-versions-on-your.html) blog post for some further reading about this.
+
 ## Step 5: Installing cloudify sources
 
 Now we need to install all the cloudify packages to the virtualenv. Usually to install packages we can just run, for example:

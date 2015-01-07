@@ -3,7 +3,7 @@ This document should contain manuals to common procedures.
 # Re-taging and updating build branch
 
 All cloudify repositories have tags corresponding to a particular version.
-They also a build-<version> branch, which the tag was created from at release time.
+They also have a build-<version> branch, which the tag was created from at release time.
 These tags are created automatically, However,
 sometimes a need arises to re-tag a repository after the version was already released.
 To do so, follow the following instructions:
