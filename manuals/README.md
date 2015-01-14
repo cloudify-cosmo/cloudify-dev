@@ -13,10 +13,10 @@ To do so, follow the following instructions:
 **After pushing changes to master:**
 
 ```bash
-git checkout build-<version>
-git pull origin build-<version> (update the local branch if needed)
-git merge master
-git push origin build-<version>
+git checkout <version>-build
+git pull origin <version>-build (update the local branch if needed)
+git cherry-pick <commit1> <commit2> ...
+git push origin <version>-build
 ```
 
 **Note**
@@ -29,7 +29,7 @@ make sure the you use the latest version when commiting to master, and the appro
 **After updating build branch:**
 
 ```bash
-git checkout build-<version>
+git checkout <version>-build
 git tag -f <version> (recreate tag locally from build branch)
 git push origin :refs/tags/<version> (delete existing tag from remote)
 git push origin <version> (push tag to remote)
