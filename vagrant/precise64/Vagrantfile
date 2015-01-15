@@ -1,0 +1,27 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+VAGRANTFILE_API_VERSION = '2'
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+
+  config.vm.define 'precise64' do |precise64|
+
+    precise64.vm.provider :virtualbox do |vb|
+      vb.customize ['modifyvm', :id, '--natdnshostresolver1', "on"]
+      vb.customize ['modifyvm', :id, '--natdnsproxy1', 'on']
+      vb.memory = 4096
+      vb.cpus = 2
+    end
+
+    precise64.vm.box = 'hashicorp/precise64'
+    precise64.vm.provision "shell" do |s|
+      s.path = "provision.sh"
+      s.privileged = false
+    end
+    precise64.vm.hostname = 'precise64'
+    precise64.vm.network "private_network", type: "dhcp"
+
+  end
+
+end
