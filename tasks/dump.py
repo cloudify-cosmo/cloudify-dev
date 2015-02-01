@@ -16,7 +16,6 @@
 import os
 import json
 import contextlib
-import logging
 from datetime import datetime
 
 from fabric import api
@@ -25,9 +24,6 @@ from cloudify_rest_client import CloudifyClient
 
 
 DOCKER_META = 'cfy.json'
-
-
-logging.getLogger('cloudify.rest_client.http').setLevel(logging.INFO)
 
 
 def dump():
@@ -53,67 +49,69 @@ def _get_cfy_mappings():
 
 class Dump(object):
 
+    BASE_DIR = '/tmp'
+
     def __init__(self, mappings):
         super(Dump, self).__init__()
-        self.management_ip = api.env.host_string
-        self.dir_name = self._create_dir_name()
-        self.destination = self._create_dir()
         self.mappings = mappings
-
-        self.deployments_dir = os.path.join(
-            self.destination, 'deployments'
-        )
-        self.rest_dir = os.path.join(
-            self.destination, 'rest-service'
-        )
+        self.management_ip = api.env.host_string
+        self.dir_name = self._generate_dir_name()
+        self.dir_path = '{0}/{1}'.format(self.BASE_DIR, self.dir_name)
         self.rest_client = CloudifyClient(host=self.management_ip)
+        self.tar_file = '{0}.tar.gz'.format(self.dir_name)
 
-    def _create_dir_name(self):
+    def _generate_dir_name(self):
         timestamp = str(datetime.now()).replace(' ', '-').replace(':', '.')
         return 'Cloudify-Manager-{0}-{1}-Logs'.format(
             self.management_ip, timestamp)
 
-    def _create_dir(self):
-        logs_dir = '/tmp/{0}'.format(self.dir_name)
-        api.run('mkdir -p {0}'.format(logs_dir))
-        return logs_dir
-
     def add_deployments(self):
 
+        deployments_dir = '{0}/deployments'.format(self.dir_path)
+        api.run('mkdir -p {0}'.format(deployments_dir))
+
         home_dir = self.mappings['/root']
-        api.run('mkdir -p {0}'.format(self.deployments_dir))
 
         def _add_worker(worker_name):
-            src = os.path.join(
+
+            worker_dir = 'cloudify.{0}'.format(worker_name)
+
+            src = '{0}/{1}/work'.format(
                 home_dir,
-                'cloudify.{0}'.format(worker_name),
-                'work')
+                worker_dir
+            )
             dst = os.path.join(
-                self.deployments_dir,
-                deployment.id,
-                'cloudify.{0}'.format(worker_name)
+                deployment_dir,
+                worker_dir
             )
             api.sudo('cp -r {0} {1}'.format(src, dst))
 
         deployments = self.rest_client.deployments.list()
         for deployment in deployments:
-            api.run('mkdir -p {0}'.format(
-                os.path.join(self.deployments_dir,
-                             deployment.id)))
+            deployment_dir = '{0}/{1}'.format(
+                deployments_dir,
+                deployment.id
+            )
+            api.run('mkdir -p {0}'.format(deployment_dir))
             _add_worker(deployment.id)
             _add_worker('{0}_workflows'.format(deployment.id))
 
     def add_rest_service(self):
+        rest_dir = '{0}/rest-service'.format(self.dir_path)
         rest_logs = self.mappings['/var/log/cloudify']
-        api.sudo('cp -r {0} {1}'.format(rest_logs, self.rest_dir))
+        api.sudo('cp -r {0} {1}'.format(rest_logs, rest_dir))
 
     def tar(self):
-        api.run('cd /tmp && tar -zcvf {0}.tar.gz {0}'
-                .format(self.dir_name))
+        api.run('cd {0} && tar -zcvf {1} {2}'
+                .format(self.BASE_DIR,
+                        self.tar_file,
+                        self.dir_name))
 
     def get(self):
-        api.get(remote_path='/tmp/{0}.tar.gz'.format(self.dir_name),
-                local_path='{0}.tar.gz'.format(self.dir_name))
+        api.get(remote_path='{0}/{1}'.format(self.BASE_DIR,
+                                             self.tar_file),
+                local_path='{0}'.format(self.tar_file))
+
 
 @contextlib.contextmanager
 def logs(mappings):
