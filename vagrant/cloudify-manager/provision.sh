@@ -95,7 +95,7 @@ function dev_packages() {
 
     _install_prerequisites
     _install_cfy
-    _bootstrap dev_packages false
+    _bootstrap dev-packages false
     _modify_bashrc
     cd /home/vagrant/cli-work
     cfy dev --tasks-file /home/vagrant/cloudify/cloudify-dev/tasks/tasks.py --task setup-dev-env
@@ -106,7 +106,7 @@ function prod_packages() {
 
     _install_prerequisites
     _install_cfy
-    _bootstrap prod_packages false
+    _bootstrap prod-packages false
     _uninstall_cfy
 }
 
@@ -115,7 +115,7 @@ function prod_docker() {
 
     _install_prerequisites
     _install_cfy
-    _bootstrap prod_docker true
+    _bootstrap prod-docker true
     _uninstall_cfy
 }
 

@@ -69,7 +69,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   end
 
-  config.vm.define 'prod_docker', primary: true do |prod_docker|
+  config.vm.define 'prod-docker', primary: true do |prod_docker|
 
     prod_docker.vm.provider :virtualbox do |vb|
       vb.customize ['modifyvm', :id, '--natdnshostresolver1', "on"]
