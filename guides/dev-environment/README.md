@@ -223,7 +223,7 @@ This section only refers to [Intellij IDE](https://www.jetbrains.com/idea/), whi
 You can create a desktop shortcut to easily startup intellij by creating a desktop entry: <br><br>
 ![Desktop Entry](images/desktop_entry.png) <br>
 
-The first thing you need to do is install the [Intellij Python Plugin](https://plugins.jetbrains.com/plugin/?idea&pluginId=631), you can install it directly from Intellij: Select File --> Setting --> Plugins, click the "Browse repositories..." button and search for "python". Select "Install plugin" on the right panel. If requested, agree to restart intellij.
+The first thing you need to do is install the [Intellij Python Plugin](https://plugins.jetbrains.com/plugin/?idea&pluginId=631), you can install it directly from Intellij: Go to File --> Setting --> Plugins, click the "Browse repositories..." button and search for "python". Select "Install plugin" on the right panel. If requested, agree to restart intellij.
 Once the plugin installation finishes, create a new empty project and give it a name (maybe cloudify-cosmo?)
 
 ![Empty Project](images/empty_project.png)
