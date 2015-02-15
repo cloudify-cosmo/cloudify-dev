@@ -280,7 +280,7 @@ If you don't see the option to run the test using *Nosetests*, try restarting In
 
 ![Test Blueprints](images/test_blueprints.png)
 
-The execution will be very quick, if you see something like this, your done! :)
+The execution will be very quick, if you see something like this, you're done! :)
 
 ![Success Nose](images/success_nose.png)
 
@@ -289,7 +289,7 @@ The execution will be very quick, if you see something like this, your done! :)
 Cloudify code changes pretty rapidly, we suggest you sync your code (git pull) at least once a day.
 Remember that when you work on a feature/bug, you should always be working on your own branch, leaving the *master* branch clean of changes or commits.
 So, by syncing we mean updating the *master* branch of every project.
-If you follow this, syncing your master branch should not introduce any conflicts, and it just a matter of running:
+If you follow this, syncing your master branch should not introduce any conflicts, and it's just a matter of running:
 
 ```
 (cloudify-cosmo)10:14:43 (master) ~/dev/src/cloudify-cosmo/cloudify-cli$ git pull origin master
