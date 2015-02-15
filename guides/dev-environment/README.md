@@ -93,7 +93,7 @@ It's most likely that the built-in version of python on your system will be Pyth
 However, code that may run on an agent machine (as opposed to the management machine) must support Python2.6 as well. We enforce this by having our CI system run the tests
 in multiple python environment. Only when the tests in all environments pass, the build is considered successful.
 Therefore, it may be useful to have these multiple environments available on your dev box.
-Following are institutions on how to achieve this with an Ubuntu Distribution:
+Following are instructions on how to achieve this with an Ubuntu Distribution:
 
 *If you are not using Ubuntu, you should lookup how its done on your system and add the steps to this guide :)*
 
@@ -223,7 +223,7 @@ This section only refers to [Intellij IDE](https://www.jetbrains.com/idea/), whi
 You can create a desktop shortcut to easily startup intellij by creating a desktop entry: <br><br>
 ![Desktop Entry](images/desktop_entry.png) <br>
 
-The first thing you need to do is install the [Intellij Python Plugin](https://plugins.jetbrains.com/plugin/?idea&pluginId=631), you can install it directly from Intellij.
+The first thing you need to do is install the [Intellij Python Plugin](https://plugins.jetbrains.com/plugin/?idea&pluginId=631), you can install it directly from Intellij: Select File --> Setting --> Plugins, click the "Browse repositories..." button and search for "python". Select "Install plugin" on the right panel. If requested, agree to restart intellij.
 Once the plugin installation finishes, create a new empty project and give it a name (maybe cloudify-cosmo?)
 
 ![Empty Project](images/empty_project.png)
@@ -261,7 +261,7 @@ We want to be able to run tests directly from intellij, and not having to execut
 Like we mentioned (twice), we use *nose* to run tests, intellij actually has built-in support for it, we just have to tell it that's what we want.
 The annoying part though, is that we have to do it for every **module** separately. For example, lets to this for the *cloudify-cli* **module**. <br>
 
-Go to File --> Settings and search for *Python Integrated Tools*.
+Go to File --> Settings and search for *Python Integrated Tools* and select Nosetests as the Default test runner.
 
 ![Nose Runner](images/nose_runner.png)
 
