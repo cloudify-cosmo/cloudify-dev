@@ -295,7 +295,7 @@ If you follow this, syncing your master branch should not introduce any conflict
 (cloudify-cosmo)10:14:43 (master) ~/dev/src/cloudify-cosmo/cloudify-cli$ git pull origin master
 ```
 
-On every directory. Its up to you when you wish to update your own branch with the latest changes from *master*, to do so run the following (after you've synced the master branch):
+On every directory. It's up to you when you wish to update your own branch with the latest changes from *master*, to do so run the following (after you've synced the master branch):
 
 ```bash
 (cloudify-cosmo)10:14:43 (master) ~/dev/src/cloudify-cosmo/cloudify-cli$ git checkout <branch_name>
@@ -313,4 +313,4 @@ So we need to force *pip* to recognize a version change, essentially it means re
 ~/dev/src/cloudify-cosmo$ python cloudify-dev/scripts/install_packages.py
 ```
 
-Also, its a good idea to stay tuned to the [cloudify-developers](https://groups.google.com/forum/#!forum/cloudify-developers) group, as changes are posted there.
+Also, it's a good idea to stay tuned to the [cloudify-developers](https://groups.google.com/forum/#!forum/cloudify-developers) group, as changes are posted there.
