@@ -130,7 +130,7 @@ You can checkout [this](http://bhfsteve.blogspot.co.il/2012/05/run-multiple-pyth
 
 ## Step 5: Installing cloudify sources
 
-Note: python-dev is a reuirement for some packages. You can install it with this command:
+Note: python-dev is a reuirement for some Cloudify packages. You can install it with this command:
 
 ```
 ~/dev/src/cloudify-cosmo$ sudo apt-get install python-dev
