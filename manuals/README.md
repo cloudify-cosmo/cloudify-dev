@@ -8,6 +8,14 @@ These tags are created automatically, However,
 sometimes a need arises to re-tag a repository after the version was already released.
 To do so, follow the following instructions:
 
+## re-create the build branch
+
+**If the build-<version> branch was deleted, creat it again:**
+
+```bash
+git checkout -b <version>-build
+```
+
 ## Update build-<version> branch
 
 **After pushing changes to master:**
@@ -35,3 +43,11 @@ git push origin :refs/tags/<version> (delete existing tag from remote)
 git push origin <version> (push tag to remote)
 ```
 
+## remove the build branch
+
+**If the build-<version> branch was created in this process, delete it:**
+
+```bash
+git branch -d <version>-build (remove the local branch)
+git push origin :<version>-build (remove the remote branch)
+```
