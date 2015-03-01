@@ -16,6 +16,8 @@
 import os
 import sys
 
+BIN_PATH = os.path.dirname(sys.executable)
+
 
 class CloudifyPackage(object):
 
@@ -33,7 +35,11 @@ class CorePackage(CloudifyPackage):
 class PluginPackage(CloudifyPackage):
     pass
 
-BIN_PATH = os.path.dirname(sys.executable)
+
+class NonPythonPackage(CloudifyPackage):
+    pass
+
+
 CLOUDIFY_PACKAGES = [
 
     # This order is important, do not change unless
@@ -65,23 +71,43 @@ CLOUDIFY_PACKAGES = [
     CorePackage(package_name='cloudify-rest-service',
                 package_path='cloudify-manager/rest-service/',
                 repo_name='cloudify-manager'),
-    CorePackage(package_name='cloudify-system-tests')
+    CorePackage(package_name='cloudify-system-tests'),
+
+    NonPythonPackage(package_name=None,
+                     package_path='cloudify-manager-blueprints')
 ]
 
 
-def run_command(command):
-    os.system(command)
+def run_command(command, wd=None):
+    current_cwd = os.getcwd()
+    if not wd:
+        wd = current_cwd
+    try:
+        os.chdir(wd)
+        os.system(command)
+    finally:
+        os.chdir(current_cwd)
 
 
-def install_package(package):
-    run_command('{0}/pip install -e {1}'
-                .format(BIN_PATH, package.package_path))
+def switch_version(package, version):
+    print 'Switching version of package {0}'.format(package.package_name)
+    run_command('git fetch', package.repo_name)
+    run_command('git pull --tags', package.repo_name)
+    run_command('git checkout {0}'.format(version),
+                package.repo_name)
+    if not isinstance(package, NonPythonPackage):
+        run_command('{0}/pip install -e {1}'
+                    .format(BIN_PATH, package.package_path))
 
 
-def install():
+def switch_versions():
     for package in CLOUDIFY_PACKAGES:
-        install_package(package)
-
+        if isinstance(package, CorePackage):
+            switch_version(package, core_version)
+        if isinstance(package, PluginPackage):
+            switch_version(package, plugins_version)
 
 if __name__ == '__main__':
-    install()
+    core_version = sys.argv[1]
+    plugins_version = sys.argv[2]
+    switch_versions()

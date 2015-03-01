@@ -73,14 +73,14 @@ def run_command(command):
     os.system(command)
 
 
-def install_package(package):
-    run_command('{0}/pip install -e {1}'
-                .format(BIN_PATH, package.package_path))
+def uninstall_package(package):
+    run_command('{0}/pip uninstall -y {1}'
+                .format(BIN_PATH, package.package_name))
 
 
 def install():
     for package in CLOUDIFY_PACKAGES:
-        install_package(package)
+        uninstall_package(package)
 
 
 if __name__ == '__main__':

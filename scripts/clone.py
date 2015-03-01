@@ -14,6 +14,7 @@
 #    * limitations under the License.
 
 import os
+import sys
 
 REPOSITORIES = [
     'cloudify-cli',
@@ -21,7 +22,9 @@ REPOSITORIES = [
     'cloudify-rest-client',
     'cloudify-plugins-common',
     'cloudify-dsl-parser',
-    'cloudify-script-plugin'
+    'cloudify-script-plugin',
+    'cloudify-openstack-plugin',
+    'cloudify-system-tests'
 ]
 
 
@@ -30,7 +33,16 @@ def run_command(command):
 
 
 def clone_repo(repo_name):
-    run_command('git clone https://github.com/cloudify-cosmo/{0}'.format(repo_name))
+    repo_url = 'https://github.com/cloudify-cosmo/{0}'\
+        .format(repo_name)
+    if method:
+        if method == 'ssh':
+            repo_url = 'git@github.com:cloudify-cosmo/{0}.git'\
+                .format(repo_name)
+        else:
+            raise RuntimeError('Unsupported authentication method ({'
+                               '0})'.format(method))
+    run_command('git clone {0}'.format(repo_url))
 
 
 def clone():
@@ -39,4 +51,6 @@ def clone():
 
 
 if __name__ == '__main__':
+    if len(sys.argv) == 2:
+        method = sys.argv[1]
     clone()
