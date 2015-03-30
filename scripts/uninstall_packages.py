@@ -17,6 +17,9 @@ import os
 import sys
 
 
+BIN_PATH = os.path.dirname(sys.executable)
+
+
 class CloudifyPackage(object):
 
     def __init__(self, package_name, package_path=None, repo_name=None):
@@ -33,7 +36,11 @@ class CorePackage(CloudifyPackage):
 class PluginPackage(CloudifyPackage):
     pass
 
-BIN_PATH = os.path.dirname(sys.executable)
+
+class NonPythonPackage(CloudifyPackage):
+    pass
+
+
 CLOUDIFY_PACKAGES = [
 
     # This order is important, do not change unless
@@ -65,12 +72,22 @@ CLOUDIFY_PACKAGES = [
     CorePackage(package_name='cloudify-rest-service',
                 package_path='cloudify-manager/rest-service/',
                 repo_name='cloudify-manager'),
-    CorePackage(package_name='cloudify-system-tests')
+    CorePackage(package_name='cloudify-system-tests'),
+
+    NonPythonPackage(package_name=None,
+                     package_path='cloudify-manager-blueprints')
 ]
 
 
-def run_command(command):
-    os.system(command)
+def run_command(command, wd=None):
+    current_cwd = os.getcwd()
+    if not wd:
+        wd = current_cwd
+    try:
+        os.chdir(wd)
+        os.system(command)
+    finally:
+        os.chdir(current_cwd)
 
 
 def uninstall_package(package):
