@@ -17,6 +17,7 @@ import os
 import sys
 
 REPOSITORIES = [
+    'flask-securest',
     'cloudify-cli',
     'cloudify-manager',
     'cloudify-rest-client',

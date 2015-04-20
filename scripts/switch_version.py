@@ -40,6 +40,14 @@ class NonPythonPackage(CloudifyPackage):
     pass
 
 
+class NonPythonCorePackage(NonPythonPackage, CorePackage):
+    pass
+
+
+class NonPythonPluginPackage(NonPythonPackage, PluginPackage):
+    pass
+
+
 CLOUDIFY_PACKAGES = [
 
     # This order is important, do not change unless
@@ -73,8 +81,12 @@ CLOUDIFY_PACKAGES = [
                 repo_name='cloudify-manager'),
     CorePackage(package_name='cloudify-system-tests'),
 
-    NonPythonPackage(package_name=None,
-                     package_path='cloudify-manager-blueprints')
+    NonPythonCorePackage(package_name=None,
+                         package_path='cloudify-manager-blueprints'),
+
+    NonPythonCorePackage(package_name=None,
+                         package_path='cloudify-nodecellar-example')
+
 ]
 
 
@@ -91,10 +103,9 @@ def run_command(command, wd=None):
 
 def switch_version(package, version):
     print 'Switching version of package {0}'.format(package.package_name)
-    run_command('git fetch', package.repo_name)
-    run_command('git pull --tags', package.repo_name)
-    run_command('git checkout {0}'.format(version),
-                package.repo_name)
+    run_command('git fetch --tags', package.package_path)
+    run_command('git checkout {0}'.format(version), package.package_path)
+    run_command('git pull origin {0}'.format(version), package.package_path)
     if not isinstance(package, NonPythonPackage):
         run_command('{0}/pip install -e {1}'
                     .format(BIN_PATH, package.package_path))
