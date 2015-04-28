@@ -45,7 +45,7 @@ need to manually delete resources from you openstack environment. Most often
 
 ### A few notes:
 
-- **Use this if and only if you have you OWN dedicated tenant on an
+- **Use this if and only if you have your OWN dedicated tenant on an
  openstack environment, as it will completely wipe out that tenant**
 - **Contradicting a bit what is stated above, it will not delete key-pairs,
 so be sure to delete them manually (locally as well - if needed)**
@@ -65,8 +65,18 @@ $ export OS_TENANT_NAME=admin
 $ export OS_AUTH_URL=http://localhost:5000/v2.0
 ```
 
+first lets have a dry run to see what resources we are going to be deleting:
+
 ```bash
-ospurge -h
+ospurge --dry-run --own-project
+```
+
+if the result is what you expected, lets go ahead and delete the resources.
+note the `--dont-delete-project` flag which tells the client not to try and
+delete the tenant, but just the resources.
+
+```bash
+ospurge --dont-delete-project --own-project --verbose
 ```
 
 You can read more about this project at the [ospurge](https://github.com/stackforge/ospurge) page.
