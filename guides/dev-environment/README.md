@@ -296,7 +296,7 @@ If you follow this, syncing your master branch should not introduce any conflict
 
 On every directory. 
 
-To automate this process you can use the exact same script you used on [step 4](#Step 4: Cloning and Installing cloudify sources):
+To automate this process you can use the exact same script you used on [step 4](#step-4-cloning-and-installing-cloudify-sources):
 
 Note: add `https` if SSH connection to github is not supported
 ```
