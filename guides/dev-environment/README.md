@@ -133,7 +133,7 @@ Clone this repo:
 ~/dev/src/cloudify-cosmo$ git clone git@github.com:cloudify-cosmo/cloudify-dev.git
 ```
 
-To clone and install all cloudify packages you can use this script:
+To clone and install all cloudify packages, use this script:
 
 ```
 ~/dev/src/cloudify-cosmo$ python cloudify-dev/scripts/clone_pull_install.py
@@ -149,7 +149,7 @@ Clone this repo:
 ~/dev/src/cloudify-cosmo$ git clone https://github.com/cloudify-cosmo/cloudify-dev
 ```
 
-To clone and install all cloudify packages you can use this command:
+To clone and install all cloudify packages, use this command:
 
 ```
 ~/dev/src/cloudify-cosmo$ python cloudify-dev/scripts/clone_and_installed.py https
