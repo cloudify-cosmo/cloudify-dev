@@ -99,7 +99,7 @@ python-dev is a reuirement for some Cloudify packages. You can install it with t
 ~/dev/src/cloudify-cosmo$ sudo apt-get install python-dev
 ```
 
-### Editable Python Packages
+#### About Editable Python Packages
 Now we need to clone and install all the cloudify packages to the virtualenv. Usually to install packages we can just run, for example:
 
 ```
@@ -116,8 +116,12 @@ When we are developing, this will become a hassle. Luckily, *pip* comes to our r
 
 What this does is create links between the virtualenv and your source files. Now when you run python, the interpreter will use the actual source files under the *cloudify-dsl-parser* folder.
 
+### Automate Package Installation
 
-### SSH Authentication
+Since many repositories need to be cloned and installed, we wrote a small python script to do that for you. To use it,
+please read ahead.
+
+#### SSH Authentication
 
 We recommend [setting up an SSH Key with your Github account](https://help.github.com/articles/generating-ssh-keys/).
 This will allow you to push code by using key-pair authentication, without the need to enter a username and password each time.
@@ -129,7 +133,7 @@ Clone this repo:
 ~/dev/src/cloudify-cosmo$ git clone git@github.com:cloudify-cosmo/cloudify-dev.git
 ```
 
-Since many repositories need to be cloned and installed, we wrote a small python script to do that for you:
+To clone and install all cloudify packages you can use this script:
 
 ```
 ~/dev/src/cloudify-cosmo$ python cloudify-dev/scripts/clone_pull_install.py
@@ -145,7 +149,7 @@ Clone this repo:
 ~/dev/src/cloudify-cosmo$ git clone https://github.com/cloudify-cosmo/cloudify-dev
 ```
 
-Since many repositories need to be cloned and installed, we wrote a small python script to do that for you:
+To clone and install all cloudify packages you can use this command:
 
 ```
 ~/dev/src/cloudify-cosmo$ python cloudify-dev/scripts/clone_and_installed.py https
