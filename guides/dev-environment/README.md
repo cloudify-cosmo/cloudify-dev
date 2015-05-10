@@ -152,7 +152,7 @@ Clone this repo:
 To clone and install all cloudify packages, use this command:
 
 ```
-~/dev/src/cloudify-cosmo$ python cloudify-dev/scripts/clone_and_installed.py https
+~/dev/src/cloudify-cosmo$ python cloudify-dev/scripts/clone_pull_install.py https
 ```
 
 
