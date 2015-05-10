@@ -90,7 +90,7 @@ You can checkout [this](http://bhfsteve.blogspot.co.il/2012/05/run-multiple-pyth
 
 ## Step 4: Cloning and Installing cloudify sources
 
-It's a good idea to create a brand new directory for cloudify source code. In this tutorial we will use ```~/dev/src/cloudify-cosmo```
+It's a good idea to create a brand new directory for cloudify source code.<br> In this tutorial we will use ```~/dev/src/cloudify-cosmo```
 
 Note:
 python-dev is a reuirement for some Cloudify packages. You can install it with this command:
