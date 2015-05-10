@@ -15,7 +15,7 @@ Verify its installed by running:
 ~$ pip --version
 ```
 
-## Step 2: Installing virtualenv
+## Step 2: Setting Up virtualenv
 
 [virtualenv](http://virtualenv.readthedocs.org/en/latest/virtualenv.html) is a python package that allows you to create isolated python environment.
 Again, we recommend reading a bit about this tool and understanding its features. Installing it is easy:
@@ -29,8 +29,6 @@ Verify its installed by running:
 ```
 ~$ virtualenv --version
 ```
-
-## Step 3: Creating a virtualenv
 
 Its also a good idea to have a dedicated directory for python virtual environments. In this tutorial we will use ```~/dev/venvs```
 Once you have this directory in place, lets create a new virtualenv for all cloudify related stuff:
@@ -49,7 +47,7 @@ from this point on (until you deactivate the virtualenv or exit the shell),
 all python packages will by installed under this virtualenv, i.e, inside ```~/dev/venvs/cloudify-cosmo/lib/python2.7/site-packages```
 
 
-### Step 3.1: Installing Python2.6 (Optional)
+### Step 3: Installing Python2.6 (Optional)
 
 It's most likely that the built-in version of python on your system will be Python2.7 and above.
 However, code that may run on an agent machine (as opposed to the management machine) must support Python2.6 as well. We enforce this by having our CI system run the tests
