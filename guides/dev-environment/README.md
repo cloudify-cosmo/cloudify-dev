@@ -298,7 +298,8 @@ On every directory.
 
 To automate this process you can use the exact same script you used on [step 4](#Step 4: Cloning and Installing cloudify sources):
 
-** Note:** add `https` if SSH connection to Github is not supported
+** Note:** <br>
+add `https` if SSH connection to Github is not supported
 ```
 ~/dev/src/cloudify-cosmo$ python cloudify-dev/scripts/clone_pull_install.py
 ```
