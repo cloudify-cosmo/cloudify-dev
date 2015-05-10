@@ -30,45 +30,7 @@ Verify its installed by running:
 ~$ virtualenv --version
 ```
 
-## Step 3: Cloning cloudify repositories
-
-Its a good idea to create a brand new directory for cloudify source code. In this tutorial we will use ```~/dev/src/cloudify-cosmo```
-
-### SSH Authentication
-
-We recommend [setting up an SSH Key with your Github account](https://help.github.com/articles/generating-ssh-keys/).
-This will allow you to push code by using key-pair authentication, without the need to enter a username and password each time.
-If you do not wish to do so, follow the instructions in the *Basic Authentication* part below.
-
-Clone this repo:
-
-```
-~/dev/src/cloudify-cosmo$ git clone git@github.com:cloudify-cosmo/cloudify-dev.git
-```
-
-Since many repositories need to be cloned, we wrote a small python script to do that for you:
-
-```
-~/dev/src/cloudify-cosmo$ python cloudify-dev/scripts/clone_ssh.py
-```
-
-### Basic Authentication
-
-This method of cloning will require you to authenticate with your Github credentials each time you push code.
-
-Clone this repo:
-
-```
-~/dev/src/cloudify-cosmo$ git clone https://github.com/cloudify-cosmo/cloudify-dev
-```
-
-Since many repositories need to be cloned, we wrote a small python script to do that for you:
-
-```
-~/dev/src/cloudify-cosmo$ python cloudify-dev/scripts/clone_basic.py
-```
-
-## Step 4: Creating a virtualenv
+## Step 3: Creating a virtualenv
 
 Its also a good idea to have a dedicated directory for python virtual environments. In this tutorial we will use ```~/dev/venvs```
 Once you have this directory in place, lets create a new virtualenv for all cloudify related stuff:
@@ -87,7 +49,7 @@ from this point on (until you deactivate the virtualenv or exit the shell),
 all python packages will by installed under this virtualenv, i.e, inside ```~/dev/venvs/cloudify-cosmo/lib/python2.7/site-packages```
 
 
-### Step 4.1: Installing Python2.6 (Optional)
+### Step 3.1: Installing Python2.6 (Optional)
 
 It's most likely that the built-in version of python on your system will be Python2.7 and above.
 However, code that may run on an agent machine (as opposed to the management machine) must support Python2.6 as well. We enforce this by having our CI system run the tests
@@ -128,15 +90,19 @@ That's it! you now have a full python2.6 environment to validate your code with.
 
 You can checkout [this](http://bhfsteve.blogspot.co.il/2012/05/run-multiple-python-versions-on-your.html) blog post for some further reading about this.
 
-## Step 5: Installing cloudify sources
+## Step 4: Cloning and Installing cloudify sources
 
-Note: python-dev is a reuirement for some Cloudify packages. You can install it with this command:
+It's a good idea to create a brand new directory for cloudify source code. In this tutorial we will use ```~/dev/src/cloudify-cosmo```
+
+Note:
+python-dev is a reuirement for some Cloudify packages. You can install it with this command:
 
 ```
 ~/dev/src/cloudify-cosmo$ sudo apt-get install python-dev
 ```
 
-Now we need to install all the cloudify packages to the virtualenv. Usually to install packages we can just run, for example:
+### Editable Python Packages
+Now we need to clone and install all the cloudify packages to the virtualenv. Usually to install packages we can just run, for example:
 
 ```
 ~/dev/src/cloudify-cosmo$ pip install cloudify-dsl-parser/
@@ -151,13 +117,44 @@ When we are developing, this will become a hassle. Luckily, *pip* comes to our r
 ```
 
 What this does is create links between the virtualenv and your source files. Now when you run python, the interpreter will use the actual source files under the *cloudify-dsl-parser* folder.
-So again, because we have many repositories, and packages need to be installed in a specific order, we wrote a small script to do that for you:
+
+
+### SSH Authentication
+
+We recommend [setting up an SSH Key with your Github account](https://help.github.com/articles/generating-ssh-keys/).
+This will allow you to push code by using key-pair authentication, without the need to enter a username and password each time.
+If you do not wish to do so, follow the instructions in the *Basic Authentication* part below.
+
+Clone this repo:
 
 ```
-~/dev/src/cloudify-cosmo$ python cloudify-dev/scripts/install_packages.py
+~/dev/src/cloudify-cosmo$ git clone git@github.com:cloudify-cosmo/cloudify-dev.git
 ```
 
-## Step 6: Verify your installation.
+Since many repositories need to be cloned and installed, we wrote a small python script to do that for you:
+
+```
+~/dev/src/cloudify-cosmo$ python cloudify-dev/scripts/clone_pull_install.py
+```
+
+### Basic Authentication
+
+This method of cloning will require you to authenticate with your Github credentials each time you push code.
+
+Clone this repo:
+
+```
+~/dev/src/cloudify-cosmo$ git clone https://github.com/cloudify-cosmo/cloudify-dev
+```
+
+Since many repositories need to be cloned and installed, we wrote a small python script to do that for you:
+
+```
+~/dev/src/cloudify-cosmo$ python cloudify-dev/scripts/clone_and_installed.py https
+```
+
+
+## Step 5: Verify your installation.
 
 If you didn't encounter any errors during the previous steps, everything should be ok. However, lets double check.
 To see a list of the installed cloudify packages, run this:
@@ -182,7 +179,7 @@ cloudify-script-plugin (1.2a1, /home/elip/dev/src/cloudify-cosmo/cloudify-script
 cloudify-workflows (3.2a1)
 ```
 
-## Step 7: Installing nose, testtools, and mock
+## Step 6: Installing nose, testtools, and mock
 
 These packages are only test dependencies and are therefore not installed during the installation phase.
 That's ok, its just three packages, lets install them manually. <br><br>
@@ -204,7 +201,7 @@ And *testtools* is the base testing framework we use. It does not come packed wi
 ~/dev/src/cloudify-cosmo$ pip install testtools
 ```
 
-## Step 8: Running unit tests
+## Step 7: Running unit tests
 
 Lets verify we are able to run unit tests. Just as a sanity check, lets run the *cloudify-dsl-parser* tests:
 
@@ -216,12 +213,12 @@ Ran 430 tests in 12.618s
 OK
 ```
 
-## Step 9: Running integration tests
+## Step 8: Running integration tests
 
 A fully functional environment is one that has everything setup in order to run the integration tests locally.
 To do so, follow the instructions [Here](https://github.com/cloudify-cosmo/cloudify-manager/tree/master/tests)
 
-## Step 10 (optional): IDE setup
+## Step 9 (optional): IDE setup
 
 This section only refers to [Intellij IDE](https://www.jetbrains.com/idea/), which is the recommended IDE in our opinion. <br>
 
@@ -295,7 +292,14 @@ If you follow this, syncing your master branch should not introduce any conflict
 (cloudify-cosmo)10:14:43 (master) ~/dev/src/cloudify-cosmo/cloudify-cli$ git pull origin master
 ```
 
-On every directory. It's up to you when you wish to update your own branch with the latest changes from *master*, to do so run the following (after you've synced the master branch):
+On every directory. 
+
+To automate this process you can use the exact same script you used on [step 4](#Step 4: Cloning and Installing cloudify sources):
+```
+~/dev/src/cloudify-cosmo$ python cloudify-dev/scripts/clone_pull_install.py (pass the argument `https` if SSH connection to Github is not supported)
+```
+
+It's up to you when you wish to update your own branch with the latest changes from *master*, to do so run the following (after you've synced the master branch):
 
 ```bash
 (cloudify-cosmo)10:14:43 (master) ~/dev/src/cloudify-cosmo/cloudify-cli$ git checkout <branch_name>
@@ -307,10 +311,6 @@ On every directory. It's up to you when you wish to update your own branch with 
 Every time a new version is released, the version number of each project is progressed accordingly.
 However, just updating the source code does not inform *pip* that the version has changed, and as far as dependencies go, you still have the *old* version installed.
 This can cause conflicts with dependency resolution and should be avoided.
-So we need to force *pip* to recognize a version change, essentially it means re-installing the packages.
-
-```
-~/dev/src/cloudify-cosmo$ python cloudify-dev/scripts/install_packages.py
-```
+So we need to force *pip* to recognize a version change, essentially it means re-installing the packages (clone_pull_install.py does that).
 
 Also, it's a good idea to stay tuned to the [cloudify-developers](https://groups.google.com/forum/#!forum/cloudify-developers) group, as changes are posted there.
