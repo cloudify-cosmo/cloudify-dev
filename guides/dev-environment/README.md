@@ -297,8 +297,10 @@ If you follow this, syncing your master branch should not introduce any conflict
 On every directory. 
 
 To automate this process you can use the exact same script you used on [step 4](#Step 4: Cloning and Installing cloudify sources):
+
+** Note:** add `https` if SSH connection to Github is not supported
 ```
-~/dev/src/cloudify-cosmo$ python cloudify-dev/scripts/clone_pull_install.py (pass the argument `https` if SSH connection to Github is not supported)
+~/dev/src/cloudify-cosmo$ python cloudify-dev/scripts/clone_pull_install.py
 ```
 
 It's up to you when you wish to update your own branch with the latest changes from *master*, to do so run the following (after you've synced the master branch):
