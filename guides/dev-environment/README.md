@@ -47,7 +47,7 @@ from this point on (until you deactivate the virtualenv or exit the shell),
 all python packages will by installed under this virtualenv, i.e, inside ```~/dev/venvs/cloudify-cosmo/lib/python2.7/site-packages```
 
 
-### Step 3: Installing Python2.6 (Optional)
+## Step 3: Installing Python2.6 (Optional)
 
 It's most likely that the built-in version of python on your system will be Python2.7 and above.
 However, code that may run on an agent machine (as opposed to the management machine) must support Python2.6 as well. We enforce this by having our CI system run the tests
