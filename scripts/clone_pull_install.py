@@ -23,7 +23,6 @@ PLUGIN_REPOS_BRANCH = 'master'
 FLASK_SECUREST_TAG = '0.6'
 
 BIN_PATH = os.path.dirname(sys.executable)
-ORIG_DIR = os.path.dirname(os.path.realpath(__file__))
 
 protocol = None
 
@@ -124,7 +123,7 @@ def verify_current_branch(target_branch_name):
 
 def pull_repo(repo_path, target_branch_name='master'):
 
-    pwd = os.path.dirname(os.path.realpath(__file__))
+    pwd = os.getcwd()
     os.chdir(repo_path)
     if not verify_current_branch(target_branch_name):
         run_command("git checkout '{0}'".format(target_branch_name))
@@ -136,7 +135,7 @@ def pull_repo(repo_path, target_branch_name='master'):
 
 
 def fetch_tag(repo_path, repo_tag):
-    pwd = os.path.dirname(os.path.realpath(__file__))
+    pwd = os.getcwd()
     os.chdir(repo_path)
     run_command('git fetch --tags')
     run_command('git checkout {0}'.format(repo_tag))
@@ -157,7 +156,7 @@ def clone_all():
         print '\n'
         print '------------------ CLONING {0} '.format(repo.upper())
         if os.path.isdir(repo):
-            print 'repo exists, skiping ...'
+            print 'repo exists, skipping ...'
         else:
             git_clone(repo)
 
@@ -165,7 +164,7 @@ def clone_all():
         print '\n'
         print '------------------ CLONING {0} '.format(repo.upper())
         if os.path.isdir(repo):
-            print 'repo exists, skiping ...'
+            print 'repo exists, skipping ...'
         else:
             git_clone(repo)
 
@@ -174,7 +173,7 @@ def clone_all():
         print '\n'
         print '------------------ CLONING {0} '.format(repo.upper())
         if os.path.isdir(repo):
-            print 'repo exists, skiping ...'
+            print 'repo exists, skipping ...'
         else:
             git_clone(repo)
 
@@ -185,7 +184,7 @@ def pull_repos(repo_version):
         if os.path.isdir(repo):
             pull_repo(repo, repo_version)
         else:
-            print '!! pull aborted, local repo not found'
+            print '!! pull aborted, local repo not found: {0}'.format(repo)
             sys.exit()
         
 
