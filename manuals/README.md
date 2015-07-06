@@ -10,7 +10,7 @@ To do so, follow the following instructions:
 
 ## re-create the build branch
 
-**If the build-<version> branch was deleted, creat it again:**
+**If the build-\<version> branch was deleted, creat it again:**
 
 ```bash
 git checkout -b <version>-build
@@ -45,10 +45,10 @@ git push origin <version> (push tag to remote)
 
 ## remove the build branch
 
-**If the build-<version> branch was created in this process, delete it:**
+**If the build-\<version> branch was created in this process, delete it:**
 
 ```bash
-git branch -d <version>-build (remove the local branch)
+git branch -d <version>-build (remove the branch locally)
 git push origin :<version>-build (remove the remote branch)
 ```
 
