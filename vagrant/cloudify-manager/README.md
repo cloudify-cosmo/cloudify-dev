@@ -25,18 +25,6 @@ or, since this is the default machine:
 vagrant up
 ```
 
-**Note**
-
-There is currently an issue which prevents this process from being completely automated. To read more you can have a look at [JIRA](https://cloudifysource.atlassian.net/browse/CFY-1910).
-For now, if you see this error you need to run the following commands:
-
-```bash
-vagrant ssh prod_docker
-sudo docker rm cfy
-sudo docker run -t --volumes-from data -p 80:80 -p 5555:5555 -p 5672:5672 -p 53229:53229 -p 8100:8100 -p 9200:9200 -e MANAGEMENT_IP=172.28.128.4 --restart=always --name=cfy -d cloudify /sbin/my_init
-```
-
-
 ## The *prod-packages* VM
 
 All this VM does is bootstrap the manager using the deb packages. You cannot change neither the code nor the packages running on the manager. To start it just run:
