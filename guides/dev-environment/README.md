@@ -31,6 +31,7 @@ Verify its installed by running:
 ```
 
 ## Step 3: Creating a virtualenv
+
 Its also a good idea to have a dedicated directory for python virtual environments. In this tutorial we will use ```~/dev/venvs```
 Once you have this directory in place, lets create a new virtualenv for all cloudify related stuff:
 
