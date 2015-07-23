@@ -45,6 +45,7 @@ INSTALL_PACKAGES = [
     'cloudify-manager/rest-service',
     'cloudify-fabric-plugin',
     'cloudify-openstack-plugin',
+    'cloudify-docker-plugin',
     'cloudify-system-tests',
 ]
 
@@ -67,6 +68,7 @@ UNINSTALL_PACKAGES = [
     'cloudify-rest-service',
     'cloudify-fabric-plugin',
     'cloudify-openstack-plugin',
+    'cloudify-docker-plugin',
     'cloudify-system-tests',
 ]
 
@@ -80,7 +82,7 @@ MAIN_REPOS = [
     'cloudify-manager',
     'cloudify-system-tests',
     'cloudify-manager-blueprints',
-    'cloudify-nodecellar-example'
+    'cloudify-nodecellar-example',
 ]
 
 PLUGIN_REPOS = [
@@ -88,6 +90,7 @@ PLUGIN_REPOS = [
     'cloudify-diamond-plugin',
     'cloudify-fabric-plugin',
     'cloudify-openstack-plugin',
+    'cloudify-docker-plugin',
 ]
 
 TAGGED_REPOS = {
