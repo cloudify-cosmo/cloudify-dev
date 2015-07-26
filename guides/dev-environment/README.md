@@ -31,7 +31,7 @@ Verify its installed by running:
 ```
 
 Note:
-If you already have virtualenv installed, updrade it:
+If you already have virtualenv installed, upgrade it:
 ```
 ~$ sudo pip install virtualenv --upgrade
 ```
