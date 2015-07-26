@@ -33,7 +33,7 @@ Verify its installed by running:
 Note:
 If you already habe virtualenv installed, updrade it:
 ```
-sudo pip install virtualenv --upgrade
+~$ sudo pip install virtualenv --upgrade
 ```
 This is required in order to make sure your virtual environments will use pip 7.1.0 or higher.
 
