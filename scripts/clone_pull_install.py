@@ -45,7 +45,6 @@ INSTALL_PACKAGES = [
     'cloudify-manager/rest-service',
     'cloudify-fabric-plugin',
     'cloudify-openstack-plugin',
-    'cloudify-docker-plugin',
     'cloudify-system-tests',
 ]
 
@@ -68,7 +67,6 @@ UNINSTALL_PACKAGES = [
     'cloudify-rest-service',
     'cloudify-fabric-plugin',
     'cloudify-openstack-plugin',
-    'cloudify-docker-plugin',
     'cloudify-system-tests',
 ]
 
@@ -90,7 +88,6 @@ PLUGIN_REPOS = [
     'cloudify-diamond-plugin',
     'cloudify-fabric-plugin',
     'cloudify-openstack-plugin',
-    'cloudify-docker-plugin',
 ]
 
 TAGGED_REPOS = {
@@ -154,53 +151,33 @@ def git_clone(repo):
     run_command('git clone {0}'.format(repo_url))
 
 
+def clone_repos(repos_list):
+    for repo in repos_list:
+        print '\n'
+        print '------------------ CLONING {0} '.format(repo.upper())
+        if os.path.isdir(repo):
+            print 'repo exists, skipping ...'
+        else:
+            git_clone(repo)
+
+
 def clone_all():
-    for repo in MAIN_REPOS:
-        print '\n'
-        print '------------------ CLONING {0} '.format(repo.upper())
-        if os.path.isdir(repo):
-            print 'repo exists, skipping ...'
-        else:
-            git_clone(repo)
-
-    for repo in PLUGIN_REPOS:
-        print '\n'
-        print '------------------ CLONING {0} '.format(repo.upper())
-        if os.path.isdir(repo):
-            print 'repo exists, skipping ...'
-        else:
-            git_clone(repo)
+    clone_repos(MAIN_REPOS)
+    clone_repos(PLUGIN_REPOS)
+    clone_repos(TAGGED_REPOS)
 
 
-    for repo, version in TAGGED_REPOS.iteritems():
+def pull_repos(repos_list, branch_name):
+    for repo in repos_list:
         print '\n'
-        print '------------------ CLONING {0} '.format(repo.upper())
+        print '------------------ PULLING {0} branch {1}'.format(
+            repo.upper(), branch_name.upper())
         if os.path.isdir(repo):
-            print 'repo exists, skipping ...'
-        else:
-            git_clone(repo)
-
-def pull_repos(repo_version):
-    for repo in MAIN_REPOS:
-        print '\n'
-        print '------------------ PULLING {0} '.format(repo.upper())
-        if os.path.isdir(repo):
-            pull_repo(repo, repo_version)
+            pull_repo(repo, branch_name)
         else:
             print '!! pull aborted, local repo not found: {0}'.format(repo)
             sys.exit()
         
-
-def pull_plugins_repos(repo_version):
-    for repo in PLUGIN_REPOS:
-        print '\n'
-        print '------------------ PULLING {0} '.format(repo.upper())
-        if os.path.isdir(repo):
-            pull_repo(repo, repo_version)
-        else:
-            print '!! pull aborted, local repo not found'
-            sys.exit()
-
 
 def fetch_tagged_repos():
     for repo, tag in TAGGED_REPOS.iteritems():
@@ -249,8 +226,8 @@ if __name__ == '__main__':
     print '\n\n'
     print '############## CLONE COMPLETED, PULLING ##############'
     print ''
-    pull_repos(MAIN_REPOS_BRANCH)
-    pull_plugins_repos(PLUGIN_REPOS_BRANCH)
+    pull_repos(MAIN_REPOS, MAIN_REPOS_BRANCH)
+    pull_repos(PLUGIN_REPOS, PLUGIN_REPOS_BRANCH)
     fetch_tagged_repos()
 
     print '\n\n'
