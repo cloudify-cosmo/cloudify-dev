@@ -91,7 +91,7 @@ PLUGIN_REPOS = [
 ]
 
 TAGGED_REPOS = {
-    'flask-securest':FLASK_SECUREST_TAG,
+    'flask-securest': FLASK_SECUREST_TAG,
 }
 
 
@@ -119,7 +119,7 @@ def verify_current_branch(target_branch_name):
     else:
         print 'failed to verify current branch, exiting'
         sys.exit()
-    
+
 
 def pull_repo(repo_path, target_branch_name='master'):
 
@@ -128,7 +128,8 @@ def pull_repo(repo_path, target_branch_name='master'):
     if not verify_current_branch(target_branch_name):
         run_command("git checkout '{0}'".format(target_branch_name))
         if not verify_current_branch(target_branch_name):
-            print "failed to switch to '{0}', exiting".format(target_branch_name)
+            print "failed to switch to '{0}', exiting".format(
+                target_branch_name)
             sys.exit
     run_command('git pull')
     os.chdir(pwd)
@@ -141,12 +142,13 @@ def fetch_tag(repo_path, repo_tag):
     run_command('git checkout {0}'.format(repo_tag))
     os.chdir(pwd)
 
+
 def git_clone(repo):
     if protocol == 'ssh':
         repo_url = 'git@github.com:cloudify-cosmo/{0}.git'.format(repo)
     else:
         repo_url = 'https://github.com/cloudify-cosmo/{0}.git'.format(repo)
-    
+
     print "local repo doesn't exist, cloning from {0} ...".format(repo_url)
     run_command('git clone {0}'.format(repo_url))
 
@@ -177,7 +179,7 @@ def pull_repos(repos_list, branch_name):
         else:
             print '!! pull aborted, local repo not found: {0}'.format(repo)
             sys.exit()
-        
+
 
 def fetch_tagged_repos():
     for repo, tag in TAGGED_REPOS.iteritems():
@@ -217,7 +219,7 @@ if __name__ == '__main__':
         if arg in ('https', 'HTTPS'):
             print 'setting protocol to: https'
             protocol = 'https'
-            break;
+            break
 
     if not protocol:
         protocol = 'ssh'
