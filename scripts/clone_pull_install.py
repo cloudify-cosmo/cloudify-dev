@@ -189,13 +189,15 @@ def fetch_tagged_repos():
 
 def uninstall_package(package):
     print '\n'
-    print '------------------ UN-INSTALLING {0} ------------------'.format(package)
+    print '------------------ UN-INSTALLING {0} ------------------'.format(
+        package)
     run_command('pip uninstall -y {0}'.format(package))
 
 
 def install_package(package):
     print '\n'
-    print '------------------ INSTALLING {0} ------------------'.format(package)
+    print '------------------ INSTALLING {0} ------------------'.format(
+        package)
     run_command('{0}/pip install -e {1}'.format(BIN_PATH, package))
 
 
