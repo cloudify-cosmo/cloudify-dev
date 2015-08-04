@@ -30,6 +30,13 @@ Verify its installed by running:
 ~$ virtualenv --version
 ```
 
+Note:
+If you already have virtualenv installed, upgrade it:
+```
+~$ sudo pip install virtualenv --upgrade
+```
+This is required in order to make sure your virtual environments will use pip 7.1.0 or higher.
+
 ## Step 3: Creating a virtualenv
 
 Its also a good idea to have a dedicated directory for python virtual environments. In this tutorial we will use ```~/dev/venvs```
