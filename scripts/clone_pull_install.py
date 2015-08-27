@@ -33,13 +33,10 @@ INSTALL_PACKAGES = [
     'cloudify-plugins-common',
     'cloudify-script-plugin',
     'cloudify-cli',
-    'cloudify-manager/plugins/agent-installer',
-    'cloudify-manager/plugins/plugin-installer',
     'cloudify-manager/plugins/riemann-controller',
-    'cloudify-manager/plugins/windows-agent-installer',
-    'cloudify-manager/plugins/windows-plugin-installer',
     'cloudify-manager/workflows',
     'cloudify-diamond-plugin',
+    'cloudify-agent',
     'cloudify-manager/tests',
     'flask-securest',
     'cloudify-manager/rest-service',
@@ -55,11 +52,8 @@ UNINSTALL_PACKAGES = [
     'cloudify-plugins-common',
     'cloudify-script-plugin',
     'cloudify',
-    'cloudify-agent-installer-plugin',
-    'cloudify-plugin-installer-plugin',
+    'cloudify-agent',
     'cloudify-riemann-controller-plugin',
-    'cloudify-windows-agent-installer-plugin',
-    'cloudify-windows-plugin-installer-plugin',
     'cloudify-workflows',
     'cloudify-diamond-plugin',
     'cloudify-integration-tests',
@@ -77,6 +71,7 @@ MAIN_REPOS = [
     'cloudify-dsl-parser',
     'cloudify-plugins-common',
     'cloudify-cli',
+    'cloudify-agent',
     'cloudify-manager',
     'cloudify-system-tests',
     'cloudify-manager-blueprints',
@@ -156,7 +151,7 @@ def git_clone(repo):
 def clone_repos(repos_list):
     for repo in repos_list:
         print '\n'
-        print '------------------ CLONING {0} '.format(repo.upper())
+        print '------------------ CLONING {0} ------------------'.format(repo)
         if os.path.isdir(repo):
             print 'repo exists, skipping ...'
         else:
@@ -172,19 +167,19 @@ def clone_all():
 def pull_repos(repos_list, branch_name):
     for repo in repos_list:
         print '\n'
-        print '------------------ PULLING {0} branch {1}'.format(
-            repo.upper(), branch_name.upper())
+        print '------------------ PULLING {0} ({1}) ------------------'.format(
+            repo, branch_name)
         if os.path.isdir(repo):
             pull_repo(repo, branch_name)
         else:
-            print '!! pull aborted, local repo not found: {0}'.format(repo)
+            print '!! pull aborted, local repo not found: {0} !!'.format(repo)
             sys.exit()
 
 
 def fetch_tagged_repos():
     for repo, tag in TAGGED_REPOS.iteritems():
         print '\n'
-        print '------------------ FETCHING {0} '.format(repo.upper())
+        print '------------------ FETCHING {0} ------------------'.format(repo)
         if os.path.isdir(repo):
             fetch_tag(repo, tag)
         else:
@@ -194,13 +189,15 @@ def fetch_tagged_repos():
 
 def uninstall_package(package):
     print '\n'
-    print '------------------ UN-INSTALLING {0} '.format(package.upper())
+    print '------------------ UN-INSTALLING {0} ------------------'.format(
+        package)
     run_command('pip uninstall -y {0}'.format(package))
 
 
 def install_package(package):
     print '\n'
-    print '------------------ INSTALLING {0} '.format(package.upper())
+    print '------------------ INSTALLING {0} ------------------'.format(
+        package)
     run_command('{0}/pip install -e {1}'.format(BIN_PATH, package))
 
 
