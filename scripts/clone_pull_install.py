@@ -9,7 +9,6 @@
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
-#    * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #    * See the License for the specific language governing permissions and
 #    * limitations under the License.
 #
@@ -190,13 +189,13 @@ def fetch_tagged_repos():
 
 def uninstall_package(package):
     print '\n'
-    print '------------------ UN-INSTALLING {0} ------------------'.format(package)
+    print '---------------- UN-INSTALLING {0} ----------------'.format(package)
     run_command('pip uninstall -y {0}'.format(package))
 
 
 def install_package(package):
     print '\n'
-    print '------------------ INSTALLING {0} ------------------'.format(package)
+    print '------------------ INSTALLING {0} -----------------'.format(package)
     run_command('{0}/pip install -e {1}'.format(BIN_PATH, package))
 
 
