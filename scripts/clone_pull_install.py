@@ -20,7 +20,7 @@ import sys
 
 MAIN_REPOS_BRANCH = 'master'
 PLUGIN_REPOS_BRANCH = 'master'
-FLASK_SECUREST_TAG = '0.6'
+FLASK_SECUREST_TAG = '0.7'
 
 BIN_PATH = os.path.dirname(sys.executable)
 
@@ -121,12 +121,13 @@ def pull_repo(repo_path, target_branch_name='master'):
     pwd = os.getcwd()
     os.chdir(repo_path)
     if not verify_current_branch(target_branch_name):
+        run_command("git fetch")
         run_command("git checkout '{0}'".format(target_branch_name))
         if not verify_current_branch(target_branch_name):
             print "failed to switch to '{0}', exiting".format(
                 target_branch_name)
-            sys.exit
-    run_command('git pull')
+            sys.exit()
+    run_command('git pull origin {0}'.format(target_branch_name))
     os.chdir(pwd)
 
 
@@ -189,15 +190,13 @@ def fetch_tagged_repos():
 
 def uninstall_package(package):
     print '\n'
-    print '------------------ UN-INSTALLING {0} ------------------'.format(
-        package)
+    print '------------------ UN-INSTALLING {0} ------------------'.format(package)
     run_command('pip uninstall -y {0}'.format(package))
 
 
 def install_package(package):
     print '\n'
-    print '------------------ INSTALLING {0} ------------------'.format(
-        package)
+    print '------------------ INSTALLING {0} ------------------'.format(package)
     run_command('{0}/pip install -e {1}'.format(BIN_PATH, package))
 
 
