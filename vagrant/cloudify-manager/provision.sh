@@ -50,12 +50,12 @@ function _bootstrap() {
     machine_name=$1
     docker=$2
 
-    blueprint_name="simple.yaml"
-    blueprint_url="https://raw.githubusercontent.com/cloudify-cosmo/cloudify-manager-blueprints/${MANAGER_BLUEPRINTS_BRANCH}/simple/simple.yaml"
-    if [ "${docker}" = true ]; then
-        blueprint_name="simple-docker.yaml"
-        blueprint_url="https://raw.githubusercontent.com/cloudify-cosmo/cloudify-manager-blueprints/${MANAGER_BLUEPRINTS_BRANCH}/simple/simple-docker.yaml"
-    fi
+    blueprint_name="simple-manager-blueprint.yaml"
+    blueprint_url="https://raw.githubusercontent.com/cloudify-cosmo/cloudify-manager-blueprints/${MANAGER_BLUEPRINTS_BRANCH}/simple-manager-blueprint.yaml"
+    # if [ "${docker}" = true ]; then
+    #     blueprint_name="simple-docker.yaml"
+    #     blueprint_url="https://raw.githubusercontent.com/cloudify-cosmo/cloudify-manager-blueprints/${MANAGER_BLUEPRINTS_BRANCH}/simple-docker.yaml"
+    # fi
 
     echo "Using blueprint url: ${blueprint_url}"
     echo "Using blueprint name: ${blueprint_name}"
