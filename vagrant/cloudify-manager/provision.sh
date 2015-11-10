@@ -50,7 +50,7 @@ function _bootstrap() {
     machine_name=$1
     docker=$2
 
-    blueprint_name="simple.yaml"
+    blueprint_name="simple-manager-blueprint.yaml"
     blueprint_url="https://raw.githubusercontent.com/cloudify-cosmo/cloudify-manager-blueprints/${MANAGER_BLUEPRINTS_BRANCH}/simple-manager-blueprint.yaml"
     # if [ "${docker}" = true ]; then
     #     blueprint_name="simple-docker.yaml"
