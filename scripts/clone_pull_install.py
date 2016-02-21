@@ -19,7 +19,7 @@ import sys
 
 MAIN_REPOS_BRANCH = 'master'
 PLUGIN_REPOS_BRANCH = 'master'
-FLASK_SECUREST_TAG = '0.7'
+FLASK_SECUREST_TAG = '0.8'
 
 BIN_PATH = os.path.dirname(sys.executable)
 
