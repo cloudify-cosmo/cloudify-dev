@@ -1,6 +1,6 @@
-## Config Shell Enviourment ##
+## Config Shell Environment ##
 
-In order to config the shell enviourment, we'll modify the ~/.bashrc file. You may want to create a backup for your current file.
+In order to config the shell environment, we'll modify the ~/.bashrc file. You may want to create a backup of your current file.
 After you've created a backup, just add the following lines at the end of the file.
 
 

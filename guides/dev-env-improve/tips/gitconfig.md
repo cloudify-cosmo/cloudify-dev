@@ -1,6 +1,6 @@
-## Config Git Enviourment ##
+## Config Git Environment ##
 
-Use the following lines in order to configure your git enviourment.
+Use the following lines in order to configure your git environment.
 Just set it as the ~/.gitconfig content
 
 
