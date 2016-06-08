@@ -21,3 +21,7 @@ Just set it as the ~/.gitconfig content
 [core]
         autocrlf = input
 ```
+
+Usage:
+ * git lg
+ * git lola
