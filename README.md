@@ -113,7 +113,7 @@ These tests will be executed as part of the travis build for the cloudify-manage
 
 ### System Tests
 
-All system tests are located in a dedicated repository called [cloudify-system-tests](https://github.com/cloudify-cosmo/cloudify-amqp-influxdb).
+All system tests are located in a dedicated repository called [cloudify-system-tests](https://github.com/cloudify-cosmo/cloudify-system-tests).
 These tests run a full blown cloudify installation on various environments.
 They are triggered by an internal mechanism at the end of the day.
 
