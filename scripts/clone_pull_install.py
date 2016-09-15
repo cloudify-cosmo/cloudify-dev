@@ -37,7 +37,6 @@ INSTALL_PACKAGES = [
     'cloudify-diamond-plugin',
     'cloudify-agent',
     'cloudify-manager/tests',
-    'flask-securest',
     'cloudify-manager/rest-service',
     'cloudify-fabric-plugin',
     'cloudify-openstack-plugin',
@@ -84,9 +83,7 @@ PLUGIN_REPOS = [
     'cloudify-openstack-plugin',
 ]
 
-TAGGED_REPOS = {
-    'flask-securest': FLASK_SECUREST_TAG,
-}
+TAGGED_REPOS = {}
 
 
 def run_command(command):
