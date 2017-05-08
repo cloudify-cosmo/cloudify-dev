@@ -1,0 +1,139 @@
+#!/usr/bin/env python
+
+import os
+import sh
+import argh
+import StringIO
+from copy import copy
+from colorama import Fore
+from threading import Thread
+from collections import OrderedDict
+
+
+REPOS = [
+    'cloudify-dsl-parser',
+    'cloudify-rest-client',
+    'cloudify-plugins-common',
+    'cloudify-agent',
+    'cloudify-cli',
+    'cloudify-manager',
+    'cloudify-premium',
+    'cloudify-system-tests',
+    'docl'
+]
+
+REPO_BASE = os.path.expanduser('~/dev/repos/')
+
+command = argh.EntryPoint(
+    'clap',
+    dict(description='Custom commands that run on several cloudify repos')
+)
+
+
+def _git(repo):
+    repo_path = os.path.join(REPO_BASE, repo)
+    return sh.git.bake(
+        '--no-pager',
+        '--git-dir', os.path.join(repo_path, '.git'),
+        '--work-tree', repo_path)
+
+
+def _print(repo, line):
+    repo = Fore.GREEN + repo
+    print '{0:<35}| {1}'.format(repo, line)
+
+
+@command
+def status():
+    def _get_status_line(line):
+        if len(line.split()) == 2:
+            status, line = line.split()
+            status = Fore.RED + status
+            line = Fore.GREEN + line
+            line = '{0} {1}'.format(status, line)
+        else:
+            line = Fore.GREEN + line
+        return line
+
+    for repo in REPOS:
+        git = _git(repo)
+        branch = git('rev-parse', '--abbrev-ref', 'HEAD').strip()
+        status_out = git('status', '-s').strip()
+        _print(repo, branch)
+        for line in status_out.split('\n'):
+            if line:
+                line = _get_status_line(line)
+                _print(repo, line)
+
+
+def _pull_repo(repo):
+    git = _git(repo)
+    try:
+        output = git.pull()
+    except sh.ErrorReturnCode:
+        output = 'No upstream defined. Skipping pull.'
+    for line in output.split('\n'):
+        if line:
+            line = Fore.YELLOW + line
+            _print(repo, line)
+
+
+@command
+def pull():
+    threads = [Thread(target=_pull_repo, args=(repo, )) for repo in REPOS]
+    for t in threads:
+        t.daemon = True
+        t.start()
+
+    for t in threads:
+        t.join()
+
+
+def _get_cloudify_packages():
+    packages = OrderedDict()
+    for repo in REPOS:
+        packages[repo] = repo
+
+    del packages['cloudify-manager']
+
+    packages['cloudify-rest-service'] = 'cloudify-manager/rest-service'
+    packages['cloudify-integration-tests'] = 'cloudify-manager/tests'
+    packages['cloudify-system-workflows'] = 'cloudify-manager/workflows'
+    return packages
+
+
+@command
+def install(verbose=False):
+    pip = sh.pip.bake()
+    packages = _get_cloudify_packages()
+
+    for name, path in packages.iteritems():
+        repo_path = os.path.join(REPO_BASE, path)
+        output = pip.install('-e', repo_path)
+        for line in output.split('\n'):
+            if not line:
+                continue
+
+            if verbose or line.startswith('Successfully installed'):
+                line = Fore.YELLOW + line
+                _print(name, line)
+
+
+@command
+def checkout(branch):
+    for repo in REPOS:
+        git = _git(repo)
+        try:
+            output = git.checkout(branch)
+        except sh.ErrorReturnCode:
+            output = 'Could not checkout branch `{0}`'.format(branch)
+
+        for line in output.split('\n'):
+            if line:
+                line = Fore.YELLOW + line
+                _print(repo, line)
+
+
+if __name__ == '__main__':
+    # Parse the arguments and run the command
+    command()
