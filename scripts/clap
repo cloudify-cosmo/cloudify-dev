@@ -19,10 +19,14 @@ REPOS = [
     'cloudify-manager',
     'cloudify-premium',
     'cloudify-system-tests',
+    'cloudify-dev',
+    'cloudify-amqp-influxdb',
     'docl'
 ]
 
 REPO_BASE = os.path.expanduser('~/dev/repos/')
+
+BASE_GITHUB_URL = 'git@github.com:cloudify-cosmo/{0}.git'
 
 command = argh.EntryPoint(
     'clap',
@@ -66,16 +70,20 @@ def status():
                 _print(repo, line)
 
 
+def _parse_and_print_output(repo, output):
+    for line in output.split('\n'):
+        if line:
+            line = Fore.YELLOW + line
+            _print(repo, line)
+
+
 def _pull_repo(repo):
     git = _git(repo)
     try:
         output = git.pull()
     except sh.ErrorReturnCode:
         output = 'No upstream defined. Skipping pull.'
-    for line in output.split('\n'):
-        if line:
-            line = Fore.YELLOW + line
-            _print(repo, line)
+    _parse_and_print_output(repo, output)
 
 
 @command
@@ -128,10 +136,24 @@ def checkout(branch):
         except sh.ErrorReturnCode:
             output = 'Could not checkout branch `{0}`'.format(branch)
 
-        for line in output.split('\n'):
-            if line:
-                line = Fore.YELLOW + line
-                _print(repo, line)
+        _parse_and_print_output(repo, output)
+
+
+@command
+def clone():
+    git = sh.git.bake()
+    for repo in REPOS:
+        full_url = BASE_GITHUB_URL.format(repo)
+        repo_path = os.path.join(REPO_BASE, repo)
+        try:
+            output = git.clone(full_url, repo_path)
+        except sh.ErrorReturnCode, e:
+            output = 'Could not clone repo `{0}`: {1}'.format(repo, e)
+
+        if 'fatal: destination path' in output:
+            output = 'Repo is already cloned (the folder exists)'
+
+        _parse_and_print_output(repo, output)
 
 
 if __name__ == '__main__':
