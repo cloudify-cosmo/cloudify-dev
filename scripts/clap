@@ -103,6 +103,7 @@ def _get_cloudify_packages():
         packages[repo] = repo
 
     del packages['cloudify-manager']
+    del packages['cloudify-dev']
 
     packages['cloudify-rest-service'] = 'cloudify-manager/rest-service'
     packages['cloudify-integration-tests'] = 'cloudify-manager/tests'
