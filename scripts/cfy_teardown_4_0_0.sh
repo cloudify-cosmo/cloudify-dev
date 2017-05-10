@@ -1,0 +1,157 @@
+systemctl stop manager-ip-setter
+systemctl disable manager-ip-setter
+rm -rf /usr/lib/systemd/system/cloudify-manager-ip-setter.service
+rm -rf /etc/sysconfig/cloudify-manager-ip-setter
+rm -rf /opt/manager-ip-setter_NOTICE.txt
+rm -rf /etc/logrotate.d/manager-ip-setter
+rm -rf /opt/cloudify/manager-ip-setter
+systemctl stop syncthing
+systemctl disable syncthing
+rm -rf /usr/lib/systemd/system/cloudify-syncthing.service
+rm -rf /etc/sysconfig/cloudify-syncthing
+rm -rf /opt/syncthing_NOTICE.txt
+rm -rf /etc/logrotate.d/syncthing
+rm -rf /opt/syncthing
+systemctl stop stage
+systemctl disable stage
+rm -rf /usr/lib/systemd/system/cloudify-stage.service
+rm -rf /etc/sysconfig/cloudify-stage
+rm -rf /opt/stage_NOTICE.txt
+rm -rf /etc/logrotate.d/stage
+rm -rf /opt/cloudify-stage
+rm -rf /opt/nodejs
+rm -rf /var/log/cloudify/stage
+userdel --force stage_user
+groupdel stage_group
+systemctl stop logstash
+systemctl disable logstash
+rm -rf /usr/lib/systemd/system/cloudify-logstash.service
+rm -rf /etc/sysconfig/cloudify-logstash
+rm -rf /opt/logstash_NOTICE.txt
+rm -rf /etc/logrotate.d/logstash
+yum remove -y logstash
+rm -rf /opt/logstash
+rm -rf /var/log/cloudify/logstash
+rm -rf /etc/systemd/system/logstash.service.d
+rm -rf /etc/init.d/logstash
+rm -rf /etc/logstash
+systemctl stop riemann
+systemctl disable riemann
+rm -rf /usr/lib/systemd/system/cloudify-riemann.service
+rm -rf /etc/sysconfig/cloudify-riemann
+rm -rf /opt/riemann_NOTICE.txt
+rm -rf /etc/logrotate.d/riemann
+yum remove -y riemann
+rm -rf /etc/riemann
+rm -rf /var/log/cloudify/riemann
+rm -rf /opt/lib/langohr.jar
+rm -rf /opt/riemann
+userdel --force riemann
+groupdel riemann
+systemctl stop amqpinflux
+systemctl disable amqpinflux
+rm -rf /usr/lib/systemd/system/cloudify-amqpinflux.service
+rm -rf /etc/sysconfig/cloudify-amqpinflux
+rm -rf /opt/amqpinflux_NOTICE.txt
+rm -rf /etc/logrotate.d/amqpinflux
+yum remove -y cloudify-amqp-influx
+rm -rf /opt/amqpinflux
+userdel --force amqpinflux
+groupdel amqpinflux
+systemctl stop java
+systemctl disable java
+rm -rf /usr/lib/systemd/system/cloudify-java.service
+rm -rf /etc/sysconfig/cloudify-java
+rm -rf /opt/java_NOTICE.txt
+rm -rf /etc/logrotate.d/java
+yum remove -y java
+rm -rf /var/log/cloudify/java
+systemctl stop mgmtworker
+systemctl disable mgmtworker
+rm -rf /usr/lib/systemd/system/cloudify-mgmtworker.service
+rm -rf /etc/sysconfig/cloudify-mgmtworker
+rm -rf /opt/mgmtworker_NOTICE.txt
+rm -rf /etc/logrotate.d/mgmtworker
+yum remove -y cloudify-management-worker
+rm -rf /opt/mgmtworker
+rm -rf /var/log/cloudify/mgmtworker
+userdel --force cfyuser
+groupdel cfyuser
+systemctl stop influxdb
+systemctl disable influxdb
+rm -rf /usr/lib/systemd/system/cloudify-influxdb.service
+rm -rf /etc/sysconfig/cloudify-influxdb
+rm -rf /opt/influxdb_NOTICE.txt
+rm -rf /etc/logrotate.d/influxdb
+yum remove -y influxdb
+rm -rf /opt/influxdb
+rm -rf /var/log/cloudify/influxdb
+rm -rf /etc/init.d/influxdb
+userdel --force influxdb
+groupdel influxdb
+systemctl stop nginx
+systemctl disable nginx
+rm -rf /usr/lib/systemd/system/cloudify-nginx.service
+rm -rf /etc/sysconfig/cloudify-nginx
+rm -rf /opt/nginx_NOTICE.txt
+rm -rf /etc/logrotate.d/nginx
+yum remove -y nginx
+rm -rf /var/log/cloudify/nginx
+rm -rf /etc/systemd/system/nginx.service.d
+rm -rf /etc/nginx
+rm -rf /var/log/nginx
+rm -rf /var/cache/nginx
+userdel --force nginx
+groupdel nginx
+systemctl stop restservice
+systemctl disable restservice
+rm -rf /usr/lib/systemd/system/cloudify-restservice.service
+rm -rf /etc/sysconfig/cloudify-restservice
+rm -rf /opt/restservice_NOTICE.txt
+rm -rf /etc/logrotate.d/restservice
+yum remove -y cloudify-rest-service
+rm -rf /opt/manager
+rm -rf /var/log/cloudify/rest
+userdel --force cfyuser
+groupdel cfyuser
+systemctl stop rabbitmq
+systemctl disable rabbitmq
+rm -rf /usr/lib/systemd/system/cloudify-rabbitmq.service
+rm -rf /etc/sysconfig/cloudify-rabbitmq
+rm -rf /opt/rabbitmq_NOTICE.txt
+rm -rf /etc/logrotate.d/rabbitmq
+yum remove -y erlang
+rm -rf /etc/rabbitmq
+rm -rf /var/log/cloudify/rabbitmq
+rm -rf /etc/security/limits.d/rabbitmq.conf
+rm -rf /var/lib/rabbitmq
+rm -rf /usr/lib/rabbitmq
+rm -rf /var/log/rabbitmq
+userdel --force rabbitmq
+groupdel rabbitmq
+systemctl stop postgresql-9.5
+systemctl disable postgresql-9.5
+rm -rf /usr/lib/systemd/system/cloudify-postgresql-9.5.service
+rm -rf /etc/sysconfig/cloudify-postgresql-9.5
+rm -rf /opt/postgresql-9.5_NOTICE.txt
+rm -rf /etc/logrotate.d/postgresql-9.5
+yum remove -y postgresql95
+yum remove -y postgresql95-libs
+rm -rf /var/lib/pgsql
+rm -rf /usr/pgsql-9.5
+rm -rf /var/log/cloudify/postgresql
+userdel --force postgres
+groupdel postgres
+systemctl stop consul
+systemctl disable consul
+rm -rf /usr/lib/systemd/system/cloudify-consul.service
+rm -rf /etc/sysconfig/cloudify-consul
+rm -rf /opt/consul_NOTICE.txt
+rm -rf /etc/logrotate.d/consul
+rm -rf /opt/consul
+rm -rf /etc/consul.d
+
+rm -rf /opt/cloudify
+rm -rf /etc/cloudify
+rm -rf /var/log/cloudify
+
