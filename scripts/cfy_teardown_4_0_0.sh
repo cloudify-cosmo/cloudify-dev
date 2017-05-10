@@ -1,3 +1,23 @@
+#!/bin/bash
+
+function print_line() {
+
+  LINE=$1
+
+  echo
+  echo '======================================================================'
+  echo $LINE
+  echo '======================================================================'
+  echo
+}
+
+
+if [ "$1" != "-f" ]; then
+  print_line "This action requires additional confirmation. Add the '-f' flag to your command if you are certain this command should be executed."
+  exit 1
+fi
+
+print_line 'Removing component:  manager-ip-setter'
 systemctl stop manager-ip-setter
 systemctl disable manager-ip-setter
 rm -rf /usr/lib/systemd/system/cloudify-manager-ip-setter.service
@@ -5,6 +25,8 @@ rm -rf /etc/sysconfig/cloudify-manager-ip-setter
 rm -rf /opt/manager-ip-setter_NOTICE.txt
 rm -rf /etc/logrotate.d/manager-ip-setter
 rm -rf /opt/cloudify/manager-ip-setter
+
+print_line 'Removing component:  syncthing'
 systemctl stop syncthing
 systemctl disable syncthing
 rm -rf /usr/lib/systemd/system/cloudify-syncthing.service
@@ -12,6 +34,8 @@ rm -rf /etc/sysconfig/cloudify-syncthing
 rm -rf /opt/syncthing_NOTICE.txt
 rm -rf /etc/logrotate.d/syncthing
 rm -rf /opt/syncthing
+
+print_line 'Removing component:  stage'
 systemctl stop stage
 systemctl disable stage
 rm -rf /usr/lib/systemd/system/cloudify-stage.service
@@ -23,6 +47,8 @@ rm -rf /opt/nodejs
 rm -rf /var/log/cloudify/stage
 userdel --force stage_user
 groupdel stage_group
+
+print_line 'Removing component:  manager-ip-setter'
 systemctl stop logstash
 systemctl disable logstash
 rm -rf /usr/lib/systemd/system/cloudify-logstash.service
@@ -35,6 +61,8 @@ rm -rf /var/log/cloudify/logstash
 rm -rf /etc/systemd/system/logstash.service.d
 rm -rf /etc/init.d/logstash
 rm -rf /etc/logstash
+
+print_line 'Removing component:  riemann'
 systemctl stop riemann
 systemctl disable riemann
 rm -rf /usr/lib/systemd/system/cloudify-riemann.service
@@ -48,6 +76,8 @@ rm -rf /opt/lib/langohr.jar
 rm -rf /opt/riemann
 userdel --force riemann
 groupdel riemann
+
+print_line 'Removing component:  amqpinflux'
 systemctl stop amqpinflux
 systemctl disable amqpinflux
 rm -rf /usr/lib/systemd/system/cloudify-amqpinflux.service
@@ -58,6 +88,8 @@ yum remove -y cloudify-amqp-influx
 rm -rf /opt/amqpinflux
 userdel --force amqpinflux
 groupdel amqpinflux
+
+print_line 'Removing component:  java'
 systemctl stop java
 systemctl disable java
 rm -rf /usr/lib/systemd/system/cloudify-java.service
@@ -66,6 +98,8 @@ rm -rf /opt/java_NOTICE.txt
 rm -rf /etc/logrotate.d/java
 yum remove -y java
 rm -rf /var/log/cloudify/java
+
+print_line 'Removing component:  mgmtworker'
 systemctl stop mgmtworker
 systemctl disable mgmtworker
 rm -rf /usr/lib/systemd/system/cloudify-mgmtworker.service
@@ -77,6 +111,8 @@ rm -rf /opt/mgmtworker
 rm -rf /var/log/cloudify/mgmtworker
 userdel --force cfyuser
 groupdel cfyuser
+
+print_line 'Removing component:  influxdb'
 systemctl stop influxdb
 systemctl disable influxdb
 rm -rf /usr/lib/systemd/system/cloudify-influxdb.service
@@ -89,6 +125,8 @@ rm -rf /var/log/cloudify/influxdb
 rm -rf /etc/init.d/influxdb
 userdel --force influxdb
 groupdel influxdb
+
+print_line 'Removing component:  nginx'
 systemctl stop nginx
 systemctl disable nginx
 rm -rf /usr/lib/systemd/system/cloudify-nginx.service
@@ -103,6 +141,8 @@ rm -rf /var/log/nginx
 rm -rf /var/cache/nginx
 userdel --force nginx
 groupdel nginx
+
+print_line 'Removing component:  restservice'
 systemctl stop restservice
 systemctl disable restservice
 rm -rf /usr/lib/systemd/system/cloudify-restservice.service
@@ -114,6 +154,8 @@ rm -rf /opt/manager
 rm -rf /var/log/cloudify/rest
 userdel --force cfyuser
 groupdel cfyuser
+
+print_line 'Removing component:  rabbitmq'
 systemctl stop rabbitmq
 systemctl disable rabbitmq
 rm -rf /usr/lib/systemd/system/cloudify-rabbitmq.service
@@ -129,6 +171,8 @@ rm -rf /usr/lib/rabbitmq
 rm -rf /var/log/rabbitmq
 userdel --force rabbitmq
 groupdel rabbitmq
+
+print_line 'Removing component:  postgresql'
 systemctl stop postgresql-9.5
 systemctl disable postgresql-9.5
 rm -rf /usr/lib/systemd/system/cloudify-postgresql-9.5.service
@@ -142,6 +186,8 @@ rm -rf /usr/pgsql-9.5
 rm -rf /var/log/cloudify/postgresql
 userdel --force postgres
 groupdel postgres
+
+print_line 'Removing component:  consul'
 systemctl stop consul
 systemctl disable consul
 rm -rf /usr/lib/systemd/system/cloudify-consul.service
@@ -151,7 +197,11 @@ rm -rf /etc/logrotate.d/consul
 rm -rf /opt/consul
 rm -rf /etc/consul.d
 
+print_line 'Removing cloudify directories...'
 rm -rf /opt/cloudify
 rm -rf /etc/cloudify
 rm -rf /var/log/cloudify
+
+print_line 'Teardown complete!'
+exit 0
 
