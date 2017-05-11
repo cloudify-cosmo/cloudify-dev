@@ -177,7 +177,7 @@ systemctl stop postgresql-9.5
 systemctl disable postgresql-9.5
 rm -rf /usr/lib/systemd/system/cloudify-postgresql-9.5.service
 rm -rf /etc/sysconfig/cloudify-postgresql-9.5
-rm -rf /opt/postgresql-9.5_NOTICE.txt
+rm -rf /opt/postgresql_NOTICE.txt
 rm -rf /etc/logrotate.d/postgresql-9.5
 yum remove -y postgresql95
 yum remove -y postgresql95-libs
