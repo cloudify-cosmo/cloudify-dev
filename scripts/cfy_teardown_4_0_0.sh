@@ -36,8 +36,8 @@ rm -rf /etc/logrotate.d/syncthing
 rm -rf /opt/syncthing
 
 print_line 'Removing component:  stage'
-systemctl stop stage
-systemctl disable stage
+systemctl stop cloudify-stage
+systemctl disable cloudify-stage
 rm -rf /usr/lib/systemd/system/cloudify-stage.service
 rm -rf /etc/sysconfig/cloudify-stage
 rm -rf /opt/stage_NOTICE.txt
@@ -48,7 +48,7 @@ rm -rf /var/log/cloudify/stage
 userdel --force stage_user
 groupdel stage_group
 
-print_line 'Removing component:  manager-ip-setter'
+print_line 'Removing component:  logstash'
 systemctl stop logstash
 systemctl disable logstash
 rm -rf /usr/lib/systemd/system/cloudify-logstash.service
@@ -65,6 +65,8 @@ rm -rf /etc/logstash
 print_line 'Removing component:  riemann'
 systemctl stop riemann
 systemctl disable riemann
+systemctl stop cloudify-riemann
+systemctl disable cloudify-riemann
 rm -rf /usr/lib/systemd/system/cloudify-riemann.service
 rm -rf /etc/sysconfig/cloudify-riemann
 rm -rf /opt/riemann_NOTICE.txt
@@ -78,8 +80,8 @@ userdel --force riemann
 groupdel riemann
 
 print_line 'Removing component:  amqpinflux'
-systemctl stop amqpinflux
-systemctl disable amqpinflux
+systemctl stop cloudify-amqpinflux
+systemctl disable cloudify-amqpinflux
 rm -rf /usr/lib/systemd/system/cloudify-amqpinflux.service
 rm -rf /etc/sysconfig/cloudify-amqpinflux
 rm -rf /opt/amqpinflux_NOTICE.txt
@@ -100,8 +102,8 @@ yum remove -y java
 rm -rf /var/log/cloudify/java
 
 print_line 'Removing component:  mgmtworker'
-systemctl stop mgmtworker
-systemctl disable mgmtworker
+systemctl stop cloudify-mgmtworker
+systemctl disable cloudify-mgmtworker
 rm -rf /usr/lib/systemd/system/cloudify-mgmtworker.service
 rm -rf /etc/sysconfig/cloudify-mgmtworker
 rm -rf /opt/mgmtworker_NOTICE.txt
@@ -113,8 +115,8 @@ userdel --force cfyuser
 groupdel cfyuser
 
 print_line 'Removing component:  influxdb'
-systemctl stop influxdb
-systemctl disable influxdb
+systemctl stop cloudify-influxdb
+systemctl disable cloudify-influxdb
 rm -rf /usr/lib/systemd/system/cloudify-influxdb.service
 rm -rf /etc/sysconfig/cloudify-influxdb
 rm -rf /opt/influxdb_NOTICE.txt
@@ -143,8 +145,8 @@ userdel --force nginx
 groupdel nginx
 
 print_line 'Removing component:  restservice'
-systemctl stop restservice
-systemctl disable restservice
+systemctl stop cloudify-restservice
+systemctl disable cloudify-restservice
 rm -rf /usr/lib/systemd/system/cloudify-restservice.service
 rm -rf /etc/sysconfig/cloudify-restservice
 rm -rf /opt/restservice_NOTICE.txt
@@ -156,8 +158,8 @@ userdel --force cfyuser
 groupdel cfyuser
 
 print_line 'Removing component:  rabbitmq'
-systemctl stop rabbitmq
-systemctl disable rabbitmq
+systemctl stop cloudify-rabbitmq
+systemctl disable cloudify-rabbitmq
 rm -rf /usr/lib/systemd/system/cloudify-rabbitmq.service
 rm -rf /etc/sysconfig/cloudify-rabbitmq
 rm -rf /opt/rabbitmq_NOTICE.txt
