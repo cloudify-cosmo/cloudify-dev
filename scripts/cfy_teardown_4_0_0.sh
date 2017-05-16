@@ -160,6 +160,8 @@ groupdel cfyuser
 print_line 'Removing component:  rabbitmq'
 systemctl stop cloudify-rabbitmq
 systemctl disable cloudify-rabbitmq
+systemctl stop rabbitmq-server
+systemctl disable rabbitmq-server
 rm -rf /usr/lib/systemd/system/cloudify-rabbitmq.service
 rm -rf /etc/sysconfig/cloudify-rabbitmq
 rm -rf /opt/rabbitmq_NOTICE.txt
