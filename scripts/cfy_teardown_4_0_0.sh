@@ -18,8 +18,8 @@ if [ "$1" != "-f" ]; then
 fi
 
 print_line 'Removing component:  manager-ip-setter'
-systemctl stop manager-ip-setter
-systemctl disable manager-ip-setter
+systemctl stop cloudify-manager-ip-setter
+systemctl disable cloudify-manager-ip-setter
 rm -rf /usr/lib/systemd/system/cloudify-manager-ip-setter.service
 rm -rf /etc/sysconfig/cloudify-manager-ip-setter
 rm -rf /opt/manager-ip-setter_NOTICE.txt
@@ -27,8 +27,8 @@ rm -rf /etc/logrotate.d/manager-ip-setter
 rm -rf /opt/cloudify/manager-ip-setter
 
 print_line 'Removing component:  syncthing'
-systemctl stop syncthing
-systemctl disable syncthing
+systemctl stop cloudify-syncthing
+systemctl disable cloudify-syncthing
 rm -rf /usr/lib/systemd/system/cloudify-syncthing.service
 rm -rf /etc/sysconfig/cloudify-syncthing
 rm -rf /opt/syncthing_NOTICE.txt
@@ -192,8 +192,12 @@ userdel --force postgres
 groupdel postgres
 
 print_line 'Removing component:  consul'
-systemctl stop consul
-systemctl disable consul
+systemctl stop cloudify-consul
+systemctl disable cloudify-consul
+systemctl stop cloudify-consul-watcher
+systemctl disable cloudify-consul-watcher
+systemctl stop cloudify-consul-recovery-watcher
+systemctl disable cloudify-consul-recovery-watcher
 rm -rf /usr/lib/systemd/system/cloudify-consul.service
 rm -rf /etc/sysconfig/cloudify-consul
 rm -rf /opt/consul_NOTICE.txt
