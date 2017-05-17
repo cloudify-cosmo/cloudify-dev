@@ -3,8 +3,6 @@
 import os
 import sh
 import argh
-import StringIO
-from copy import copy
 from colorama import Fore
 from threading import Thread
 from collections import OrderedDict
@@ -17,6 +15,7 @@ REPOS = [
     'cloudify-agent',
     'cloudify-cli',
     'cloudify-manager',
+    'cloudify-manager-blueprints',
     'cloudify-premium',
     'cloudify-system-tests',
     'cloudify-dev',
@@ -44,7 +43,7 @@ def _git(repo):
 
 def _print(repo, line):
     repo = Fore.GREEN + repo
-    print '{0:<35}| {1}'.format(repo, line)
+    print '{0:<35}| {1}{2}'.format(repo, line, Fore.RESET)
 
 
 @command
@@ -103,6 +102,7 @@ def _get_cloudify_packages():
         packages[repo] = repo
 
     del packages['cloudify-manager']
+    del packages['cloudify-manager-blueprints']
     del packages['cloudify-dev']
 
     packages['cloudify-rest-service'] = 'cloudify-manager/rest-service'
@@ -118,7 +118,13 @@ def install(verbose=False):
 
     for name, path in packages.iteritems():
         repo_path = os.path.join(REPO_BASE, path)
-        output = pip.install('-e', repo_path)
+        try:
+            output = pip.install('-e', repo_path)
+        except Exception, e:
+            error = Fore.RED + 'Could not pip install repo: {0}'.format(e)
+            _print(name, error)
+            continue
+
         for line in output.split('\n'):
             if not line:
                 continue
@@ -140,16 +146,28 @@ def checkout(branch):
         _parse_and_print_output(repo, output)
 
 
+def _git_clone(git, repo, shallow):
+    full_url = BASE_GITHUB_URL.format(repo)
+    repo_path = os.path.join(REPO_BASE, repo)
+    args = [full_url, repo_path]
+    if shallow:
+        args += ['--depth', 1]
+    return git.clone(*args)
+
+
 @command
-def clone():
+def clone(shallow=False):
     git = sh.git.bake()
+
+    if not os.path.exists(REPO_BASE):
+        print 'Creating base repos dir: {0}'.format(REPO_BASE)
+        os.makedirs(REPO_BASE)
+
     for repo in REPOS:
-        full_url = BASE_GITHUB_URL.format(repo)
-        repo_path = os.path.join(REPO_BASE, repo)
         try:
-            output = git.clone(full_url, repo_path)
+            output = _git_clone(git, repo, shallow)
         except sh.ErrorReturnCode, e:
-            output = 'Could not clone repo `{0}`: {1}'.format(repo, e)
+            return 'Could not clone repo `{0}`: {1}'.format(repo, e)
 
         if 'fatal: destination path' in output:
             output = 'Repo is already cloned (the folder exists)'
