@@ -1,0 +1,173 @@
+
+<html>
+
+<head>
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+<!--<script
+  src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+  integrity="sha256-k2WSCIexGzOj3Euiig+TlR8gA0EmPjuc79OEeY5L45g="
+  crossorigin="anonymous"></script>-->
+
+<script type="text/javascript">
+
+function toggleElementVisibility(element) {
+    var details = element.getElementsByClassName("test-details")[0];
+    if (details.style.display === 'block') {
+        details.style.display = 'none';
+    } else {
+        details.style.display = 'block';
+    }    
+}
+
+function togglePassedTestsVisibility() {
+    var passed = document.getElementsByClassName("passed-test-indicator");
+    for (var i = 0; i < passed.length; i++) {
+        if (passed[i].className.includes('hidden')) {
+            passed[i].className = passed[i].className.replace('hidden', '');    
+        } else {
+            passed[i].className += ' hidden';
+        }
+    }
+}
+
+
+</script>
+
+<style>
+
+html { overflow-y: scroll; }
+
+body {
+    margin: 20px;
+    background: dimgray;
+}
+
+#report {
+    background: white;
+    padding: 20px;
+    border: 4px solid gray;
+}
+
+.test-row {
+    cursor: pointer;
+}
+
+.test-details {
+    display: none;
+    width: 80%;
+}
+
+.small-column {
+    width: 5%;
+}
+
+#summary {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    margin: 40px;
+    clear: both;
+    display: block;
+    overflow: hidden;
+}
+
+#summary div {
+    float: left;
+    width: 200px;
+    margin: 10px;
+    text-align: center;
+}
+
+#toggles {
+    text-align: right;
+    margin-top: 40px;
+    margin-bottom: 20px;
+}
+
+table {
+    table-layout: fixed;
+}
+</style>
+
+</head>
+
+<body>
+
+<div id="report">
+
+    <h1>Integration Tests Report</h1>
+
+    <div id="summary">
+        <div class="alert alert-info">
+            <h2>{{ summary.tests }}</h2>
+            <br/>
+            <h3>Tests</h3>
+        </div>
+        <div class="alert alert-success">
+            <h2>{{ summary.tests - summary.errors - summary.failures - summary.skipped }}</h2>
+            <br/>
+            <h3>Passed</h3>
+        </div>
+        <div class="alert alert-danger">
+            <h2>{{ summary.errors + summary.failures }}</h2>
+            <br/>
+            <h3>Failures</h3>
+        </div>
+        <div class="alert alert-warning">
+            <h2>{{ summary.skipped }}</h2>
+            <br/>
+            <h3>Skipped</h3>
+        </div>
+    </div>
+
+    <div id="toggles">
+        <button class="btn btn-success" onclick="togglePassedTestsVisibility();">Show/Hide Passed Tests</button>
+    </div>
+
+    <div>
+        <table class="table table-hover">
+            <tr>
+                <th class="small-column text-center">Status</th>
+                <th>Name</th>
+                <th class="small-column text-center">Time</th>
+            </tr>
+            {% for testsuite in testsuites %}
+            {% for testcase in testsuite.testcases %}
+            <tr class="test-row {% if testcase.passed %}passed-test-indicator hidden{% endif %}" onclick="toggleElementVisibility(this);">
+                <td class="text-center">
+                    {% if testcase.passed %}
+                        <span class="text-success glyphicon glyphicon-ok"/>
+                    {% else %}
+                        <span class="text-danger glyphicon glyphicon-remove"/>
+                    {% endif %}
+                </td>
+                <td>
+                    {{ testcase.name }} - {{ testcase.classname }}
+                    <div class="test-details">
+                        <h3>Error</h3>
+                        <p>
+                            {{ testcase.error | replace("\n", "<br/>") }}
+                        </p>
+                        <h3>System Out</h3>
+                        <p>
+                            {{ testcase.stdout | replace("\n", "<br/>") }}
+                        </p>                   
+                        <h3>System Error</h3>
+                        <p>
+                            {{ testcase.stderr | replace("\n", "<br/>") }}
+                        </p>                   
+                    </div>
+                </td>
+                <td class="text-center">{{ testcase.time }}</td>
+            </tr>
+            {% endfor %}
+            {% endfor %}
+        </table>
+    </div>
+
+</div>
+
+</body>
+
+</html>

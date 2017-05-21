@@ -1,0 +1,4 @@
+Jinja2==2.9.6
+path.py==10.3.1
+colorama==0.3.9
+

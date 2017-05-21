@@ -1,0 +1,33 @@
+{
+    "repositories": {
+        "cloudify-dsl-parser": "master",
+        "cloudify-rest-client": "master",
+        "cloudify-plugins-common": "master",
+        "cloudify-diamond-plugin": "master",
+        "cloudify-script-plugin": "master",
+        "cloudify-agent": "master",
+        "cloudify-cli": "master",
+        "cloudify-manager": "master",
+        "cloudify-manager-blueprints": "master",
+        "cloudify-amqp-influxdb": "master",
+        "cloudify-premium": "master",
+        "docl": "master"
+    },
+    "tests_path": [
+        "cloudify-manager/tests/integration_tests/tests/agent_tests",
+        "cloudify-manager/tests/integration_tests/tests/agentless_tests",
+        "cloudify-premium/tests/integration_tests/multi_tenancy",
+        "cloudify-premium/tests/integration_tests/security"
+    ],
+    "excluded_modules": [
+        "test_n_instances.py",
+        "policies",
+        "test_hello_world.py",
+        "ldap",
+        "deployment_update"
+    ],
+    "test_server": {
+        "image": "integration-tests-image",
+        "flavor": "m1.medium"
+    }
+}
