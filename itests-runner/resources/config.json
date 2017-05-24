@@ -24,7 +24,8 @@
         "policies",
         "test_hello_world.py",
         "ldap",
-        "deployment_update"
+        "deployment_update",
+        "manager_maintenance_mode"
     ],
     "test_server": {
         "image": "integration-tests-image",
