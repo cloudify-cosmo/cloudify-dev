@@ -30,6 +30,10 @@ source venv/bin/activate
 echo "# Upgrading to latest pip.."
 pip install pip -q --upgrade
 
+# This is required as otherwise networkx will fail to install
+echo "# Installing six.."
+pip install six -q
+
 echo "# Creating a private SSH key.."
 ssh-keygen -t rsa -f ~/.ssh/id_rsa -q -N ''
 cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
