@@ -8,6 +8,7 @@ from threading import Thread
 from collections import OrderedDict
 
 
+MASTER = 'master'
 REPOS = [
     'cloudify-dsl-parser',
     'cloudify-rest-client',
@@ -19,13 +20,19 @@ REPOS = [
     'cloudify-premium',
     'cloudify-system-tests',
     'cloudify-dev',
+    'cloudify-script-plugin',
+    'cloudify-fabric-plugin',
     'cloudify-amqp-influxdb',
     'docl'
 ]
 
-REPO_BASE = os.path.expanduser('~/dev/repos/')
-
+REPO_BASE = os.environ.get('CLAP_REPO_BASE',
+                           os.path.expanduser('~/dev/repos/'))
 BASE_GITHUB_URL = 'git@github.com:cloudify-cosmo/{0}.git'
+
+# The actual map of repos to clone/checkout/pull/install, as calculated
+# from the REPOS list along with any requirements file passed to clap
+actual_repos = OrderedDict()
 
 command = argh.EntryPoint(
     'clap',
@@ -46,27 +53,20 @@ def _print(repo, line):
     print '{0:<35}| {1}{2}'.format(repo, line, Fore.RESET)
 
 
-@command
-def status():
-    def _get_status_line(line):
-        if len(line.split()) == 2:
-            status, line = line.split()
-            status = Fore.RED + status
-            line = Fore.GREEN + line
-            line = '{0} {1}'.format(status, line)
-        else:
-            line = Fore.GREEN + line
-        return line
+def _print_header(header):
+    header = Fore.BLUE + header + Fore.RESET
+    print '{s:{c}^{n}}'.format(s=header, n=40, c='-')
 
-    for repo in REPOS:
-        git = _git(repo)
-        branch = git('rev-parse', '--abbrev-ref', 'HEAD').strip()
-        status_out = git('status', '-s').strip()
-        _print(repo, branch)
-        for line in status_out.split('\n'):
-            if line:
-                line = _get_status_line(line)
-                _print(repo, line)
+
+def _get_current_branch_or_tag(git):
+    """
+    Get the value of HEAD, if it's not detached, or emit the tag name, if it's
+    an exact match. Throw an error otherwise
+    """
+    try:
+        return git('symbolic-ref', '-q', '--short', 'HEAD').strip()
+    except sh.ErrorReturnCode:
+        return git('describe', '--tags', '--exact-match').strip()
 
 
 def _parse_and_print_output(repo, output):
@@ -85,9 +85,114 @@ def _pull_repo(repo):
     _parse_and_print_output(repo, output)
 
 
+def _get_repos(branch=MASTER):
+    if actual_repos:
+        if branch != MASTER:
+            for repo, repo_branch in actual_repos.iteritems():
+                if repo_branch == MASTER:
+                    actual_repos[repo] = branch
+        return actual_repos.iteritems()
+    else:
+        return {repo: branch for repo in REPOS}.iteritems()
+
+
+def _parse_requirements(requirements, branch):
+    repos_dict = {}
+    with open(requirements, 'r') as f:
+        for line in f.readlines():
+            line = line.strip()
+            if '@' in line:
+                repo, repo_branch = line.split('@')
+            else:
+                repo, repo_branch = line, branch
+            repos_dict[repo] = repo_branch
+
+    # This extra loop makes sure the order of the repos in the dict is correct
+    for repo in REPOS:
+        if repo in repos_dict:
+            actual_repos[repo] = repos_dict[repo]
+
+
+def _get_cloudify_packages():
+    packages = OrderedDict()
+    for repo, _ in _get_repos():
+        packages[repo] = repo
+
+    manager_repo = packages.pop('cloudify-manager', None)
+    packages.pop('cloudify-manager-blueprints', None)
+    packages.pop('cloudify-dev', None)
+
+    if manager_repo:
+        packages['cloudify-rest-service'] = 'cloudify-manager/rest-service'
+        packages['cloudify-integration-tests'] = 'cloudify-manager/tests'
+        packages['cloudify-system-workflows'] = 'cloudify-manager/workflows'
+    return packages.iteritems()
+
+
+def _git_clone(git, repo, branch, shallow):
+    full_url = BASE_GITHUB_URL.format(repo)
+    repo_path = os.path.join(REPO_BASE, repo)
+    args = [full_url, repo_path, '--branch', branch]
+    if shallow:
+        args += ['--depth', 1]
+    return git.clone(*args)
+
+
+def _clone_repo(git, repo, repo_branch, shallow):
+    _parse_and_print_output(repo, 'Cloning `{0}`'.format(repo))
+    output = _git_clone(git, repo, repo_branch, shallow)
+    return output or 'Successfully cloned `{0}`'.format(repo)
+
+
+def _create_repo_base():
+    if not os.path.exists(REPO_BASE):
+        print 'Creating base repos dir: {0}'.format(REPO_BASE)
+        os.makedirs(REPO_BASE)
+
+
+def _print_status_line(line, repo):
+    if not line:
+        return
+
+    if len(line.split()) == 2:
+        status_out, line = line.split()
+        status_out = Fore.RED + status_out
+        line = Fore.GREEN + line
+        line = '{0} {1}'.format(status_out, line)
+    else:
+        line = Fore.GREEN + line
+
+    _print(repo, line)
+
+
+def _print_install_line(line, name, verbose):
+    if not line:
+        return
+
+    if verbose or line.startswith('Successfully installed'):
+        line = Fore.YELLOW + line
+        _print(name, line)
+
+
+@command
+def status():
+    _print_header('Status')
+    for repo, _ in _get_repos():
+        git = _git(repo)
+
+        branch = _get_current_branch_or_tag(git)
+        _print(repo, branch)
+
+        status_out = git('status', '-s').strip()
+        for line in status_out.split('\n'):
+            _print_status_line(line, repo)
+
+
 @command
 def pull():
-    threads = [Thread(target=_pull_repo, args=(repo, )) for repo in REPOS]
+    _print_header('Pull')
+    threads = [Thread(target=_pull_repo, args=(repo, ))
+               for repo, _ in _get_repos()]
     for t in threads:
         t.daemon = True
         t.start()
@@ -96,27 +201,12 @@ def pull():
         t.join()
 
 
-def _get_cloudify_packages():
-    packages = OrderedDict()
-    for repo in REPOS:
-        packages[repo] = repo
-
-    del packages['cloudify-manager']
-    del packages['cloudify-manager-blueprints']
-    del packages['cloudify-dev']
-
-    packages['cloudify-rest-service'] = 'cloudify-manager/rest-service'
-    packages['cloudify-integration-tests'] = 'cloudify-manager/tests'
-    packages['cloudify-system-workflows'] = 'cloudify-manager/workflows'
-    return packages
-
-
 @command
 def install(verbose=False):
+    _print_header('Install')
     pip = sh.pip.bake()
-    packages = _get_cloudify_packages()
 
-    for name, path in packages.iteritems():
+    for name, path in _get_cloudify_packages():
         repo_path = os.path.join(REPO_BASE, path)
         try:
             output = pip.install('-e', repo_path)
@@ -126,53 +216,48 @@ def install(verbose=False):
             continue
 
         for line in output.split('\n'):
-            if not line:
-                continue
-
-            if verbose or line.startswith('Successfully installed'):
-                line = Fore.YELLOW + line
-                _print(name, line)
+            _print_install_line(line, name, verbose)
 
 
 @command
 def checkout(branch):
-    for repo in REPOS:
+    _print_header('Checkout')
+    for repo, repo_branch in _get_repos(branch):
         git = _git(repo)
         try:
-            output = git.checkout(branch)
+            output = git.checkout(repo_branch)
         except sh.ErrorReturnCode:
-            output = 'Could not checkout branch `{0}`'.format(branch)
+            output = 'Could not checkout branch `{0}`'.format(repo_branch)
 
         _parse_and_print_output(repo, output)
 
 
-def _git_clone(git, repo, shallow):
-    full_url = BASE_GITHUB_URL.format(repo)
-    repo_path = os.path.join(REPO_BASE, repo)
-    args = [full_url, repo_path]
-    if shallow:
-        args += ['--depth', 1]
-    return git.clone(*args)
-
-
 @command
 def clone(shallow=False):
+    _print_header('Clone')
     git = sh.git.bake()
+    _create_repo_base()
 
-    if not os.path.exists(REPO_BASE):
-        print 'Creating base repos dir: {0}'.format(REPO_BASE)
-        os.makedirs(REPO_BASE)
-
-    for repo in REPOS:
+    for repo, repo_branch in _get_repos():
         try:
-            output = _git_clone(git, repo, shallow)
+            output = _clone_repo(git, repo, repo_branch, shallow)
         except sh.ErrorReturnCode, e:
-            return 'Could not clone repo `{0}`: {1}'.format(repo, e)
+            output = 'Could not clone repo `{0}`: {1}'.format(repo, e)
 
         if 'fatal: destination path' in output:
             output = 'Repo is already cloned (the folder exists)'
 
         _parse_and_print_output(repo, output)
+
+
+@command
+def setup(branch=MASTER, requirements=None):
+    if requirements:
+        _parse_requirements(requirements, branch)
+
+    clone(shallow=True)
+    status()
+    install()
 
 
 if __name__ == '__main__':
