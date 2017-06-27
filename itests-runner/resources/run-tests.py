@@ -83,7 +83,22 @@ def get_test_modules_weights(weights_file):
     return weights
     
 
-def run_tests(repos_dir, group_number, number_of_groups, pattern, dry_run, weights_file, config):
+def _run_modules_tests(test_modules, group_number):
+    """Runs tests for the provided test_modules and returns a list of failed modules.
+
+    test_modules is a tuple (index, test_module)
+    """
+    failed_modules = []
+    for i, test_module in test_modules:
+        command = 'nosetests -v -s --nologcapture --tests "{0}" --with-xunit --xunit-file $HOME/report-{1}-{2}.xml --xunit-testsuite-name "Server-{1}"'.format(
+                test_module, group_number, i)
+        exit_code = os.system(command)
+        if exit_code != 0:
+            failed_modules((i, test_module))
+    return failed_modules
+
+
+def run_tests(repos_dir, group_number, number_of_groups, pattern, dry_run, weights_file, config, retry_on_failure=False):
 
     test_modules_weights = get_test_modules_weights(weights_file)
 
@@ -106,20 +121,18 @@ def run_tests(repos_dir, group_number, number_of_groups, pattern, dry_run, weigh
         os.system('nosetests -v --collect-only --tests {0}'.format(','.join(test_modules_to_run)))
         sys.exit(0)
 
-    collect_only = '--collect-only' if dry_run else ''
+    failed_modules = _run_modules_tests(enumerate(test_modules), group_number)
 
-    exit_code = 0
+    print('# Failed modules: {0}'.format(json.dumps(failed_modules)))
 
-    for i, test_module in enumerate(test_modules_to_run):
+    if retry_on_failure:
+        if len(failed_modules) > 1:
+            print('# There is more than one failed module - retry will be skipped..')
+        else:
+            print('# Re-running failed modules tests: {0}'.format(json.dumps(failed_modules)))
+            failed_modules = _run_modules_tests(failed_modules, group_number)
 
-        command = 'nosetests -v -s --nologcapture {0} --tests "{1}" --with-xunit --xunit-file $HOME/report-{2}-{3}.xml --xunit-testsuite-name "Server-{2}"'.format(
-                collect_only, test_module, group_number, i)
-
-        last_exit_code = os.system(command)
-
-        exit_code = last_exit_code or exit_code
-
-    return exit_code
+    return 0 if len(failed_modules) == 0 else 1
 
 
 def simulate(repos_dir, pattern, weights_file, config):
@@ -165,6 +178,8 @@ if __name__ == '__main__':
                         help='Simulate and estimate running times for different number of groups.')
     parser.add_argument('--config-file', type=str, required=True,
                         help='Config file path (config.json).')
+    parser.add_argument('--retry-on-failure', action='store_true',
+                        help='Retry module tests on failure (up to one module).')
 
     args = parser.parse_args()
     validate_args(args)
@@ -174,5 +189,12 @@ if __name__ == '__main__':
     if args.simulate:
         simulate(args.repos, args.pattern, args.weights_file, config)
     else:
-        exit_code = run_tests(args.repos, args.group_number, args.number_of_groups, args.pattern, args.dry_run, args.weights_file, config)
+        exit_code = run_tests(args.repos,
+                              args.group_number,
+                              args.number_of_groups,
+                              args.pattern,
+                              args.dry_run,
+                              args.weights_file,
+                              config,
+                              args.retry_on_failure)
         sys.exit(exit_code)

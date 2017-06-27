@@ -151,7 +151,7 @@ resource "openstack_compute_instance_v2" "server{{ loop.index0 }}" {
   provisioner "remote-exec" {
     inline = [
       "source venv/bin/activate",
-      "python /tmp/run-tests.py --repos ~/repos --group-number {{ loop.index }} --number-of-groups {{ servers|length }} --pattern ${var.tests_pattern} --weights-file /tmp/weights.json --config-file /tmp/config.json"
+      "python /tmp/run-tests.py --repos ~/repos --group-number {{ loop.index }} --number-of-groups {{ servers|length }} --pattern ${var.tests_pattern} --weights-file /tmp/weights.json --config-file /tmp/config.json --retry-on-failure"
     ]
     on_failure = "continue"
   }
