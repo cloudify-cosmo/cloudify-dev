@@ -83,18 +83,25 @@ def get_test_modules_weights(weights_file):
     return weights
     
 
-def _run_modules_tests(test_modules, group_number):
+def _run_modules_tests(test_modules, group_number, retry_on_failure=False):
     """Runs tests for the provided test_modules and returns a list of failed modules.
 
     test_modules is a tuple (index, test_module)
     """
     failed_modules = []
     for i, test_module in test_modules:
-        command = 'nosetests -v -s --nologcapture --tests "{0}" --with-xunit --xunit-file $HOME/report-{1}-{2}.xml --xunit-testsuite-name "Server-{1}"'.format(
+        command = 'nosetests -v -s --nologcapture --with-id --tests "{0}" --with-xunit --xunit-file $HOME/report-{1}-{2}.xml --xunit-testsuite-name "Server-{1}"'.format(
                 test_module, group_number, i)
         exit_code = os.system(command)
+
+        if exit_code != 0 and retry_on_failure:
+            command = 'nosetests -v -s --nologcapture --failed --tests "{0}" --with-xunit --xunit-file $HOME/report-{1}-{2}.xml --xunit-testsuite-name "Server-{1}"'.format(
+                    test_module, group_number, i)
+            exit_code = os.system(command)
+
         if exit_code != 0:
             failed_modules((i, test_module))
+
     return failed_modules
 
 
@@ -121,16 +128,9 @@ def run_tests(repos_dir, group_number, number_of_groups, pattern, dry_run, weigh
         os.system('nosetests -v --collect-only --tests {0}'.format(','.join(test_modules_to_run)))
         sys.exit(0)
 
-    failed_modules = _run_modules_tests(enumerate(test_modules), group_number)
+    failed_modules = _run_modules_tests(enumerate(test_modules), group_number, retry_on_failure)
 
     print('# Failed modules: {0}'.format(json.dumps(failed_modules)))
-
-    if retry_on_failure:
-        if len(failed_modules) > 1:
-            print('# There is more than one failed module - retry will be skipped..')
-        else:
-            print('# Re-running failed modules tests: {0}'.format(json.dumps(failed_modules)))
-            failed_modules = _run_modules_tests(failed_modules, group_number)
 
     return 0 if len(failed_modules) == 0 else 1
 
