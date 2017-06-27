@@ -89,6 +89,11 @@ def _run_modules_tests(test_modules, group_number, retry_on_failure=False):
     test_modules is a tuple (index, test_module)
     """
     failed_modules = []
+
+    # this is needed for clearing the nose context between nosetests commands.
+    if os.path.exists('.noseids'):
+        os.remove('.noseids')
+
     for i, test_module in test_modules:
         command = 'nosetests -v -s --nologcapture --with-id --tests "{0}" --with-xunit --xunit-file $HOME/report-{1}-{2}.xml --xunit-testsuite-name "Server-{1}"'.format(
                 test_module, group_number, i)
