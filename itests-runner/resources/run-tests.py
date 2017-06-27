@@ -95,6 +95,9 @@ def _run_modules_tests(test_modules, group_number, retry_on_failure=False):
         exit_code = os.system(command)
 
         if exit_code != 0 and retry_on_failure:
+
+            print('# Running failed tests again..')
+
             command = 'nosetests -v -s --nologcapture --failed --tests "{0}" --with-xunit --xunit-file $HOME/report-{1}-{2}.xml --xunit-testsuite-name "Server-{1}"'.format(
                     test_module, group_number, i)
             exit_code = os.system(command)
