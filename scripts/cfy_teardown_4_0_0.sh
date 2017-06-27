@@ -209,6 +209,7 @@ print_line 'Removing cloudify directories...'
 rm -rf /opt/cloudify
 rm -rf /etc/cloudify
 rm -rf /var/log/cloudify
+rm -rf /tmp/cloudify-ctx
 
 print_line 'Teardown complete!'
 exit 0
