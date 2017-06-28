@@ -92,8 +92,18 @@ def _run_modules_tests(test_modules, group_number, retry_on_failure=False):
 
     for i, test_module in test_modules:
         # this is needed for clearing the nose context between nosetests commands.
+
+        print('$$$$$$$$$$$$$$$$$$$$')
+        os.system('ls -la')
+
         if os.path.exists('.noseids'):
+            print('$$$ removing .noseids')
             os.remove('.noseids')
+        else:
+            print('$$$ not removing .noseids')
+
+        if os.path.exists('.noseids'):
+            raise RuntimeError('.noseids exists but it shouldnt!!!')
 
         command = 'nosetests -v -s --nologcapture --with-id --tests "{0}" --with-xunit --xunit-file $HOME/report-{1}-{2}.xml --xunit-testsuite-name "Server-{1}"'.format(
                 test_module, group_number, i)
