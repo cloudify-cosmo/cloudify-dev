@@ -3,36 +3,37 @@
 import os
 import sh
 import argh
+from time import time
 from colorama import Fore
 from threading import Thread
 from collections import OrderedDict
 
-
-MASTER = 'master'
-REPOS = [
+CORE_REPOS = [
     'cloudify-dsl-parser',
     'cloudify-rest-client',
     'cloudify-plugins-common',
+    'cloudify-diamond-plugin',
     'cloudify-agent',
     'cloudify-cli',
     'cloudify-manager',
     'cloudify-manager-blueprints',
     'cloudify-premium',
-    'cloudify-system-tests',
-    'cloudify-dev',
     'cloudify-script-plugin',
-    'cloudify-fabric-plugin',
     'cloudify-amqp-influxdb',
     'docl'
 ]
+DEV_REPOS = [
+    'cloudify-fabric-plugin',
+    'cloudify-system-tests',
+    'cloudify-dev'
+]
+REPOS = CORE_REPOS + DEV_REPOS
 
-REPO_BASE = os.environ.get('CLAP_REPO_BASE',
+
+MASTER = 'master'
+REPO_BASE = os.environ.get('CLAD_REPO_BASE',
                            os.path.expanduser('~/dev/repos/'))
 BASE_GITHUB_URL = 'git@github.com:cloudify-cosmo/{0}.git'
-
-# The actual map of repos to clone/checkout/pull/install, as calculated
-# from the REPOS list along with any requirements file passed to clap
-actual_repos = OrderedDict()
 
 command = argh.EntryPoint(
     'clap',
@@ -40,159 +41,17 @@ command = argh.EntryPoint(
 )
 
 
-def _git(repo):
-    repo_path = os.path.join(REPO_BASE, repo)
-    return sh.git.bake(
-        '--no-pager',
-        '--git-dir', os.path.join(repo_path, '.git'),
-        '--work-tree', repo_path)
+def get_repo_path(repo):
+    return os.path.join(REPO_BASE, repo)
 
 
-def _print(repo, line):
-    repo = Fore.GREEN + repo
-    print '{0:<35}| {1}{2}'.format(repo, line, Fore.RESET)
-
-
-def _print_header(header):
-    header = Fore.BLUE + header + Fore.RESET
-    print '{s:{c}^{n}}'.format(s=header, n=40, c='-')
-
-
-def _get_current_branch_or_tag(git):
-    """
-    Get the value of HEAD, if it's not detached, or emit the tag name, if it's
-    an exact match. Throw an error otherwise
-    """
-    try:
-        return git('symbolic-ref', '-q', '--short', 'HEAD').strip()
-    except sh.ErrorReturnCode:
-        return git('describe', '--tags', '--exact-match').strip()
-
-
-def _parse_and_print_output(repo, output):
-    for line in output.split('\n'):
-        if line:
-            line = Fore.YELLOW + line
-            _print(repo, line)
-
-
-def _pull_repo(repo):
-    git = _git(repo)
-    try:
-        output = git.pull()
-    except sh.ErrorReturnCode:
-        output = 'No upstream defined. Skipping pull.'
-    _parse_and_print_output(repo, output)
-
-
-def _get_repos(branch=MASTER):
-    if actual_repos:
-        if branch != MASTER:
-            for repo, repo_branch in actual_repos.iteritems():
-                if repo_branch == MASTER:
-                    actual_repos[repo] = branch
-        return actual_repos.iteritems()
-    else:
-        return {repo: branch for repo in REPOS}.iteritems()
-
-
-def _parse_requirements(requirements, branch):
-    repos_dict = {}
-    with open(requirements, 'r') as f:
-        for line in f.readlines():
-            line = line.strip()
-            if '@' in line:
-                repo, repo_branch = line.split('@')
-            else:
-                repo, repo_branch = line, branch
-            repos_dict[repo] = repo_branch
-
-    # This extra loop makes sure the order of the repos in the dict is correct
-    for repo in REPOS:
-        if repo in repos_dict:
-            actual_repos[repo] = repos_dict[repo]
-
-
-def _get_cloudify_packages():
-    packages = OrderedDict()
-    for repo, _ in _get_repos():
-        packages[repo] = repo
-
-    manager_repo = packages.pop('cloudify-manager', None)
-    packages.pop('cloudify-manager-blueprints', None)
-    packages.pop('cloudify-dev', None)
-
-    if manager_repo:
-        packages['cloudify-rest-service'] = 'cloudify-manager/rest-service'
-        packages['cloudify-integration-tests'] = 'cloudify-manager/tests'
-        packages['cloudify-system-workflows'] = 'cloudify-manager/workflows'
-    return packages.iteritems()
-
-
-def _git_clone(git, repo, branch, shallow):
-    full_url = BASE_GITHUB_URL.format(repo)
-    repo_path = os.path.join(REPO_BASE, repo)
-    args = [full_url, repo_path, '--branch', branch]
-    if shallow:
-        args += ['--depth', 1]
-    return git.clone(*args)
-
-
-def _clone_repo(git, repo, repo_branch, shallow):
-    _parse_and_print_output(repo, 'Cloning `{0}`'.format(repo))
-    output = _git_clone(git, repo, repo_branch, shallow)
-    return output or 'Successfully cloned `{0}`'.format(repo)
-
-
-def _create_repo_base():
+def create_repo_base():
     if not os.path.exists(REPO_BASE):
-        print 'Creating base repos dir: {0}'.format(REPO_BASE)
+        print logger.yellow('Creating base repos dir: {0}'.format(REPO_BASE))
         os.makedirs(REPO_BASE)
 
 
-def _print_status_line(line, repo):
-    if not line:
-        return
-
-    if len(line.split()) == 2:
-        status_out, line = line.split()
-        status_out = Fore.RED + status_out
-        line = Fore.GREEN + line
-        line = '{0} {1}'.format(status_out, line)
-    else:
-        line = Fore.GREEN + line
-
-    _print(repo, line)
-
-
-def _print_install_line(line, name, verbose):
-    if not line:
-        return
-
-    if verbose or line.startswith('Successfully installed'):
-        line = Fore.YELLOW + line
-        _print(name, line)
-
-
-@command
-def status():
-    _print_header('Status')
-    for repo, _ in _get_repos():
-        git = _git(repo)
-
-        branch = _get_current_branch_or_tag(git)
-        _print(repo, branch)
-
-        status_out = git('status', '-s').strip()
-        for line in status_out.split('\n'):
-            _print_status_line(line, repo)
-
-
-@command
-def pull():
-    _print_header('Pull')
-    threads = [Thread(target=_pull_repo, args=(repo, ))
-               for repo, _ in _get_repos()]
+def run_multi_threaded(threads):
     for t in threads:
         t.daemon = True
         t.start()
@@ -201,59 +60,317 @@ def pull():
         t.join()
 
 
+class Logger(object):
+    @staticmethod
+    def red(msg):
+        return Fore.RED + msg + Fore.RESET
+
+    @staticmethod
+    def yellow(msg):
+        return Fore.YELLOW + msg + Fore.RESET
+
+    @staticmethod
+    def green(msg):
+        return Fore.GREEN + msg + Fore.RESET
+
+    @staticmethod
+    def blue(msg):
+        return Fore.BLUE + msg + Fore.RESET
+
+    def error(self, msg, should_exit=True):
+        print self.red(msg)
+        if should_exit:
+            exit(1)
+
+    @staticmethod
+    def log(repo, line):
+        repo = Fore.GREEN + repo
+        print '{0:<35}| {1}{2}'.format(repo, line, Fore.RESET)
+
+    def header(self, header):
+        header = self.blue(header)
+        print '{s:{c}^{n}}'.format(s=header, n=40, c='-')
+
+    def log_multiline(self, repo, output):
+        for line in output.split('\n'):
+            if line:
+                line = Fore.YELLOW + line
+                self.log(repo, line)
+
+    def log_status(self, line, repo):
+        if not line:
+            return
+
+        if len(line.split()) == 2:
+            status_out, line = line.split()
+            status_out = Fore.RED + status_out
+            line = Fore.GREEN + line
+            line = '{0} {1}'.format(status_out, line)
+        else:
+            line = Fore.GREEN + line
+
+        self.log(repo, line)
+
+    def log_install(self, line, name, verbose):
+        if not line:
+            return
+
+        if verbose or line.startswith('Successfully installed'):
+            line = Fore.YELLOW + line
+            self.log(name, line)
+
+
+logger = Logger()
+
+
+class Git(object):
+    def __init__(self, repo=None):
+        self._git = self._get_git(repo)
+        self._repo = repo
+
+    @staticmethod
+    def _validate_git():
+        try:
+            sh.git
+        except sh.CommandNotFound:
+            logger.error('git is not installed on the computer')
+
+    def validate_repo(self, repo=None):
+        repo = repo or self._repo
+        repo_path = get_repo_path(repo)
+        if not os.path.exists(repo_path):
+            msg = 'Folder `{0}` does not exist'.format(repo_path)
+            return logger.red(msg)
+
+        try:
+            self._git.status()
+        except sh.ErrorReturnCode, e:
+            if 'Not a git repository' in str(e):
+                msg = '`{0}` is not a git repository'.format(repo_path)
+            else:
+                msg = str(e)
+            return logger.red(msg)
+
+        return None
+
+    def status(self):
+        return self._git('status', '-s').strip()
+
+    def _get_git(self, repo=None):
+        self._validate_git()
+        if not repo:
+            return sh.git.bake()
+
+        repo_path = get_repo_path(repo)
+        return sh.git.bake(
+            '--no-pager',
+            '--git-dir', os.path.join(repo_path, '.git'),
+            '--work-tree', repo_path)
+
+    def get_current_branch_or_tag(self, hide_tags=False):
+        """
+        Get the value of HEAD, if it's not detached, or emit the
+        tag name, if it's an exact match. Throw an error otherwise
+        """
+        branch = self._git('rev-parse', '--abbrev-ref', 'HEAD').strip()
+        if hide_tags:
+            return branch
+
+        tags = self._git('tag', '--points-at', 'HEAD').split()
+        result = branch if branch != 'HEAD' else ''
+
+        if tags:
+            tags = ', '.join(tags)
+            tags = logger.yellow('[{0}]'.format(tags))
+            result = '{0} {1}'.format(result, tags).strip()
+        return result
+
+    def pull(self):
+        return self._git.pull()
+
+    def checkout(self, branch):
+        return self._git.checkout(branch)
+
+    def _git_clone(self, repo, branch, shallow):
+        full_url = BASE_GITHUB_URL.format(repo)
+        args = [full_url, get_repo_path(repo), '--branch', branch]
+        if shallow:
+            args += ['--depth', 1]
+        self._git.clone(*args)
+
+    def clone_repo(self, repo, repo_branch, shallow):
+        # logger.log(repo, 'Cloning `{0}`'.format(repo))
+        if not self.validate_repo(repo):
+            return logger.yellow('Folder already exists. '
+                                 'Repo probably already cloned')
+        else:
+            self._git_clone(repo, repo_branch, shallow)
+            return logger.green('Successfully cloned `{0}`'.format(repo))
+
+
+class Repos(object):
+    def __init__(self, branch=MASTER, dev=True, requirements=None):
+        self._branch = branch
+        self._full_repos_list = REPOS if dev else CORE_REPOS
+        if requirements:
+            self._repos = self._parse_requirements(requirements)
+        else:
+            self._repos = OrderedDict((repo, branch)
+                                      for repo in self._full_repos_list)
+
+    @property
+    def repos(self):
+        return self._repos.iteritems()
+
+    def _parse_requirements(self, requirements):
+        repos_dict = {}
+        with open(requirements, 'r') as f:
+            for line in f.readlines():
+                line = line.strip()
+                if '@' in line:
+                    repo, repo_branch = line.split('@')
+                else:
+                    repo, repo_branch = line, self._branch
+                repos_dict[repo] = repo_branch
+
+        result_dict = OrderedDict()
+        # This extra loop makes sure the order of the repos in the dict is
+        # correct
+        for repo in self._full_repos_list:
+            if repo in repos_dict:
+                result_dict[repo] = repos_dict[repo]
+
+        return result_dict
+
+    @property
+    def cloudify_packages(self):
+        packages = OrderedDict()
+        for repo, _ in self.repos:
+            packages[repo] = repo
+
+        manager_repo = packages.pop('cloudify-manager', None)
+        packages.pop('cloudify-manager-blueprints', None)
+        packages.pop('cloudify-dev', None)
+
+        if manager_repo:
+            packages['cloudify-rest-service'] = 'cloudify-manager/rest-service'
+            packages['cloudify-integration-tests'] = 'cloudify-manager/tests'
+            packages['cloudify-system-workflows'] = 'cloudify-manager/workflows'  # NOQA
+        return packages.iteritems()
+
+
+repos = Repos()
+
+
+@command
+def status(hide_tags=False):
+    logger.header('Status')
+    for repo, _ in repos.repos:
+        git = Git(repo)
+        output = git.validate_repo()
+        if output:
+            logger.log(repo, output)
+            continue
+
+        branch = git.get_current_branch_or_tag(hide_tags=hide_tags)
+        logger.log(repo, branch)
+
+        for line in git.status().split('\n'):
+            logger.log_status(line, repo)
+
+
+@command
+def pull():
+    def _pull_repo(repo):
+        git = Git(repo)
+        try:
+            output = git.pull()
+        except sh.ErrorReturnCode:
+            output = 'No upstream defined. Skipping pull.'
+        logger.log_multiline(repo, output)
+
+    logger.header('Pull')
+    threads = [Thread(target=_pull_repo, args=(repo, ))
+               for repo, _ in repos.repos]
+    run_multi_threaded(threads)
+
+
 @command
 def install(verbose=False):
-    _print_header('Install')
+    logger.header('Install')
     pip = sh.pip.bake()
 
-    for name, path in _get_cloudify_packages():
-        repo_path = os.path.join(REPO_BASE, path)
+    for repo, path in repos.cloudify_packages:
+        git = Git(repo)
+        output = git.validate_repo()
+        if output:
+            logger.log(repo, output)
+            continue
+
+        repo_path = get_repo_path(path)
         try:
             output = pip.install('-e', repo_path)
         except Exception, e:
             error = Fore.RED + 'Could not pip install repo: {0}'.format(e)
-            _print(name, error)
+            logger.log(repo, error)
             continue
 
         for line in output.split('\n'):
-            _print_install_line(line, name, verbose)
+            logger.log_install(line, repo, verbose)
 
 
 @command
-def checkout(branch):
-    _print_header('Checkout')
-    for repo, repo_branch in _get_repos(branch):
-        git = _git(repo)
+def checkout(branch, hide_tags=False):
+    global repos
+    repos = Repos(branch)
+
+    logger.header('Checkout')
+    for repo, repo_branch in repos.repos:
+        git = Git(repo)
         try:
-            output = git.checkout(repo_branch)
+            git.checkout(repo_branch)
+            branch = git.get_current_branch_or_tag(hide_tags=hide_tags)
+            logger.log(repo, branch)
         except sh.ErrorReturnCode:
             output = 'Could not checkout branch `{0}`'.format(repo_branch)
-
-        _parse_and_print_output(repo, output)
+            logger.log_multiline(repo, output)
 
 
 @command
 def clone(shallow=False):
-    _print_header('Clone')
-    git = sh.git.bake()
-    _create_repo_base()
+    logger.header('Clone')
+    create_repo_base()
+    git = Git()
 
-    for repo, repo_branch in _get_repos():
+    def _clone_repo(repo, repo_branch, shallow):
         try:
-            output = _clone_repo(git, repo, repo_branch, shallow)
+            output = git.clone_repo(repo, repo_branch, shallow)
         except sh.ErrorReturnCode, e:
-            output = 'Could not clone repo `{0}`: {1}'.format(repo, e)
+            error = str(e)
 
-        if 'fatal: destination path' in output:
-            output = 'Repo is already cloned (the folder exists)'
+            if 'fatal: destination path' in error:
+                error = 'Repo is probably already cloned (the folder exists)'
+            if 'fatal: Could not read from remote repository' in error:
+                error = 'Make sure you have your GitHub SSH key set up'
 
-        _parse_and_print_output(repo, output)
+            output = 'Could not clone repo `{0}`: {1}'.format(repo, error)
+            output = logger.red(output)
+
+        logger.log_multiline(repo, output)
+
+    threads = [
+        Thread(target=_clone_repo, args=(repo, repo_branch, shallow))
+        for repo, repo_branch in repos.repos
+    ]
+    run_multi_threaded(threads)
 
 
 @command
-def setup(branch=MASTER, requirements=None):
-    if requirements:
-        _parse_requirements(requirements, branch)
+def setup(requirements=None, dev=False):
+    # Overriding the default repos object, to reflect the
+    # branch/requirements file
+    global repos
+    repos = Repos(requirements=requirements, dev=dev)
 
     clone(shallow=True)
     status()
@@ -261,5 +378,7 @@ def setup(branch=MASTER, requirements=None):
 
 
 if __name__ == '__main__':
-    # Parse the arguments and run the command
+    start_time = time()
     command()
+    end_time = time()
+    logger.header('Took {:.2f} seconds'.format(end_time - start_time))
