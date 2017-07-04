@@ -366,11 +366,11 @@ def clone(shallow=False):
 
 
 @command
-def setup(requirements=None, dev=False):
+def setup(branch=MASTER, requirements=None, dev=False):
     # Overriding the default repos object, to reflect the
     # branch/requirements file
     global repos
-    repos = Repos(requirements=requirements, dev=dev)
+    repos = Repos(branch=branch, requirements=requirements, dev=dev)
 
     clone(shallow=True)
     status()
