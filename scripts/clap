@@ -31,7 +31,7 @@ REPOS = CORE_REPOS + DEV_REPOS
 
 
 MASTER = 'master'
-REPO_BASE = os.environ.get('CLAD_REPO_BASE',
+REPO_BASE = os.environ.get('CLAP_REPO_BASE',
                            os.path.expanduser('~/dev/repos/'))
 BASE_GITHUB_URL = 'git@github.com:cloudify-cosmo/{0}.git'
 
@@ -301,13 +301,12 @@ def install(verbose=False):
     pip = sh.pip.bake()
 
     for repo, path in repos.cloudify_packages:
-        git = Git(repo)
-        output = git.validate_repo()
-        if output:
-            logger.log(repo, output)
+        repo_path = get_repo_path(path)
+        if not os.path.exists(repo_path):
+            msg = logger.red('Folder `{0}` does not exist'.format(repo_path))
+            logger.log(repo, msg)
             continue
 
-        repo_path = get_repo_path(path)
         try:
             output = pip.install('-e', repo_path)
         except Exception, e:
