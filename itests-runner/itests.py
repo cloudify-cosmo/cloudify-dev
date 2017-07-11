@@ -120,12 +120,33 @@ def deploy(number_of_servers, pattern, keep_servers):
             os.system('terraform destroy -force -var-file inputs.json')
 
 
-def get_server_ip_address():
+def get_servers_ip_address():
     cmd = 'terraform output -json'.split(' ')
     with WORK_DIR:
-        output = subprocess.check_output(cmd)
-    return json.loads(output)['public_ip_address_0']['value']
+        output = json.loads(subprocess.check_output(cmd))
+    ips = []
+    for i in xrange(999999):
+        key = 'public_ip_address_{0}'.format(i)
+        if key in output:
+            ips.append(output[key]['value'])
+        else:
+            return ips
+    return ips
+
+
+def destroy():
+    print('Destroying the test environment..')
+    with WORK_DIR:
+        exit_code = os.system('terraform destroy -force -var-file inputs.json')
     
+    if exit_code == 0:
+        print('Deleting work dir..')
+        shutil.rmtree(WORK_DIR)
+        print('Done!')
+    else:
+        print('Failed to destroy the test environment!')
+        sys.exit(exit_code)
+
 
 if __name__ == '__main__':
 
@@ -149,9 +170,15 @@ if __name__ == '__main__':
     simulate_parser.add_argument('-p', '--pattern', type=str, required=False, default=DEFAULT_PATTERN,
                                  help='Test modules pattern to match (default=test_*.py).')
 
-
     create_server_parser = subparsers.add_parser('create-server', help='Creates a test server.')
     create_server_parser.set_defaults(which='create_server')
+
+    destroy_parser = subparsers.add_parser('destroy', help='Destroys the test envrionment.')
+    destroy_parser.set_defaults(which='destroy')
+
+    ssh_parser = subparsers.add_parser('ssh', help='SSH to a test server.')
+    ssh_parser.add_argument('server_index', nargs='?', default=0, type=int, help='Server index to SSH to.')
+    ssh_parser.set_defaults(which='ssh')
 
     args = parser.parse_args()
     
@@ -166,14 +193,22 @@ if __name__ == '__main__':
         os.system(
             'python resources/run-tests.py --repos {0} --weights-file {1} --config-file {2} --pattern {3} --simulate'.format(
                 args.repos, WEIGHTS_FILE_PATH, CONFIG_FILE_PATH, args.pattern))
-
-    else:
+    elif args.which == 'destroy':
+        destroy()
+    elif args.which == 'create_server':
         # Hopefully tests will not be found for this pattern.
         deploy(1, pattern=str(uuid.uuid4()), keep_servers=True)
-        ip_address = get_server_ip_address()
+        ip_address = get_servers_ip_address()[0]
         print('Test server is up!')
         print('SSH to it by running: "ssh -i {0} centos@{1}"'.format(PRIVATE_KEY_FILE, ip_address))
-
+        print('Or ./itests.py ssh')
+    elif args.which == 'ssh':
+        ip_addresses = get_servers_ip_address()
+        if args.server_index > len(ip_addresses) - 1 or args.server_index < 0:
+            print('Server index not in range! (0:{0})'.format(len(ip_addresses) - 1))
+            sys.exit(1)
+        os.system('ssh -oStrictHostKeyChecking=no -i {0} centos@{1}'.format(PRIVATE_KEY_FILE, ip_addresses[args.server_index]))
+        sys.exit(0)
 
     elapsed_seconds = float('%.2f' % (time.time() - start))
     print('')

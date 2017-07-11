@@ -124,6 +124,16 @@ resource "openstack_compute_instance_v2" "server{{ loop.index0 }}" {
     destination = "/tmp/prepare-env.sh"
   }
 
+  provisioner "file" {
+    source = "resources/create-docker-images.sh"
+    destination = "/tmp/create-docker-images.sh"
+  }
+
+  provisioner "file" {
+    source = "resources/clone-repo.sh"
+    destination = "/tmp/clone-repo.sh"
+  }
+
   # this file is created by the program which invokes terraform
   provisioner "file" {
     source = "cloudify-premium.tar.gz"
@@ -133,6 +143,8 @@ resource "openstack_compute_instance_v2" "server{{ loop.index0 }}" {
   provisioner "remote-exec" {
     inline = [
       "chmod +x /tmp/prepare-env.sh",
+      "chmod +x /tmp/create-docker-images.sh",
+      "chmod +x /tmp/clone-repo.sh",
       "/tmp/prepare-env.sh"
     ]
   }

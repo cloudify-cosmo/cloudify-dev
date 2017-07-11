@@ -32,7 +32,7 @@ Download terraform from [here](https://www.terraform.io/downloads.html), and fol
 ## The itest.py Program
 
 ```bash
-$ python itests.py -h
+$ ./itests.py -h
 usage: itests.py [-h] {run,simulate,create-server} ...
 
 positional arguments:
@@ -48,7 +48,7 @@ optional arguments:
 ## Running Tests
 
 ```bash
-$ python itests.py run -h
+$ ./itests.py run -h
 usage: itests.py run [-h] -n NUMBER_OF_SERVERS [-p PATTERN] [-k]
 
 optional arguments:
@@ -88,7 +88,7 @@ source my-openrc.sh
 
 Running tests example:
 ```bash
-python itests.py -n 1 --pattern "test_workflow.py"
+./itests.py -n 1 --pattern "test_workflow.py"
 
 ...
 
@@ -129,7 +129,7 @@ In order to view the report, open the `work/report.html` file using your favouri
 In order to decide how many servers to use for running the tests, it is possible to simulate and estimate how long it will take to run the tests per `number of servers`.
 
 ```bash
-$ python itests.py simulate --help
+$ ./itests.py simulate --help
 usage: itests.py simulate [-h] --repos REPOS [-p PATTERN]
 
 optional arguments:
@@ -142,7 +142,7 @@ optional arguments:
 
 Run:
 ```bash
-$ python itests.py simulate --repos ~/dev/repos
+$ ./itests.py simulate --repos ~/dev/repos
 
 ...
 
@@ -171,22 +171,35 @@ Please note that the time listed in the output does not include the time for cre
 
 In order to create a test server with all dependencies for running tests manually run:
 ```bash
-python itests.py create-server
+./itests.py create-server
 
 ...
 
 Test server is up!
 SSH to it by running: ssh -i /home/idanmo/dev/repos/integration-tests/work/ssh_key.pem centos@10.239.1.32
+Or ./itests.py ssh
 
 Execution time: 261.71 seconds.
 ```
+
+
+## Connecting to Test Servers via SSH
+
+In order to connect to a server (when it is up :-)) using SSH run:
+
+```bash
+./itests.py ssh <server-index>
+```
+
+`server-index` is 0 by default.
+
 
 ## Cleaning Up Cloud Resources
 
 If from some reason the environment was not destroyed, use the provided `destroy.sh` script to destroy the envrionment:
 
 ```bash
-./destroy.sh
+./itests.py destroy
 ```
 
 Please note that the script also deletes the `work` directory.
