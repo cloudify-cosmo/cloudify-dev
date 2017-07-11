@@ -31,8 +31,8 @@ fi
 
 IP=$1
 USER=${2:-centos}               # Set the default remote (ssh) user
-REPOS_DIR=${3:-"~/dev/repos"}   # Set the default local repos folder
-KEY=${4:-"~/.ssh/id_rsa"}       # Set the default ssh key
+KEY=${3:-"~/.ssh/id_rsa"}       # Set the default ssh key
+REPOS_DIR=${4:-"~/dev/repos"}   # Set the default local repos folder
 MGMTWORKER_DIR=/opt/mgmtworker/env/lib/python2.7/site-packages
 MANAGER_DIR=/opt/manager/env/lib/python2.7/site-packages
 AGENTS_DIR=/opt/manager/resources/packages/agents
