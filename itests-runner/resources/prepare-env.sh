@@ -1,5 +1,7 @@
 #!/bin/bash
 
+export DOCL_IMAGE_BUILDER_SERVER="10.239.2.51"
+
 set -e
 
 function install_package {
@@ -92,6 +94,7 @@ echo "# Cloning completed!"
 
 echo "# Creating docker images in a sub-process.."
 nohup /tmp/create-docker-images.sh > create-docker-images.log 2>&1 &
+create_docker_images_pid=$!
 
 echo "# Unpacking cloudfiy-premium.."
 # -m is for supressing timestamp related warnings
@@ -128,7 +131,7 @@ docl init --simple-manager-blueprint-path=$HOME/repos/cloudify-manager-blueprint
 
 set +e
 
-curl -I http://10.239.2.51/docl_images/centos-manager.tar | grep 200
+curl -I http://${DOCL_IMAGE_BUILDER_SERVER}/docl_images/centos-manager.tar | grep 200
 
 exit_code="$?"
 if [ "$exit_code" -ne "0" ]; then
@@ -143,6 +146,8 @@ set -e
 echo "source ~/venv/bin/activate" >> ~/.bashrc
 echo "export DOCKER_HOST=172.20.0.1" >> ~/.bashrc
 
+echo "# Waiting for docker images creation..."
+wait $create_docker_images_pid
 cat create-docker-images.log
 
 echo "# Environment prepared successfully!"

@@ -3,7 +3,7 @@
 set +e
 
 echo "# Checking whether docl image can be downloaded directly from build machine.."
-curl -I http://10.239.2.51/docl_images/centos-manager.tar | grep 200
+curl -I http://${DOCL_IMAGE_BUILDER_SERVER}/docl_images/centos-manager.tar | grep 200
 
 exit_code="$?"
 if [ "$exit_code" -eq "0" ]; then
