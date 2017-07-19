@@ -32,11 +32,15 @@ config = {
 }
 
 
-def _stop_systemd_unit(name):
-    subprocess.check_call(['systemctl', 'stop', name])
-    subprocess.check_call(['systemctl', 'disable', name])
-    os.unlink(os.path.join('/usr/lib/systemd/system',
-                           '{0}.service'.format(name)))
+def _stop_systemd_unit(name, ignore_failures=True):
+    try:
+        subprocess.check_call(['systemctl', 'stop', name])
+        subprocess.check_call(['systemctl', 'disable', name])
+        os.unlink(os.path.join('/usr/lib/systemd/system',
+                               '{0}.service'.format(name)))
+    except subprocess.CalledProcessError:
+      if not ignore_failures:
+          raise
 
 
 def _userdel(username, ignore_failures=True):
@@ -57,7 +61,10 @@ def _groupdel(group, ignore_failures=True):
 
 def _delete_database(config):
     _stop_systemd_unit('cloudify-postgresql')
-    shutil.rmtree(config['postgresql']['data_dir'])
+    try:
+        shutil.rmtree(config['postgresql']['data_dir'])
+    except:
+        pass
 
 
 def _delete_consul(config):
