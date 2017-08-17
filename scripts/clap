@@ -308,7 +308,7 @@ def install(verbose=False):
             continue
 
         try:
-            output = pip.install('-e', repo_path)
+            output = pip.install('--upgrade', '-e', repo_path)
         except Exception, e:
             error = Fore.RED + 'Could not pip install repo: {0}'.format(e)
             logger.log(repo, error)
