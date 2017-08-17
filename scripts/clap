@@ -33,7 +33,7 @@ REPOS = CORE_REPOS + DEV_REPOS
 MASTER = 'master'
 REPO_BASE = os.environ.get('CLAP_REPO_BASE',
                            os.path.expanduser('~/dev/repos/'))
-BASE_GITHUB_URL = os.environ.get('CLAP_REPO_BASE',
+BASE_GITHUB_URL = os.environ.get('BASE_GITHUB_URL',
                                  'git@github.com:cloudify-cosmo/{0}.git')
 
 command = argh.EntryPoint(
