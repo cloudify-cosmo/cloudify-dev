@@ -128,7 +128,7 @@ echo "# Initializing docl.."
 docl init --simple-manager-blueprint-path=$HOME/repos/cloudify-manager-blueprints/simple-manager-blueprint.yaml --docker-host 172.20.0.1 --source-root=$HOME/repos --ssh-key-path=$HOME/.ssh/id_rsa
 
 # If this file wasn't touched, we need to download the image from S3
-if [ -e /tmp/docl-image-downloaded ]; then
+if [ ! -f /tmp/docl-image-downloaded ]; then
     echo "# Downloading docl image from build server failed. Image will be pulled from S3.."
     echo "# Pulling docl image.."
     set -e
