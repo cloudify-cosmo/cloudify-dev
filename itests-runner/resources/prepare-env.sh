@@ -1,7 +1,5 @@
 #!/bin/bash
 
-export DOCL_IMAGE_BUILDER_SERVER="10.239.2.51"
-
 set -e
 
 function install_package {
@@ -129,12 +127,8 @@ pip install -q pyyaml==3.10 --upgrade
 echo "# Initializing docl.."
 docl init --simple-manager-blueprint-path=$HOME/repos/cloudify-manager-blueprints/simple-manager-blueprint.yaml --docker-host 172.20.0.1 --source-root=$HOME/repos --ssh-key-path=$HOME/.ssh/id_rsa
 
-set +e
-
-curl -I http://${DOCL_IMAGE_BUILDER_SERVER}/docl_images/centos-manager.tar | grep 200
-
-exit_code="$?"
-if [ "$exit_code" -ne "0" ]; then
+# If this file wasn't touched, we need to download the image from S3
+if [ -e /tmp/docl-image-downloaded ]; then
     echo "# Downloading docl image from build server failed. Image will be pulled from S3.."
     echo "# Pulling docl image.."
     set -e
