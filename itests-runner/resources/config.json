@@ -28,7 +28,7 @@
         "manager_maintenance_mode"
     ],
     "test_server": {
-        "image": "integration-tests-image",
-        "flavor": "m1.medium"
+        "image": "integration-tests-image-2",
+        "flavor": "m1.large"
     }
 }

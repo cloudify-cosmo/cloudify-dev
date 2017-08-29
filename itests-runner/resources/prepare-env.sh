@@ -131,11 +131,8 @@ docl init --simple-manager-blueprint-path=$HOME/repos/cloudify-manager-blueprint
 if [ ! -f /tmp/docl-image-downloaded ]; then
     echo "# Downloading docl image from build server failed. Image will be pulled from S3.."
     echo "# Pulling docl image.."
-    set -e
     docl pull-image --no-progress
 fi
-
-set -e
 
 echo "source ~/venv/bin/activate" >> ~/.bashrc
 echo "export DOCKER_HOST=172.20.0.1" >> ~/.bashrc
