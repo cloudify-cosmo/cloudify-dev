@@ -130,8 +130,8 @@ resource "openstack_compute_instance_v2" "server{{ loop.index0 }}" {
   }
 
   provisioner "file" {
-    source = "resources/clone-repo.sh"
-    destination = "/tmp/clone-repo.sh"
+    source = "resources/create-clap-requirements.py"
+    destination = "/tmp/create-clap-requirements.py"
   }
 
   # this file is created by the program which invokes terraform
@@ -144,7 +144,7 @@ resource "openstack_compute_instance_v2" "server{{ loop.index0 }}" {
     inline = [
       "chmod +x /tmp/prepare-env.sh",
       "chmod +x /tmp/create-docker-images.sh",
-      "chmod +x /tmp/clone-repo.sh",
+      "chmod +x /tmp/create-clap-requirements.py",
       "/tmp/prepare-env.sh"
     ]
   }
@@ -163,7 +163,7 @@ resource "openstack_compute_instance_v2" "server{{ loop.index0 }}" {
   provisioner "remote-exec" {
     inline = [
       "source venv/bin/activate",
-      "python /tmp/run-tests.py --repos ~/repos --group-number {{ loop.index }} --number-of-groups {{ servers|length }} --pattern ${var.tests_pattern} --weights-file /tmp/weights.json --config-file /tmp/config.json"
+      "python /tmp/run-tests.py --repos ~/dev/repos --group-number {{ loop.index }} --number-of-groups {{ servers|length }} --pattern ${var.tests_pattern} --weights-file /tmp/weights.json --config-file /tmp/config.json"
     ]
     on_failure = "continue"
   }

@@ -33,7 +33,8 @@ REPOS = CORE_REPOS + DEV_REPOS
 MASTER = 'master'
 REPO_BASE = os.environ.get('CLAP_REPO_BASE',
                            os.path.expanduser('~/dev/repos/'))
-BASE_GITHUB_URL = 'git@github.com:cloudify-cosmo/{0}.git'
+BASE_SSH_GITHUB_URL = 'git@github.com:cloudify-cosmo/{0}.git'
+BASE_HTTPS_GITHUB_URL = 'https://github.com/cloudify-cosmo/{0}.git'
 
 command = argh.EntryPoint(
     'clap',
@@ -191,20 +192,21 @@ class Git(object):
     def checkout(self, branch):
         return self._git.checkout(branch)
 
-    def _git_clone(self, repo, branch, shallow):
-        full_url = BASE_GITHUB_URL.format(repo)
+    def _git_clone(self, repo, branch, shallow, ssh):
+        base_url = BASE_SSH_GITHUB_URL if ssh else BASE_HTTPS_GITHUB_URL
+        full_url = base_url.format(repo)
         args = [full_url, get_repo_path(repo), '--branch', branch]
         if shallow:
             args += ['--depth', 1]
         self._git.clone(*args)
 
-    def clone_repo(self, repo, repo_branch, shallow):
+    def clone_repo(self, repo, repo_branch, shallow, ssh):
         # logger.log(repo, 'Cloning `{0}`'.format(repo))
         if not self.validate_repo(repo):
             return logger.yellow('Folder already exists. '
                                  'Repo probably already cloned')
         else:
-            self._git_clone(repo, repo_branch, shallow)
+            self._git_clone(repo, repo_branch, shallow, ssh)
             return logger.green('Successfully cloned `{0}`'.format(repo))
 
 
@@ -336,14 +338,14 @@ def checkout(branch, hide_tags=False):
 
 
 @command
-def clone(shallow=False):
+def clone(shallow=False, ssh=True):
     logger.header('Clone')
     create_repo_base()
     git = Git()
 
     def _clone_repo(repo, repo_branch, shallow):
         try:
-            output = git.clone_repo(repo, repo_branch, shallow)
+            output = git.clone_repo(repo, repo_branch, shallow, ssh)
         except sh.ErrorReturnCode, e:
             error = str(e)
 
@@ -371,7 +373,7 @@ def setup(branch=MASTER, requirements=None, dev=False):
     global repos
     repos = Repos(branch=branch, requirements=requirements, dev=dev)
 
-    clone(shallow=True)
+    clone(shallow=True, ssh=False)
     status()
     install()
 

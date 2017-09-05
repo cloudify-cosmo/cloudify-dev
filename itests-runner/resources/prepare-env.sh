@@ -3,8 +3,8 @@
 set -e
 
 function install_package {
-    rpm -qa | grep $1 > /dev/null
-    if [ "$?" -eq "1" ]; then
+    rpm -q $1 > /dev/null
+    if [ ! $? -eq 0 ]; then
         echo "Installing $1.."
         sudo yum install $1 -y -q
     else
@@ -18,6 +18,10 @@ install_package bridge-utils
 install_package gcc
 install_package python-devel
 install_package git
+install_package openssl-devel
+install_package gcc-c++
+
+set -e
 
 echo "# Creating a network bridge.."
 sudo brctl addbr cfy0
@@ -52,71 +56,28 @@ echo "# Creating a private SSH key.."
 ssh-keygen -t rsa -f ~/.ssh/id_rsa -q -N ''
 cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
 
-echo "# Cloning required repositories.."
-mkdir -p repos
-
-function clone_repo {
-    # $1 - repository name
-    branch=$(python -c "import json; print(json.loads(open('/tmp/config.json', 'r').read())['repositories']['$1'])")
-    echo "# Cloning $1.. [$branch]"
-    /tmp/clone-repo.sh $1 $branch &
-    clone_pids+="$! "
-}
-
-# Clone is done in a child process per repository
-pushd repos > /dev/null
-    clone_repo "cloudify-dsl-parser"
-    clone_repo "cloudify-rest-client"
-    clone_repo "cloudify-plugins-common"
-    clone_repo "cloudify-diamond-plugin"
-    clone_repo "cloudify-script-plugin"
-    clone_repo "cloudify-agent"
-    clone_repo "cloudify-cli"
-    clone_repo "cloudify-manager"
-    clone_repo "cloudify-manager-blueprints"
-    clone_repo "cloudify-amqp-influxdb"
-    clone_repo "docl"
-popd > /dev/null
-
-# Wait for clone child processes..
-echo "# Waiting for cloning to complete.."
-for clone_pid in $clone_pids; do
-    wait $pid
-    rc=$?
-    if [ "$rc" -ne "0" ]; then
-        echo "# Error when cloning repositories."
-        exit 1
-    fi
-done
-echo "# Cloning completed!"
-
 echo "# Creating docker images in a sub-process.."
 nohup /tmp/create-docker-images.sh > create-docker-images.log 2>&1 &
 create_docker_images_pid=$!
 
-echo "# Unpacking cloudfiy-premium.."
-# -m is for supressing timestamp related warnings
-tar xzf /tmp/cloudify-premium.tar.gz -C ~/repos -m
+echo "# Downloading and configuring clap..."
+curl https://raw.githubusercontent.com/cloudify-cosmo/cloudify-dev/master/scripts/clap -o /tmp/clap
+chmod +x /tmp/clap
+pip install sh==1.11 argh==0.26.2 colorama==0.3.3
 
-function pip_install {
-    echo "# Installing $1.."
-    pushd $1 > /dev/null
-        pip install -q -e .
-    popd > /dev/null
-}
+mkdir -p ~/dev/repos
 
-echo "# Installing dependencies.."
-pushd repos > /dev/null
-    pip_install "cloudify-dsl-parser"
-    pip_install "cloudify-rest-client"
-    pip_install "cloudify-plugins-common"
-    pip_install "cloudify-cli"
-    pip_install "cloudify-manager/rest-service"
-    pip_install "cloudify-manager/plugins/riemann-controller"
-    pip_install "cloudify-premium"
-    pip_install "docl"
-    pip_install "cloudify-manager/tests"   
-popd > /dev/null
+echo "# Unpacking cloudify-premium.."
+# This is in order to avoid having credentials for private repos
+# -m is for suppressing timestamp related warnings
+tar xzf /tmp/cloudify-premium.tar.gz -C ~/dev/repos -m
+
+echo "# Creating clap requirements file..."
+# This will create /tmp/clap-requirements.txt
+/tmp/create-clap-requirements.py
+
+echo "# Cloning/installing required repositories.."
+/tmp/clap setup --requirements=/tmp/clap-requirements.txt
 
 echo "Installing nose.."
 pip install -q nose
@@ -125,7 +86,7 @@ echo "# Installing pyaml==3.10.."
 pip install -q pyyaml==3.10 --upgrade
 
 echo "# Initializing docl.."
-docl init --simple-manager-blueprint-path=$HOME/repos/cloudify-manager-blueprints/simple-manager-blueprint.yaml --docker-host 172.20.0.1 --source-root=$HOME/repos --ssh-key-path=$HOME/.ssh/id_rsa
+docl init --simple-manager-blueprint-path=$HOME/dev/repos/cloudify-manager-blueprints/simple-manager-blueprint.yaml --docker-host 172.20.0.1 --source-root=$HOME/dev/repos --ssh-key-path=$HOME/.ssh/id_rsa
 
 # If this file wasn't touched, we need to download the image from S3
 if [ ! -f /tmp/docl-image-downloaded ]; then
