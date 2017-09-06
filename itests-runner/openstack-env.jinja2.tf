@@ -130,8 +130,8 @@ resource "openstack_compute_instance_v2" "server{{ loop.index0 }}" {
   }
 
   provisioner "file" {
-    source = "resources/create-clap-requirements.py"
-    destination = "/tmp/create-clap-requirements.py"
+    source = "resources/create-cdep-requirements.py"
+    destination = "/tmp/create-cdep-requirements.py"
   }
 
   # this file is created by the program which invokes terraform
@@ -144,7 +144,7 @@ resource "openstack_compute_instance_v2" "server{{ loop.index0 }}" {
     inline = [
       "chmod +x /tmp/prepare-env.sh",
       "chmod +x /tmp/create-docker-images.sh",
-      "chmod +x /tmp/create-clap-requirements.py",
+      "chmod +x /tmp/create-cdep-requirements.py",
       "/tmp/prepare-env.sh"
     ]
   }

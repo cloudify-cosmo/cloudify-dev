@@ -8,5 +8,5 @@ repositories = config['repositories']
 requirements = '\n'.join('{0}@{1}'.format(key, value)
                          for key, value in repositories.iteritems())
 
-with open('/tmp/clap-requirements.txt', 'w') as f:
+with open('/tmp/cdep-requirements.txt', 'w') as f:
     f.write(requirements)

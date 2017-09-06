@@ -60,9 +60,9 @@ echo "# Creating docker images in a sub-process.."
 nohup /tmp/create-docker-images.sh > create-docker-images.log 2>&1 &
 create_docker_images_pid=$!
 
-echo "# Downloading and configuring clap..."
-curl https://raw.githubusercontent.com/cloudify-cosmo/cloudify-dev/master/scripts/clap -o /tmp/clap
-chmod +x /tmp/clap
+echo "# Downloading and configuring cdep..."
+curl https://raw.githubusercontent.com/cloudify-cosmo/cloudify-dev/master/scripts/cdep -o /tmp/cdep
+chmod +x /tmp/cdep
 pip install sh==1.11 argh==0.26.2 colorama==0.3.3
 
 mkdir -p ~/dev/repos
@@ -72,12 +72,12 @@ echo "# Unpacking cloudify-premium.."
 # -m is for suppressing timestamp related warnings
 tar xzf /tmp/cloudify-premium.tar.gz -C ~/dev/repos -m
 
-echo "# Creating clap requirements file..."
-# This will create /tmp/clap-requirements.txt
-/tmp/create-clap-requirements.py
+echo "# Creating cdep requirements file..."
+# This will create /tmp/cdep-requirements.txt
+/tmp/create-cdep-requirements.py
 
 echo "# Cloning/installing required repositories.."
-/tmp/clap setup --requirements=/tmp/clap-requirements.txt
+/tmp/cdep setup --requirements=/tmp/cdep-requirements.txt
 
 echo "Installing nose.."
 pip install -q nose
