@@ -20,14 +20,11 @@ CORE_REPOS = [
     'cloudify-premium',
     'cloudify-script-plugin',
     'cloudify-amqp-influxdb',
-    'docl'
-]
-DEV_REPOS = [
     'cloudify-fabric-plugin',
     'cloudify-system-tests',
     'cloudify-dev'
 ]
-REPOS = CORE_REPOS + DEV_REPOS
+REPOS = CORE_REPOS
 
 
 MASTER = 'master'
@@ -132,8 +129,8 @@ class Git(object):
     @staticmethod
     def _validate_git():
         try:
-            sh.git
-        except sh.CommandNotFound:
+            os.system("git --help")
+        except Exception as e:
             logger.error('git is not installed on the computer')
 
     def validate_repo(self, repo=None):
@@ -145,7 +142,7 @@ class Git(object):
 
         try:
             self._git.status()
-        except sh.ErrorReturnCode, e:
+        except Exception as e:
             if 'Not a git repository' in str(e):
                 msg = '`{0}` is not a git repository'.format(repo_path)
             else:
@@ -160,13 +157,10 @@ class Git(object):
     def _get_git(self, repo=None):
         self._validate_git()
         if not repo:
-            return sh.git.bake()
+            return ""
 
         repo_path = get_repo_path(repo)
-        return sh.git.bake(
-            '--no-pager',
-            '--git-dir', os.path.join(repo_path, '.git'),
-            '--work-tree', repo_path)
+        return "--no-pager --git-dir {0} --work-tree {1}".format(os.path.join(repo_path, '.git'), repo_path)
 
     def get_current_branch_or_tag(self, hide_tags=False):
         """
@@ -289,7 +283,7 @@ def pull():
         git = Git(repo)
         try:
             output = git.pull()
-        except sh.ErrorReturnCode:
+        except Exception as e:
             output = 'No upstream defined. Skipping pull.'
         logger.log_multiline(repo, output)
 
@@ -301,9 +295,6 @@ def pull():
 
 @command
 def install(verbose=False):
-    logger.header('Install')
-    pip = sh.pip.bake()
-
     for repo, path in repos.cloudify_packages:
         repo_path = get_repo_path(path)
         if not os.path.exists(repo_path):
@@ -311,9 +302,13 @@ def install(verbose=False):
             logger.log(repo, msg)
             continue
 
-        try:
-            output = pip.install('--upgrade', '-e', repo_path)
-        except Exception, e:
+        cmd = ['pip', 'install', '--upgrade', '-e', repo_path]
+        proc = subprocess.Popen(cmd, stdin=subprocess.PIPE,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+        out, err = proc.communicate(unencoded)
+        proc.stdin.close()
+        if proc.returncode:
             error = Fore.RED + 'Could not pip install repo: {0}'.format(e)
             logger.log(repo, error)
             continue
@@ -334,7 +329,7 @@ def checkout(branch, hide_tags=False):
             git.checkout(repo_branch)
             branch = git.get_current_branch_or_tag(hide_tags=hide_tags)
             logger.log(repo, branch)
-        except sh.ErrorReturnCode:
+        except Exception as e:
             output = 'Could not checkout branch `{0}`'.format(repo_branch)
             logger.log_multiline(repo, output)
 
@@ -348,7 +343,7 @@ def clone(shallow=False, ssh=True):
     def _clone_repo(repo, repo_branch, shallow):
         try:
             output = git.clone_repo(repo, repo_branch, shallow, ssh)
-        except sh.ErrorReturnCode, e:
+        except Exception as e:
             error = str(e)
 
             if 'fatal: destination path' in error:
