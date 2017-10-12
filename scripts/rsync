@@ -136,7 +136,7 @@ def main(args=None):
         chown(args.user, dir)
 
         for path in paths:
-            src = os.path.join(args.repos_dir, REPO_PATHS(path))
+            src = os.path.join(args.repos_dir, REPO_PATHS[path])
             print("syncing", src, dir)
             try:
                 rsync(src, dir)
