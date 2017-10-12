@@ -49,6 +49,7 @@ DIRS = {
 PIPS = [
         '/opt/mgmtworker/env/bin/pip',
         '/opt/manager/env/bin/pip',
+        '/opt/manager/resources/packages/agents/cloudify/env/bin/pip',
         ]
 
 for dir in DIRS.values():
