@@ -5,7 +5,6 @@ from __future__ import print_function
 import argparse
 import os
 import subprocess
-from itertools import product
 
 
 REPO_PATHS = {
@@ -49,7 +48,7 @@ DIRS = {
 PIPS = [
         '/opt/mgmtworker/env/bin/pip',
         '/opt/manager/env/bin/pip',
-        '/opt/manager/resources/packages/agents/cloudify/env/bin/pip',
+        '/opt/manager/resources/packages/agents/cloudify/env/bin/python -m pip'
         ]
 
 for dir in DIRS.values():
@@ -145,8 +144,9 @@ def main(args=None):
             except subprocess.CalledProcessError as e:
                 print("rsync failed", e)
 
-    for pip, package in product(PIPS, args.extra_packages):
-        ssh('sudo {pip} install {package}'.format(pip=pip, package=package))
+    for pip in PIPS:
+        ssh('sudo {pip} install "{packages}"'.format(
+            pip=pip, packages='" "'.join(args.extra_packages)))
 
     print('Repacking agent')
     ssh('cd /opt/manager/resources/packages/agents;'
