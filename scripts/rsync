@@ -121,6 +121,7 @@ def main(args=None):
         return subprocess.check_call(
             [
                 'rsync',
+                '-avz',
                 '--rsh=' + ' '.join(ssh_args),
                 '--exclude', '*.pyc',
                 '--exclude', 'test*',
