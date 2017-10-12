@@ -1,0 +1,162 @@
+#!/usr/bin/env python
+
+from __future__ import print_function
+
+import argparse
+import os
+import subprocess
+from itertools import product
+
+
+REPO_PATHS = {
+        'agent': 'cloudify-agent/cloudify_agent',
+        'dsl-parser': 'cloudify-dsl-parser/dsl_parser',
+        'manager': 'cloudify-manager/rest-service/manager_rest',
+        'manager-resources':
+            'cloudify-manager/resources/rest-service/cloudify',
+        'manager-workflows':
+            'cloudify-manager/workflows/cloudify_system_workflows',
+        'plugins-common': 'cloudify-plugins-common/cloudify',
+        'premium': 'cloudify-premium/cloudify_premium',
+        'rest-client': 'cloudify-rest-client/cloudify_rest_client',
+        }
+
+DIRS = {
+        '/opt/mgmtworker/env/lib/python2.7/site-packages': [
+            'agent',
+            'manager',
+            'plugins-common',
+            'rest-client',
+            ],
+        '/opt/manager/env/lib/python2.7/site-packages': [
+            'agent',
+            'manager',
+            'plugins-common',
+            'premium',
+            'rest-client',
+            ],
+        '/opt/manager/resources': [
+            'manager-resources',
+            ],
+        '/opt/manager/resources/packages/agents/cloudify'
+        '/env/lib/python2.7/site-packages': [
+            'agent',
+            'plugins-common',
+            'rest-client',
+            ],
+        }
+
+PIPS = [
+        '/opt/mgmtworker/env/bin/pip',
+        '/opt/manager/env/bin/pip',
+        ]
+
+for dir in DIRS.values():
+    for path in dir:
+        if path not in REPO_PATHS:
+            raise ValueError('undefined REPO_PATH', path)
+
+
+def get_ssh_args(
+        user,
+        key=None,
+        extra_options=None,
+        ignore_host_keys=False):
+    args = ['ssh', '-l', user]
+    if extra_options:
+        args += extra_options
+    if key:
+        args += ['-i', os.path.expanduser(key)]
+    if ignore_host_keys:
+        args += [
+                '-o', 'StrictHostKeyChecking=no',
+                '-o', 'UserKnownHostsFile=/dev/null',
+                ]
+
+    return args
+
+
+def main(args=None):
+    parser = argparse.ArgumentParser(
+            description="sync common cloudify packages to a running manager",
+            )
+
+    parser.add_argument('ip')
+    parser.add_argument('user', nargs='?', default='centos')
+    parser.add_argument(
+            'key', nargs='?',
+            type=os.path.expanduser,
+            default=None,
+            )
+    parser.add_argument(
+            'repos_dir', nargs='?',
+            type=os.path.expanduser,
+            default='~/dev/repos',
+            )
+    parser.add_argument('--ignore-host-keys', action='store_true')
+    parser.add_argument(
+            '--extra-packages',
+            type=lambda x: x.split(','),
+            help='comma-separated list of packages to install',
+            default='pydevd,rpdb',
+            )
+
+    args = parser.parse_args(args)
+
+    ssh_args = get_ssh_args(
+            args.user, args.ip, args.key,
+            ignore_host_keys=args.ignore_host_keys)
+
+    print(args, ssh_args)
+
+    def ssh(cmd):
+        return subprocess.check_call(ssh_args + [args.ip, cmd])
+
+    def chown(user, files):
+        return ssh('sudo chown {user}:{user} -R {files}'.format(
+                user=user,
+                files=files))
+
+    def rsync(src, dest):
+        return subprocess.check_call(
+            [
+                'rsync',
+                '--rsh="' + ' '.join(ssh_args) + '"',
+                '--exclude', '*.pyc',
+                '--exclude', 'test*',
+                src,
+                args.ip + ':' + dest,
+                ])
+
+    print('Unpacking agent')
+    ssh('cd /opt/manager/resources/packages/agents;'
+        'sudo tar -xf centos-core-agent.tar.gz')
+
+    for dir, paths in DIRS.items():
+        chown(args.user, dir)
+
+        for path in paths:
+            src = os.path.join(args.repos_dir, REPO_PATHS(path))
+            print("syncing", src, dir)
+            try:
+                rsync(src, dir)
+            except subprocess.CalledProcessError as e:
+                print("rsync failed", e)
+
+    for pip, package in product(PIPS, args.extra_packages):
+        ssh('sudo {pip} install {package}'.format(pip=pip, package=package))
+
+    print('Repacking agent')
+    ssh('cd /opt/manager/resources/packages/agents;'
+        'sudo tar -czf centos-core-agent.tar.gz cloudify')
+
+    for dir in DIRS:
+        chown('cfyuser', dir)
+
+    print('Restarting services')
+    for service in ['cloudify-mgmtworker', 'cloudify-restservice']:
+        ssh('sudo systemctl restart ' + service)
+
+
+if __name__ == "__main__":
+    main()
