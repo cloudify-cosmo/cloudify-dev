@@ -25,7 +25,8 @@ CORE_REPOS = [
 DEV_REPOS = [
     'cloudify-fabric-plugin',
     'cloudify-system-tests',
-    'cloudify-dev'
+    'cloudify-dev',
+    'cloudify-manager-install'
 ]
 REPOS = CORE_REPOS + DEV_REPOS
 
