@@ -86,7 +86,7 @@ echo "# Installing pyaml==3.10.."
 pip install -q pyyaml==3.10 --upgrade
 
 echo "# Initializing docl.."
-docl init --simple-manager-blueprint-path=$HOME/dev/repos/cloudify-manager-blueprints/simple-manager-blueprint.yaml --docker-host 172.20.0.1 --source-root=$HOME/dev/repos --ssh-key-path=$HOME/.ssh/id_rsa
+docl init --docker-host 172.20.0.1 --source-root=$HOME/dev/repos --ssh-key-path=$HOME/.ssh/id_rsa
 
 # If this file wasn't touched, we need to download the image from S3
 if [ ! -f /tmp/docl-image-downloaded ]; then
