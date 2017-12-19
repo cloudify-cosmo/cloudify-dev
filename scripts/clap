@@ -10,6 +10,7 @@ from collections import OrderedDict
 
 CORE_REPOS = [
     'cloudify-dsl-parser',
+    'incubator-ariatosca',
     'cloudify-rest-client',
     'cloudify-plugins-common',
     'cloudify-diamond-plugin',
