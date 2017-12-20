@@ -17,7 +17,6 @@ CORE_REPOS = [
     'cloudify-agent',
     'cloudify-cli',
     'cloudify-manager',
-    'cloudify-manager-blueprints',
     'cloudify-premium',
     'cloudify-script-plugin',
     'cloudify-amqp-influxdb',
@@ -253,7 +252,6 @@ class Repos(object):
             packages[repo] = repo
 
         manager_repo = packages.pop('cloudify-manager', None)
-        packages.pop('cloudify-manager-blueprints', None)
         packages.pop('cloudify-dev', None)
 
         if manager_repo:
