@@ -3,7 +3,9 @@
 set -e
 
 function install_package {
+    set +e
     rpm -q $1 > /dev/null
+    set -e
     if [ ! $? -eq 0 ]; then
         echo "Installing $1.."
         sudo yum install $1 -y -q
@@ -21,8 +23,6 @@ install_package git
 install_package openssl-devel
 install_package openldap-devel
 install_package gcc-c++
-
-set -e
 
 echo "# Creating a network bridge.."
 sudo brctl addbr cfy0
