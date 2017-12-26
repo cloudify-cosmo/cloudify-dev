@@ -19,6 +19,7 @@ install_package gcc
 install_package python-devel
 install_package git
 install_package openssl-devel
+install_package openldap-devel
 install_package gcc-c++
 
 set -e
