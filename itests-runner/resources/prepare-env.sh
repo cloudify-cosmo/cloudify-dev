@@ -5,8 +5,9 @@ set -e
 function install_package {
     set +e
     rpm -q $1 > /dev/null
+    EXIT_CODE=$?
     set -e
-    if [ ! $? -eq 0 ]; then
+    if [ ! ${EXIT_CODE} -eq 0 ]; then
         echo "Installing $1.."
         sudo yum install $1 -y -q
     else
