@@ -14,11 +14,11 @@ CORE_REPOS = [
     'cloudify-rest-client',
     'cloudify-plugins-common',
     'cloudify-diamond-plugin',
+    'cloudify-script-plugin',
     'cloudify-agent',
     'cloudify-manager',
     'cloudify-premium',
     'cloudify-cli',
-    'cloudify-script-plugin',
     'cloudify-amqp-influxdb',
     'docl'
 ]
