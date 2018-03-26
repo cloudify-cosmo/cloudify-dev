@@ -42,6 +42,7 @@ echo "Installing pydev"
 ssh ${USER}@${IP} -i ${KEY} 'sudo chown -R ${USER}:${USER} /opt/mgmtworker/env/lib/python2.7/site-packages'
 ssh ${USER}@${IP} -i ${KEY} 'sudo chown -R ${USER}:${USER} /opt/manager/env/lib/python2.7/site-packages'
 ssh ${USER}@${IP} -i ${KEY} 'sudo chown -R ${USER}:${USER} /opt/manager/resources/cloudify'
+ssh ${USER}@${IP} -i ${KEY} 'sudo chown -R ${USER}:${USER} /opt/manager/resources/spec'
 ssh ${USER}@${IP} -i ${KEY} 'sudo /opt/mgmtworker/env/bin/pip install pydevd'
 ssh ${USER}@${IP} -i ${KEY} 'sudo /opt/manager/env/bin/pip install pydevd'
 
@@ -60,6 +61,7 @@ rsync -avz ${REPOS_DIR}/cloudify-dsl-parser/dsl_parser ${USER}@${IP}:${MANAGER_D
 
 echo "Syncing resources folder"
 rsync -avz ${REPOS_DIR}/cloudify-manager/resources/rest-service/cloudify ${USER}@${IP}:/opt/manager/resources --exclude '*.pyc' -e "ssh -i ${KEY}"
+rsync -avz ${REPOS_DIR}/cloudify-manager/resources/rest-service/cloudify/types/types.yaml ${USER}@${IP}:/opt/manager/resources/spec/cloudify/4.4.dev1/ -e "ssh -i ${KEY}"
 
 echo "Restarting services"
 ssh ${USER}@${IP} -i ${KEY} 'sudo systemctl restart cloudify-mgmtworker'
