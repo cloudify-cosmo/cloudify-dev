@@ -112,7 +112,7 @@ def run_tests(repos_dir, group_number, number_of_groups, pattern, dry_run, weigh
 
     for i, test_module in enumerate(test_modules_to_run):
 
-        command = 'nosetests -v -s --nologcapture {0} --tests "{1}" --with-flaky --with-xunit --xunit-file $HOME/report-{2}-{3}.xml --xunit-testsuite-name "Server-{2}"'.format(
+        command = 'nosetests -v -s --nologcapture {0} --tests "{1}" --with-xunit --xunit-file $HOME/report-{2}-{3}.xml --xunit-testsuite-name "Server-{2}"'.format(
                 collect_only, test_module, group_number, i)
 
         last_exit_code = os.system(command)
