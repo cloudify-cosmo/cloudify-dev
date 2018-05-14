@@ -22,10 +22,7 @@ PACKAGES = [
     # This order is important, do not change unless
     # you know what you are doing.
 
-    'cloudify-rest-client/',
-    'cloudify-dsl-parser/',
-    'cloudify-plugins-common/',
-    'cloudify-script-plugin/',
+    'cloudify-common/',
     'cloudify-cli/',
     'cloudify-manager/plugins/agent-installer/',
     'cloudify-manager/plugins/plugin-installer/',

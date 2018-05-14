@@ -18,10 +18,7 @@ import os
 REPOSITORIES = [
     'cloudify-cli',
     'cloudify-manager',
-    'cloudify-rest-client',
-    'cloudify-plugins-common',
-    'cloudify-dsl-parser',
-    'cloudify-script-plugin'
+    'cloudify-common'
 ]
 
 

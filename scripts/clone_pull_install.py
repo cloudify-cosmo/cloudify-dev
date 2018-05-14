@@ -27,10 +27,7 @@ protocol = None
 
 
 INSTALL_PACKAGES = [
-    'cloudify-rest-client',
-    'cloudify-dsl-parser',
-    'cloudify-plugins-common',
-    'cloudify-script-plugin',
+    'cloudify-common',
     'cloudify-cli',
     'cloudify-manager/plugins/riemann-controller',
     'cloudify-manager/workflows',
@@ -46,10 +43,7 @@ INSTALL_PACKAGES = [
 
 
 UNINSTALL_PACKAGES = [
-    'cloudify-rest-client',
-    'cloudify-dsl-parser',
-    'cloudify-plugins-common',
-    'cloudify-script-plugin',
+    'cloudify-common',
     'cloudify',
     'cloudify-agent',
     'cloudify-riemann-controller-plugin',
@@ -66,9 +60,7 @@ UNINSTALL_PACKAGES = [
 
 MAIN_REPOS = [
     'cloudify-packager',
-    'cloudify-rest-client',
-    'cloudify-dsl-parser',
-    'cloudify-plugins-common',
+    'cloudify-common',
     'cloudify-cli',
     'cloudify-agent',
     'cloudify-manager',
@@ -78,7 +70,7 @@ MAIN_REPOS = [
 ]
 
 PLUGIN_REPOS = [
-    'cloudify-script-plugin',
+    'cloudify-common',
     'cloudify-diamond-plugin',
     'cloudify-fabric-plugin',
     'cloudify-openstack-plugin',
