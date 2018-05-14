@@ -53,8 +53,7 @@ MANAGER_REST_PACKAGES = [
 # packages that need to be installed under the management worker
 # virtualenv, relative to the CODE_BASE
 MANAGEMENT_WORKER_PACKAGES = [
-    ('cloudify-rest-client', 'cloudify-rest-client'),
-    ('cloudify-plugins-common', 'cloudify-plugins-common'),
+    ('cloudify-common', 'cloudify-common'),
     ('cloudify-manager/plugins/agent-installer', 'cloudify-agent-installer-plugin'),
     ('cloudify-manager/plugins/plugin-installer', 'cloudify-plugin-installer-plugin'),
     ('cloudify-manager/plugins/riemann-controller', 'cloudify-riemann-controller-plugin'),
@@ -64,13 +63,11 @@ MANAGEMENT_WORKER_PACKAGES = [
 
 # packages to install (in this order) for the agent package virtualenv
 AGENT_PACKAGES = [
-    ('cloudify-rest-client', 'cloudify-rest-client'),
-    ('cloudify-plugins-common', 'cloudify-plugins-common'),
+    ('cloudify-common', 'cloudify-common'),
     ('cloudify-manager/plugins/agent-installer', 'cloudify-agent-installer-plugin'),
     ('cloudify-manager/plugins/plugin-installer', 'cloudify-plugin-installer-plugin'),
     ('cloudify-manager/plugins/windows-agent-installer', 'cloudify-windows-agent-installer-plugin'),
-    ('cloudify-manager/plugins/windows-plugin-installer', 'cloudify-windows-plugin-installer-plugin'),
-    ('cloudify-script-plugin', 'cloudify-script-plugin')
+    ('cloudify-manager/plugins/windows-plugin-installer', 'cloudify-windows-plugin-installer-plugin')
 ]
 
 
