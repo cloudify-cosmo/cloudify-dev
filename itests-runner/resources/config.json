@@ -1,11 +1,8 @@
 {
     "repositories": {
-        "cloudify-dsl-parser": "master",
-        "cloudify-rest-client": "master",
+        "cloudify-common": "master",
         "incubator-ariatosca": "master",
-        "cloudify-plugins-common": "master",
         "cloudify-diamond-plugin": "master",
-        "cloudify-script-plugin": "master",
         "cloudify-agent": "master",
         "cloudify-cli": "master",
         "cloudify-manager": "master",
