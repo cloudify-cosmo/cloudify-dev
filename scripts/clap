@@ -9,12 +9,9 @@ from threading import Thread
 from collections import OrderedDict
 
 CORE_REPOS = [
-    'cloudify-dsl-parser',
     'incubator-ariatosca',
-    'cloudify-rest-client',
-    'cloudify-plugins-common',
+    'cloudify-common',
     'cloudify-diamond-plugin',
-    'cloudify-script-plugin',
     'cloudify-agent',
     'cloudify-manager',
     'cloudify-premium',

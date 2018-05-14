@@ -222,11 +222,8 @@ For example:
 ```json
 {
     "repositories": {
-        "cloudify-dsl-parser": "master",
-        "cloudify-rest-client": "master",
-        "cloudify-plugins-common": "master",
+        "cloudify-common": "master",
         "cloudify-diamond-plugin": "master",
-        "cloudify-script-plugin": "master",
         "cloudify-agent": "master",
         "cloudify-cli": "master",
         "cloudify-manager": "master",
