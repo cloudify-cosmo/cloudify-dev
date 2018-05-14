@@ -1,6 +1,7 @@
 {
     "repositories": {
         "cloudify-common": "master",
+        "incubator-ariatosca": "master",
         "cloudify-diamond-plugin": "master",
         "cloudify-agent": "master",
         "cloudify-cli": "master",
