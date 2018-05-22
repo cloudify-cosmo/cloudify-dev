@@ -14,15 +14,7 @@
 #    * limitations under the License.
 
 # This script is used to sync most of the common cloudify packages
-# on a running manager, as well as installing pydevd on both the
-# `mgmtworker` and `manager` venvs. 
-
-# To set up remote debugging on the manager, add the following 
-# two lines to your code, turn on the remote debugger in pycharm, 
-# run this script, and execute a command on the manager:
-#      import pydevd
-#      pydevd.settrace('{YOUR IP}', port=53100, stdoutToServer=True, stderrToServer=True, suspend=True)
-
+# on a running manager
 
 if [ $# -eq 0 ]; then
     echo "Need to provide an IP for the script to work"
@@ -38,13 +30,11 @@ MANAGER_DIR=/opt/manager/env/lib/python2.7/site-packages
 AGENTS_DIR=/opt/manager/resources/packages/agents
 AGENT_DIR=${AGENTS_DIR}/cloudify/env/lib/python2.7/site-packages
 
-echo "Installing pydev"
+echo "Chowning folders"
 ssh ${USER}@${IP} -i ${KEY} 'sudo chown -R ${USER}:${USER} /opt/mgmtworker/env/lib/python2.7/site-packages'
 ssh ${USER}@${IP} -i ${KEY} 'sudo chown -R ${USER}:${USER} /opt/manager/env/lib/python2.7/site-packages'
 ssh ${USER}@${IP} -i ${KEY} 'sudo chown -R ${USER}:${USER} /opt/manager/resources/cloudify'
 ssh ${USER}@${IP} -i ${KEY} 'sudo chown -R ${USER}:${USER} /opt/manager/resources/spec'
-ssh ${USER}@${IP} -i ${KEY} 'sudo /opt/mgmtworker/env/bin/pip install pydevd'
-ssh ${USER}@${IP} -i ${KEY} 'sudo /opt/manager/env/bin/pip install pydevd'
 
 echo "Syncing mgmtworker packages"
 rsync -avz ${REPOS_DIR}/cloudify-common/cloudify ${USER}@${IP}:${MGMTWORKER_DIR} --exclude '*.pyc' --exclude 'test*' -e "ssh -i ${KEY}"
@@ -74,6 +64,8 @@ ssh ${USER}@${IP} -i ${KEY} 'sudo chown -R ${USER}:${USER} /opt/manager/resource
 rsync -avz ${REPOS_DIR}/cloudify-common/cloudify ${USER}@${IP}:${AGENT_DIR} --exclude '*.pyc' --exclude 'test*' -e "ssh -i ${KEY}"
 rsync -avz ${REPOS_DIR}/cloudify-agent/cloudify_agent ${USER}@${IP}:${AGENT_DIR} --exclude '*.pyc' --exclude 'test*' -e "ssh -i ${KEY}"
 rsync -avz ${REPOS_DIR}/cloudify-common/cloudify_rest_client ${USER}@${IP}:${AGENT_DIR} --exclude '*.pyc' -e "ssh -i ${KEY}"
+rsync -avz ${REPOS_DIR}/cloudify-diamond-plugin/diamond_agent ${USER}@${IP}:${AGENT_DIR} --exclude '*.pyc' -e "ssh -i ${KEY}"
+rsync -avz ${REPOS_DIR}/cloudify-diamond-plugin/cloudify_handler ${USER}@${IP}:${AGENT_DIR} --exclude '*.pyc' -e "ssh -i ${KEY}"
 
 ssh ${USER}@${IP} -i ${KEY} 'sudo chown -R cfyuser:cfyuser /opt/manager/resources/packages/agents/cloudify'
 ssh ${USER}@${IP} -i ${KEY} 'cd /opt/manager/resources/packages/agents; sudo tar -czf centos-core-agent.tar.gz cloudify'
