@@ -51,7 +51,7 @@ rsync -avz ${REPOS_DIR}/cloudify-common/dsl_parser ${USER}@${IP}:${MANAGER_DIR} 
 
 echo "Syncing resources folder"
 rsync -avz ${REPOS_DIR}/cloudify-manager/resources/rest-service/cloudify ${USER}@${IP}:/opt/manager/resources --exclude '*.pyc' -e "ssh -i ${KEY}"
-rsync -avz ${REPOS_DIR}/cloudify-manager/resources/rest-service/cloudify/types/types.yaml ${USER}@${IP}:/opt/manager/resources/spec/cloudify/4.4.dev1/ -e "ssh -i ${KEY}"
+rsync -avz ${REPOS_DIR}/cloudify-manager/resources/rest-service/cloudify/types/types.yaml ${USER}@${IP}:/opt/manager/resources/spec/cloudify/*/ -e "ssh -i ${KEY}"
 
 echo "Restarting services"
 ssh ${USER}@${IP} -i ${KEY} 'sudo systemctl restart cloudify-mgmtworker'
