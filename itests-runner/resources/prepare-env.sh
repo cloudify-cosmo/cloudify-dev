@@ -40,6 +40,9 @@ echo "# Installing latest pip.."
 curl -O https://bootstrap.pypa.io/get-pip.py
 sudo python get-pip.py
 
+echo "# Installing pip 10.0.1.."
+pip install --upgrade pip==10.0.1
+
 echo "# Installing virtualenv.."
 sudo pip install -q virtualenv
 
@@ -47,8 +50,8 @@ echo "# Creating virtualenv.."
 virtualenv venv
 source venv/bin/activate
 
-echo "# Upgrading to latest pip.."
-pip install pip -q --upgrade
+echo "# Installing pip 10.0.1.."
+pip install --upgrade pip==10.0.1
 
 # This is required as otherwise networkx will fail to install
 echo "# Installing six.."
