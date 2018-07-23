@@ -41,7 +41,7 @@ curl -O https://bootstrap.pypa.io/get-pip.py
 sudo python get-pip.py
 
 echo "# Installing pip 10.0.1.."
-pip install --upgrade pip==10.0.1
+sudo pip install --upgrade pip==10.0.1
 
 echo "# Installing virtualenv.."
 sudo pip install -q virtualenv
