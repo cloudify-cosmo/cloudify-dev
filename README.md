@@ -98,7 +98,7 @@ After you make all the necessary changes, turn to Github and create the pull req
 ## Tests
 
 Tests are a very important part of our development process. We try hard to cover our code with as many tests as possible, be it unit tests, integration tests or system tests.
-We use the [nose](http://pythontesting.net/framework/nose/nose-introduction/) framework to write and run our tests.
+We use the [pytest](http://pytest.readthedocs.io/en/latest/) framework to write and run our tests.
 
 ### Unit Tests
 

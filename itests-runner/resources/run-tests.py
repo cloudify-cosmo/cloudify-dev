@@ -103,7 +103,7 @@ def run_tests(repos_dir, group_number, number_of_groups, pattern, dry_run, weigh
     print('# Running test modules in group number {0}'.format(group_number))
 
     if dry_run:
-        os.system('nosetests -v --collect-only --tests {0}'.format(','.join(test_modules_to_run)))
+        os.system('pytest -v --collect-only {0}'.format(' '.join(test_modules_to_run)))
         sys.exit(0)
 
     collect_only = '--collect-only' if dry_run else ''
@@ -112,7 +112,7 @@ def run_tests(repos_dir, group_number, number_of_groups, pattern, dry_run, weigh
 
     for i, test_module in enumerate(test_modules_to_run):
 
-        command = 'nosetests -v -s --nologcapture {0} --tests "{1}" --with-xunit --xunit-file $HOME/report-{2}-{3}.xml --xunit-testsuite-name "Server-{2}"'.format(
+        command = 'pytest -v -s {0} "{1}" --junit-xml=$HOME/report-{2}-{3}.xml --junit-prefix="Server-{2}"'.format(
                 collect_only, test_module, group_number, i)
 
         last_exit_code = os.system(command)

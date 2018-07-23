@@ -84,8 +84,8 @@ echo "# Creating clap requirements file..."
 echo "# Cloning/installing required repositories.."
 /tmp/clap setup --requirements=/tmp/clap-requirements.txt
 
-echo "Installing nose.."
-pip install -q nose
+echo "Installing pytest.."
+pip install -q pytest
 
 echo "# Installing pyaml==3.10.."
 pip install -q pyyaml==3.10 --upgrade

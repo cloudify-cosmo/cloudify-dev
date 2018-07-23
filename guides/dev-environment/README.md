@@ -190,14 +190,14 @@ cloudify-script-plugin (1.2a1, /home/elip/dev/src/cloudify-cosmo/cloudify-script
 cloudify-workflows (3.2a1)
 ```
 
-## Step 6: Installing nose, testtools, and mock
+## Step 6: Installing pytest, testtools, and mock
 
 These packages are only test dependencies and are therefore not installed during the installation phase.
 That's ok, its just three packages, lets install them manually. <br><br>
-Like we mentioned, *nose* is the framework we use to run our tests:
+Like we mentioned, *pytest* is the framework we use to run our tests:
 
 ```
-~/dev/src/cloudify-cosmo$ pip install nose
+~/dev/src/cloudify-cosmo$ pip install pytest
 ```
 
 *mock* is a python mocking framework we also use:
@@ -217,7 +217,7 @@ And *testtools* is the base testing framework we use. It does not come packed wi
 Lets verify we are able to run unit tests. Just as a sanity check, lets run the *cloudify-dsl-parser* tests:
 
 ```bash
-~/dev/src/cloudify-cosmo$ nosetests cloudify-dsl-parser/dsl_parser/tests/
+~/dev/src/cloudify-cosmo$ pytest cloudify-dsl-parser/dsl_parser/tests/
 ......................................................................
 ----------------------------------------------------------------------
 Ran 430 tests in 12.618s
@@ -272,25 +272,25 @@ Your Intellij project should now look like this: <br>
 ![Imported Modules](images/imported_modules.png)
 
 We want to be able to run tests directly from intellij, and not having to execute a command line. To do so properly, we need to configure the default test runner intellij will use.
-Like we mentioned (twice), we use *nose* to run tests, intellij actually has built-in support for it, we just have to tell it that's what we want.
+Like we mentioned (twice), we use *pytest* to run tests, intellij actually has built-in support for it, we just have to tell it that's what we want.
 The annoying part though, is that we have to do it for every **module** separately. For example, lets to this for the *cloudify-cli* **module**. <br>
 
-Go to File --> Settings and search for *Python Integrated Tools* and select Nosetests as the Default test runner.
+Go to File --> Settings and search for *Python Integrated Tools* and select pytest as the Default test runner.
 
-![Nose Runner](images/nose_runner.png)
+![Pytest Runner](images/pytest_runner.png)
 
 Do this for all modules and apply the change. <br>
 Now lets make sure this worked, to do that we will try to run some unit tests from the *cloudify-cli* **module**. <br>
 Traverse that **module** as following: cloudify-cli-->cloudify_cli-->tests-->commands, now right click the *test_blueprints.py* file.
-Notice it should should give you the option to run tests in this file using *Nosetests*
+Notice it should should give you the option to run tests in this file using *pytest*
 
-If you don't see the option to run the test using *Nosetests*, try restarting IntelliJ.
+If you don't see the option to run the test using *pytest*, try restarting IntelliJ.
 
 ![Test Blueprints](images/test_blueprints.png)
 
 The execution will be very quick, if you see something like this, you're done! :)
 
-![Success Nose](images/success_nose.png)
+![Success pytest](images/success_pytest.png)
 
 # Maintain
 
