@@ -252,7 +252,41 @@ For example:
 }
 ```
 
+### Saving the Cloudify Manager's logs
+Run
 
+```
+# Sets the path for the logs to be saved at, on the machine where the
+# itests-runner is run.
+export CFY_LOGS_PATH_LOCAL=YOUR_LOCAL_PATH
+# Sets the path for the logs to be saved at, on the containers where the 
+# actual tests are run.
+export CFY_LOGS_PATH_REMOTE=YOUR_REMOTE_PATH
+``` 
+
+to save the logs to the local path you set.
+For example you may want to run this before running the tests:
+ ```
+export CFY_LOGS_PATH_LOCAL=~/cloudify_logs/
+export CFY_LOGS_PATH_REMOTE=/tmp/cfy_test_logs/
+export SKIP_LOGS_EXTRACTION=True
+export SKIP_LOG_SAVE_ON_SUCCESS=True
+``` 
+
+You may want to run 
+
+```
+export SKIP_LOGS_EXTRACTION=True
+``` 
+
+to not remove the log `tar.gz` files, for a more convenient 
+way to organize the logs locally; and also 
+
+```
+export SKIP_LOG_SAVE_ON_SUCCESS=True
+``` 
+
+to skip saving the logs for successful tests.
 ## Implementation
 
 The framework is implemented using a bunch of Python and Bash scripts executed locally and remotely using `Terraform`.

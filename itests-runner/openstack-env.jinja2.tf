@@ -159,10 +159,18 @@ resource "openstack_compute_instance_v2" "server{{ loop.index0 }}" {
     destination = "/tmp/weights.json"
   }
 
-
   provisioner "remote-exec" {
     inline = [
       "source venv/bin/activate",
+{% if 'CFY_LOGS_PATH_REMOTE' in env %}
+      "export CFY_LOGS_PATH_REMOTE={{ env['CFY_LOGS_PATH_REMOTE'] }}",
+{% if 'SKIP_LOGS_EXTRACTION' in env %}
+      "export SKIP_LOGS_EXTRACTION={{ env['SKIP_LOGS_EXTRACTION'] }}",
+{% endif %}
+{% if 'SKIP_LOG_SAVE_ON_SUCCESS' in env %}
+      "export SKIP_LOG_SAVE_ON_SUCCESS={{ env['SKIP_LOG_SAVE_ON_SUCCESS'] }}",
+{% endif %}
+{% endif %}
       "python /tmp/run-tests.py --repos ~/dev/repos --group-number {{ loop.index }} --number-of-groups {{ servers|length }} --pattern ${var.tests_pattern} --weights-file /tmp/weights.json --config-file /tmp/config.json"
     ]
     on_failure = "continue"
@@ -175,6 +183,14 @@ resource "openstack_compute_instance_v2" "server{{ loop.index0 }}" {
       "sleep 3"
     ]
   }
+{% if 'CFY_LOGS_PATH_REMOTE' in env and 'CFY_LOGS_PATH_LOCAL' in env %}
+  provisioner "local-exec" {
+    command = "mkdir -p {{ env['CFY_LOGS_PATH_LOCAL'] }}/{{ loop.index }}/"
+  }
+  provisioner "local-exec" {
+    command = "scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -pr -i ${var.private_key_path} centos@${openstack_networking_floatingip_v2.floatingip{{ loop.index0 }}.address}:{{ env['CFY_LOGS_PATH_REMOTE'] }}/. {{ env['CFY_LOGS_PATH_LOCAL'] }}/{{ loop.index }}/. 2>/dev/null || echo 'Could not copy log files/No log files exist'"
+  }
+{% endif %}
 
   provisioner "local-exec" {
     command = "curl -O http://${openstack_networking_floatingip_v2.floatingip{{ loop.index0 }}.address}:8080/report-{{ loop.index }}.tar.gz"

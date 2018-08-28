@@ -74,10 +74,11 @@ def deploy(number_of_servers, pattern, keep_servers):
         terraform_template_content = f.read()
 
     rendered_template = jinja2.Template(terraform_template_content).render({
-        'servers': range(number_of_servers)
+        'servers': range(number_of_servers),
+        'env': os.environ
     })
 
-    
+
     output_file = WORK_DIR / TERRAFORM_OUTPUT_FILE    
     with open(output_file, 'w') as f:
         f.write(rendered_template)
