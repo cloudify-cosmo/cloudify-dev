@@ -88,7 +88,12 @@ echo "# Installing pyaml==3.10.."
 pip install -q pyyaml==3.10 --upgrade
 
 echo "# Initializing docl.."
-docl init --docker-host 172.20.0.1 --source-root=$HOME/dev/repos --ssh-key-path=$HOME/.ssh/id_rsa
+if ! [ -z ${DOCL_DEV_IMG_URL} ]
+then
+    _MANAGER_IMAGE_URL_PARAM="--manager-image-url ${DOCL_DEV_IMG_URL}"
+fi
+
+docl init --docker-host 172.20.0.1 --source-root=$HOME/dev/repos --ssh-key-path=$HOME/.ssh/id_rsa ${_MANAGER_IMAGE_URL_PARAM}
 
 # If this file wasn't touched, we need to download the image from S3
 if [ ! -f /tmp/docl-image-downloaded ]; then

@@ -123,7 +123,15 @@ The framework generates an HTML file containing an aggregation of all xunit test
 
 In order to view the report, open the `work/report.html` file using your favourite browser.
 
+### Testing with a specific `docl` image
+If you've built your own `docl` image, run the following before running the tests:
+```bash
+export DOCL_DEV_IMG_URL=<URL>
+``` 
 
+This will make sure that when the `docl` image is download, it'll download the specified one instead of the default.
+
+_Note: the docker image tag will be `cloudify/centos-manager:7`._
 ## Simulate
 
 In order to decide how many servers to use for running the tests, it is possible to simulate and estimate how long it will take to run the tests per `number of servers`.

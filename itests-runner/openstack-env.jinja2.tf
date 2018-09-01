@@ -142,6 +142,9 @@ resource "openstack_compute_instance_v2" "server{{ loop.index0 }}" {
 
   provisioner "remote-exec" {
     inline = [
+{% if 'DOCL_DEV_IMG_URL' in env %}
+        "export DOCL_DEV_IMG_URL={{ env['DOCL_DEV_IMG_URL'] }}",
+{% endif %}
       "chmod +x /tmp/prepare-env.sh",
       "chmod +x /tmp/create-docker-images.sh",
       "chmod +x /tmp/create-clap-requirements.py",
