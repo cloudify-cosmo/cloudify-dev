@@ -30,34 +30,46 @@ MANAGER_DIR=/opt/manager/env/lib/python2.7/site-packages
 AGENTS_DIR=/opt/manager/resources/packages/agents
 AGENT_DIR=${AGENTS_DIR}/cloudify/env/lib/python2.7/site-packages
 
-echo "Chowning folders"
+function print_line() {
+
+  LINE=$1
+
+  echo
+  echo '======================================================================'
+  echo $LINE
+  echo '======================================================================'
+  echo
+}
+
+
+print_line "Chowning folders"
 ssh ${USER}@${IP} -i ${KEY} 'sudo chown -R ${USER}:${USER} /opt/mgmtworker/env/lib/python2.7/site-packages'
 ssh ${USER}@${IP} -i ${KEY} 'sudo chown -R ${USER}:${USER} /opt/manager/env/lib/python2.7/site-packages'
 ssh ${USER}@${IP} -i ${KEY} 'sudo chown -R ${USER}:${USER} /opt/manager/resources/cloudify'
 ssh ${USER}@${IP} -i ${KEY} 'sudo chown -R ${USER}:${USER} /opt/manager/resources/spec'
 
-echo "Syncing mgmtworker packages"
+print_line "Syncing mgmtworker packages"
 rsync -avz ${REPOS_DIR}/cloudify-common/cloudify ${USER}@${IP}:${MGMTWORKER_DIR} --exclude '*.pyc' --exclude 'test*' -e "ssh -i ${KEY}"
 rsync -avz ${REPOS_DIR}/cloudify-agent/cloudify_agent ${USER}@${IP}:${MGMTWORKER_DIR} --exclude '*.pyc' --exclude 'test*' -e "ssh -i ${KEY}"
 rsync -avz ${REPOS_DIR}/cloudify-common/cloudify_rest_client ${USER}@${IP}:${MGMTWORKER_DIR} --exclude '*.pyc' -e "ssh -i ${KEY}"
 rsync -avz ${REPOS_DIR}/cloudify-manager/workflows/cloudify_system_workflows ${USER}@${IP}:${MGMTWORKER_DIR} --exclude '*.pyc' -e "ssh -i ${KEY}"
 
-echo "Syncing manager packages"
+print_line "Syncing manager packages"
 rsync -avz ${REPOS_DIR}/cloudify-agent/cloudify_agent ${USER}@${IP}:${MANAGER_DIR} --exclude '*.pyc' --exclude 'test*' -e "ssh -i ${KEY}"
 rsync -avz ${REPOS_DIR}/cloudify-common/cloudify_rest_client ${USER}@${IP}:${MANAGER_DIR} --exclude '*.pyc' -e "ssh -i ${KEY}"
 rsync -avz ${REPOS_DIR}/cloudify-premium/cloudify_premium ${USER}@${IP}:${MANAGER_DIR} --exclude '*.pyc' -e "ssh -i ${KEY}"
 rsync -avz ${REPOS_DIR}/cloudify-manager/rest-service/manager_rest ${USER}@${IP}:${MANAGER_DIR} --exclude '*.pyc' --exclude 'test*' -e "ssh -i ${KEY}"
 rsync -avz ${REPOS_DIR}/cloudify-common/dsl_parser ${USER}@${IP}:${MANAGER_DIR} --exclude '*.pyc' --exclude 'test*' -e "ssh -i ${KEY}"
 
-echo "Syncing resources folder"
+print_line "Syncing resources folder"
 rsync -avz ${REPOS_DIR}/cloudify-manager/resources/rest-service/cloudify ${USER}@${IP}:/opt/manager/resources --exclude '*.pyc' -e "ssh -i ${KEY}"
 rsync -avz ${REPOS_DIR}/cloudify-manager/resources/rest-service/cloudify/types/types.yaml ${USER}@${IP}:/opt/manager/resources/spec/cloudify/*/ -e "ssh -i ${KEY}"
 
-echo "Restarting services"
+print_line "Restarting services"
 ssh ${USER}@${IP} -i ${KEY} 'sudo systemctl restart cloudify-mgmtworker'
 ssh ${USER}@${IP} -i ${KEY} 'sudo systemctl restart cloudify-restservice'
 
-echo "Repackaging the agent package"
+print_line "Repackaging the agent package"
 ssh ${USER}@${IP} -i ${KEY} 'cd /opt/manager/resources/packages/agents; sudo tar -xf centos-core-agent.tar.gz'
 ssh ${USER}@${IP} -i ${KEY} 'sudo chown -R ${USER}:${USER} /opt/manager/resources/packages/agents/cloudify'
 
