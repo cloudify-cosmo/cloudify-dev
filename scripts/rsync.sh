@@ -82,3 +82,6 @@ rsync -avz ${REPOS_DIR}/cloudify-diamond-plugin/cloudify_handler ${USER}@${IP}:$
 ssh ${USER}@${IP} -i ${KEY} 'sudo chown -R cfyuser:cfyuser /opt/manager/resources/packages/agents/cloudify'
 ssh ${USER}@${IP} -i ${KEY} 'cd /opt/manager/resources/packages/agents; sudo tar -czf centos-core-agent.tar.gz cloudify'
 ssh ${USER}@${IP} -i ${KEY} 'sudo chown cfyuser:cfyuser /opt/manager/resources/packages/agents/centos-core-agent.tar.gz'
+
+print_line "Syncing cfy_manager package"
+rsync -avz ${REPOS_DIR}/cloudify-manager-install/cfy_manager ${USER}@${IP}:/home/${USER}/.pex/install/cloudify_manager_install*/cloudify_manager_install*/ -e "ssh -i ${KEY}"
