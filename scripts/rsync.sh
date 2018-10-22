@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 ########
 # Copyright (c) 2013 GigaSpaces Technologies Ltd. All rights reserved
 #
