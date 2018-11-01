@@ -90,10 +90,12 @@ class Logger(object):
         print '{s:{c}^{n}}'.format(s=header, n=40, c='-')
 
     def log_multiline(self, repo, output):
+        first_line = True
         for line in output.split('\n'):
             if line:
                 line = Fore.YELLOW + line
-                self.log(repo, line)
+                self.log(repo if first_line else '', line)
+                first_line = False
 
     def log_status(self, line, repo):
         if not line:
@@ -285,8 +287,8 @@ def pull():
         git = Git(repo)
         try:
             output = git.pull()
-        except sh.ErrorReturnCode:
-            output = 'No upstream defined. Skipping pull.'
+        except sh.ErrorReturnCode as ex:
+            output = 'Pull failed: {}'.format(str(ex))
         logger.log_multiline(repo, output)
 
     logger.header('Pull')
