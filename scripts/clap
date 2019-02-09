@@ -2,11 +2,13 @@
 
 import os
 import sh
-import argh
 from time import time
-from colorama import Fore
 from threading import Thread
 from collections import OrderedDict
+
+import argh
+from colorama import Fore
+
 
 CORE_REPOS = [
     'cloudify-common',
@@ -15,7 +17,6 @@ CORE_REPOS = [
     'cloudify-manager',
     'cloudify-premium',
     'cloudify-cli',
-    'cloudify-amqp-influxdb',
     'docl'
 ]
 DEV_REPOS = [
@@ -256,8 +257,7 @@ class Repos(object):
             packages['cloudify-rest-service'] = 'cloudify-manager/rest-service'
             packages['cloudify-integration-tests'] = 'cloudify-manager/tests'
             packages['cloudify-system-workflows'] = 'cloudify-manager/workflows'  # NOQA
-            packages['cloudify-cloudify-riemann-controller-plugin'] = \
-                'cloudify-manager/plugins/riemann-controller'
+
         return packages.iteritems()
 
 
