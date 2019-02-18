@@ -26,6 +26,6 @@
     ],
     "test_server": {
         "image": "integration-tests-image-2",
-        "flavor": "m1.large"
+        "flavor": "MSOS008_3"
     }
 }

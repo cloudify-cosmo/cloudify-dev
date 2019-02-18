@@ -25,7 +25,7 @@ output "public_ip_address_{{ loop.index0 }}" { value = "${openstack_networking_f
 
 resource "openstack_networking_router_v2" "router" {
   name = "router-${var.resource_suffix}"
-  external_gateway = "dda079ce-12cf-4309-879a-8e67aec94de4"
+  external_gateway = "2579fb53-4710-4706-ba46-c016f6c837c5"
 }
 
 resource "openstack_networking_network_v2" "network" {
