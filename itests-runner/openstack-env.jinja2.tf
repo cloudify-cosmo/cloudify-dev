@@ -88,7 +88,7 @@ resource "openstack_compute_keypair_v2" "keypair" {
 {% for server in servers %}
 
 resource "openstack_networking_floatingip_v2" "floatingip{{ loop.index0 }}" {
-  pool = "GATEWAY_NET"
+  pool = "ext-net"
 }
 
 # resource "openstack_compute_floatingip_associate_v2" "fip_associate{{ loop.index0 }}" {
