@@ -1,12 +1,10 @@
 {
     "repositories": {
         "cloudify-common": "master",
-        "cloudify-diamond-plugin": "master",
         "cloudify-agent": "master",
         "cloudify-cli": "master",
         "cloudify-manager": "master",
         "cloudify-manager-blueprints": "master",
-        "cloudify-amqp-influxdb": "master",
         "cloudify-premium": "master",
         "docl": "master"
     },
