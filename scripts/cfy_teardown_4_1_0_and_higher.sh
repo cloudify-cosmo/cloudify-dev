@@ -208,15 +208,15 @@ rm -rf /var/log/rabbitmq
 userdel --force rabbitmq
 groupdel rabbitmq
 
-print_line 'Removing component:  consul'
-systemctl stop cloudify-consul
-systemctl disable cloudify-consul
-rm -rf /usr/lib/systemd/system/cloudify-consul.service
-rm -rf /etc/sysconfig/cloudify-consul
-rm -rf /opt/consul_NOTICE.txt
-rm -rf /etc/logrotate.d/consul
-rm -rf /opt/consul
-rm -rf /etc/consul.d
+#print_line 'Removing component:  consul'
+#systemctl stop cloudify-consul
+#systemctl disable cloudify-consul
+#rm -rf /usr/lib/systemd/system/cloudify-consul.service
+#rm -rf /etc/sysconfig/cloudify-consul
+#rm -rf /opt/consul_NOTICE.txt
+#rm -rf /etc/logrotate.d/consul
+#rm -rf /opt/consul
+#rm -rf /etc/consul.d
 
 print_line 'Removing cloudify directories...'
 rm -rf /opt/cloudify

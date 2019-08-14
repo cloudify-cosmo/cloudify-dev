@@ -15,8 +15,7 @@ import shutil
 import subprocess
 
 config = {
-    'services': ['check-runner', 'consul-watcher', 'consul-recovery-watcher',
-                 'handler-runner', 'iptables-restore'],
+    'services': ['check-runner', 'handler-runner', 'iptables-restore'],
     'postgresql': {
         'data_dir': '/var/pgdata'
     },
@@ -24,10 +23,10 @@ config = {
         'user': 'cfyuser_syncthing',
         'group': 'syncthing'
     },
-    'consul': {
-        'user': 'cfyuser_consul',
-        'group': 'cfyuser_consul'
-    },
+    # 'consul': {
+    #     'user': 'cfyuser_consul',
+    #     'group': 'cfyuser_consul'
+    # },
     'group': 'cluster'
 }
 
@@ -67,14 +66,14 @@ def _delete_database(config):
         pass
 
 
-def _delete_consul(config):
-    for unit in config['services']:
-        _stop_systemd_unit('cloudify-{0}'.format(unit))
-    _userdel(config['consul']['user'])
-    _groupdel(config['consul']['group'])
-
-    # also remove the cluster group here
-    _groupdel(config['group'])
+# def _delete_consul(config):
+#     for unit in config['services']:
+#         _stop_systemd_unit('cloudify-{0}'.format(unit))
+#     _userdel(config['consul']['user'])
+#     _groupdel(config['consul']['group'])
+#
+#     # also remove the cluster group here
+#     _groupdel(config['group'])
 
 
 def _delete_syncthing(config):
@@ -84,4 +83,4 @@ def _delete_syncthing(config):
 
 _delete_syncthing(config)
 _delete_database(config)
-_delete_consul(config)
+# _delete_consul(config)
