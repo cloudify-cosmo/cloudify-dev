@@ -15,7 +15,6 @@ import shutil
 import subprocess
 
 config = {
-    'services': ['check-runner', 'handler-runner', 'iptables-restore'],
     'postgresql': {
         'data_dir': '/var/pgdata'
     },
