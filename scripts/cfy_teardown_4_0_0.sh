@@ -191,20 +191,6 @@ rm -rf /var/log/cloudify/postgresql
 userdel --force postgres
 groupdel postgres
 
-print_line 'Removing component:  consul'
-systemctl stop cloudify-consul
-systemctl disable cloudify-consul
-systemctl stop cloudify-consul-watcher
-systemctl disable cloudify-consul-watcher
-systemctl stop cloudify-consul-recovery-watcher
-systemctl disable cloudify-consul-recovery-watcher
-rm -rf /usr/lib/systemd/system/cloudify-consul.service
-rm -rf /etc/sysconfig/cloudify-consul
-rm -rf /opt/consul_NOTICE.txt
-rm -rf /etc/logrotate.d/consul
-rm -rf /opt/consul
-rm -rf /etc/consul.d
-
 print_line 'Removing cloudify directories...'
 rm -rf /opt/cloudify
 rm -rf /etc/cloudify
