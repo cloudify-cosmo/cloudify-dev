@@ -1,0 +1,26 @@
+postgresql_server:
+  cert_path:
+  key_path:
+  ca_path:
+
+  ssl_client_verification: true
+  ssl_only_connections: true
+
+  postgres_password: 'somesecretvalue123!'
+  cluster:
+    nodes: []
+
+    etcd:
+      cluster_token: 'somesecretvalue123!'
+      root_password: 'somesecretvalue123!'
+      patroni_password: 'somesecretvalue123!'
+    patroni:
+      rest_password: 'somesecretvalue123!'
+    postgres:
+      replicator_password: 'somesecretvalue123!'
+
+validations:
+  minimum_required_total_physical_memory_in_mb: 1024
+
+services_to_install:
+  - database_service

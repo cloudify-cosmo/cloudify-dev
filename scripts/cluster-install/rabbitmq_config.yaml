@@ -1,0 +1,25 @@
+rabbitmq:
+  username:
+  password:
+
+  cluster_members:
+    <first rabbitmq instance-name>:
+      default: <first rabbitmq private-ip>
+    <second rabbitmq instance-name>:
+      default: <second rabbitmq private-ip>
+    <third rabbitmq instance-name>:
+      default: <third rabbitmq private-ip>
+
+  cert_path:
+  key_path:
+  ca_path:
+
+  nodename: '<current rabbitmq instance-name>'
+
+  erlang_cookie: 'securesharedtoken'
+
+validations:
+  minimum_required_total_physical_memory_in_mb: 1024
+
+services_to_install:
+  - queue_service
