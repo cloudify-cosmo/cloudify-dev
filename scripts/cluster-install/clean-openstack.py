@@ -9,7 +9,7 @@ def _parse_command():
     parser = argparse.ArgumentParser(description='Cleaning the OpenStack '
                                                  'environment')
     parser.add_argument('--config-path', action='store', type=str,
-                        required=True, help='The config.yaml file path')
+                        required=True, help='The config_env.yaml file path')
     parser.add_argument('--environment-ids-path', action='store', required=True,
                         type=str, help='The environment_ids.yaml file path. '
                                        'These servers and security group '

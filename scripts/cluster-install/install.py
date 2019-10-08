@@ -322,7 +322,7 @@ def _parse_command():
     parser = argparse.ArgumentParser(description='Installing an Active-Active '
                                                  'manager cluster')
     parser.add_argument('--config-path', action='store', type=str,
-                        required=True, help='The config.yaml file path')
+                        required=True, help='The config_env.yaml file path')
     parser.add_argument('--clean-on-failure', dest='clean',
                         action='store_true', default=False,
                         help='Pass this flag if you want to clean your '
