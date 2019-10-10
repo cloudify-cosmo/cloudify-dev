@@ -1,16 +1,16 @@
-auth_url:
-username:
-password:
-region_name:
-tenant_name:
+auth_url:  #from the RC file
+username:  #from the RC file
+password:  #your password for Openstack
+region_name:  #from the RC file
+tenant_name:  #from the RC file
 image_id: 70de1e0f-2951-4eae-9a8f-05afd97cd036 #centos-7 image_id
 machine_username: centos
 flavor_id: 2 #m1.small
 gateway_net_id: dda079ce-12cf-4309-879a-8e67aec94de4
-network_id:
-key_name:
-key_file_path:
+network_id:  #the network id you created on Openstack
+key_name:  #the name of the key you created on Openstack
+key_file_path:  #your private key local path, should match the key that you created on Openstack
 using_load_balancer: true
 manager_rpm_download_link: http://repository.cloudifysource.org/cloudify/5.0.5/m1-release/cloudify-manager-install-5.0.5m1.rpm
 manager_rpm_name: cloudify-manager-install-5.0.5m1.rpm
-cloudify_license_path:
+cloudify_license_path:  #local path to a valid Cloudify license

@@ -136,4 +136,5 @@ def create_openstack_vms(config, logging, clean_openstack_env):
     except Exception:
         handle_failure(connection, environment_ids_dict, clean_openstack_env,
                        logging)
+        exit(0)
     return instances, connection, environment_ids_dict
