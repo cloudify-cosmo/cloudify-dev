@@ -11,9 +11,10 @@ def _parse_command():
     parser.add_argument('--config-path', action='store', type=str,
                         required=True, help='The config_env.yaml file path')
     parser.add_argument('--environment-ids-path', action='store', required=True,
-                        type=str, help='The environment_ids.yaml file path. '
-                                       'These servers and security group '
-                                       'will be deleted')
+                        type=str, default='environment_ids.yaml',
+                        help='The environment_ids.yaml file path. '
+                             'These servers and security group will be deleted.'
+                             ' default=environment_ids.yaml')
     return parser.parse_args().config_path, \
            parser.parse_args().environment_ids_path
 
