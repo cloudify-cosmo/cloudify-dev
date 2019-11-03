@@ -114,13 +114,20 @@ def create_connection(config):
     return openstack.connect(**client_config)
 
 
-def create_openstack_vms(config, logging, clean_openstack_env):
-    logging.info('Creating VMs on Openstack')
-    instances_names = ['factory', 'postgresql_1', 'postgresql_2',
-                       'postgresql_3', 'rabbitmq_1', 'rabbitmq_2',
-                       'rabbitmq_3', 'manager_1', 'manager_2', 'manager_3']
+def _create_instances_names_list(config):
+    instances_names = ['factory']
+    instances_count = config['number_of_instances']
+    for instance, instances_number in instances_count.iteritems():
+        for i in range(instances_number):
+            instances_names.append('{0}_{1}'.format(instance, i+1))
     if config['using_load_balancer']:
         instances_names.append('load_balancer')
+    return instances_names
+
+
+def create_openstack_vms(config, logging, clean_openstack_env):
+    logging.info('Creating VMs on Openstack')
+    instances_names = _create_instances_names_list(config)
     instances = {}
     environment_ids_dict = {}
     connection = create_connection(config)
