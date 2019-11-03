@@ -216,6 +216,8 @@ def _prepare_manager_config_files(instances_dict, rabbitmq_credentials):
         config_file['rabbitmq']['ca_path'] = ca_path
         config_file['postgresql_server']['cluster']['nodes'] = postgresql_nodes
         config_file['postgresql_server']['ca_path'] = ca_path
+        config_file['agent']['networks']['default'] = \
+            instances_dict['load_balancer'][0].private_ip
         config_file['ssl_inputs'] = _create_ssl_inputs(node.name)
         suffix = '/config_files/{}_config.yaml'.format(node.name)
         conf_file_name = LOCAL_INSTALL_CLUSTER + suffix

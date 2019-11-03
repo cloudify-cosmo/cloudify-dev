@@ -1,0 +1,6 @@
+{factory: 5b69f1de-1591-414d-85e7-ca30d18ed4f2, load_balancer: a7bff24c-f9d6-40d4-8b9f-46a00f690065,
+  manager_1: 8860b3d6-2118-44a2-a4f4-21fb2295b656, manager_2: 085a633e-86f5-4163-9899-f1547d6bfdcc,
+  manager_3: d817af0a-ca4d-40cc-8143-740ef128560c, postgresql_1: 70f07ecf-e4ae-493f-ae46-b39d9d7df8df,
+  postgresql_2: d2e26726-ea8f-4dcc-8aaa-928d1d51149b, postgresql_3: 7c1bead9-83a4-4ace-836c-541cac8701dc,
+  rabbitmq_1: d8bc894e-8d16-4d79-81b1-82a993a83762, rabbitmq_2: d1c5f698-30e7-4bad-bc50-d36de2d62b98,
+  rabbitmq_3: 317bb4c9-4f12-47db-af5c-537fe4f21af3, sec_group: c53f78b7-7f5e-404c-b15f-8f3d4ea959d1}

@@ -35,6 +35,10 @@ postgresql_client:
 validations:
   minimum_required_total_physical_memory_in_mb: 1024
 
+agent:
+  networks:
+    default: <load_balancer private-ip>
+
 ssl_inputs:
   ca_cert_path:
   internal_cert_path:

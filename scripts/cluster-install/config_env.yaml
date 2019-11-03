@@ -11,6 +11,6 @@ network_id:  #the network id you created on Openstack
 key_name:  #the name of the key you created on Openstack
 key_file_path:  #your private key local path, should match the key that you created on Openstack
 using_load_balancer: true
-manager_rpm_download_link: http://repository.cloudifysource.org/cloudify/5.0.5/m1-release/cloudify-manager-install-5.0.5m1.rpm
-manager_rpm_name: cloudify-manager-install-5.0.5m1.rpm
+manager_rpm_download_link: http://cloudify-release-eu.s3.amazonaws.com/cloudify/5.0.5/.dev1-release/cloudify-manager-install-5.0.5-.dev1.x86_64.rpm
+manager_rpm_name: cloudify-manager-install-5.0.5-.dev1.x86_64.rpm
 cloudify_license_path:  #local path to a valid Cloudify license
