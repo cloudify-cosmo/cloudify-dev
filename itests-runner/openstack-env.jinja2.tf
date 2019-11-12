@@ -174,6 +174,9 @@ resource "openstack_compute_instance_v2" "server{{ loop.index0 }}" {
       "export SKIP_LOG_SAVE_ON_SUCCESS={{ env['SKIP_LOG_SAVE_ON_SUCCESS'] }}",
 {% endif %}
 {% endif %}
+{% if 'LDAP_SERVER_IP' in env %}
+      "export LDAP_SERVER_IP={{ env['LDAP_SERVER_IP'] }}",
+{% endif %}
       "python /tmp/run-tests.py --repos ~/dev/repos --group-number {{ loop.index }} --number-of-groups {{ servers|length }} --pattern ${var.tests_pattern} --weights-file /tmp/weights.json --config-file /tmp/config.json"
     ]
     on_failure = "continue"
