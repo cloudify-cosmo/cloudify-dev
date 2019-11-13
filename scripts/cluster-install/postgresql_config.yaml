@@ -8,7 +8,16 @@ postgresql_server:
 
   postgres_password: 'somesecretvalue123!'
   cluster:
-    nodes: []
+    nodes:
+      <first postgresql instance-name>:
+        ip:
+        node_id:
+      <second postgresql instance-name>:
+        ip:
+        node_id:
+      <third postgresql instance-name>:
+        ip:
+        node_id:
 
     etcd:
       cluster_token: 'somesecretvalue123!'

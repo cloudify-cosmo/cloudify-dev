@@ -53,7 +53,7 @@ def _get_private_ip(connection, server_id):
     while tmp_server.private_v4 == '':
         tmp_server = connection.get_server(server_id, detailed=True)
         end_time = time.time()
-        if (end_time-start_time) > 20 and tmp_server.private_v4 == '':
+        if (end_time-start_time) > 40 and tmp_server.private_v4 == '':
             raise Exception('Could not get the private ip of the server: {}'
                             .format(server_id))  # Timeout
     return tmp_server.private_v4
@@ -118,6 +118,8 @@ def _create_instances_names_list(config):
     instances_names = ['factory']
     instances_count = config['number_of_instances']
     for instance, instances_number in instances_count.iteritems():
+        # if instance == 'postgresql' and instances_number < 2:
+        #     raise Exception('PostgreSQL cluster must be more than 2 instances')
         for i in range(instances_number):
             instances_names.append('{0}_{1}'.format(instance, i+1))
     if config['using_load_balancer']:

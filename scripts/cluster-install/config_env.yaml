@@ -3,7 +3,7 @@ username:  #from the RC file
 password:  #your password for Openstack
 region_name:  #from the RC file
 tenant_name:  #from the RC file
-image_id: 70de1e0f-2951-4eae-9a8f-05afd97cd036 #centos-7 image_id
+image_id: a1a8b205-cadd-4907-aab4-05bc33e728af #centos-7.6 image_id
 machine_username: centos
 flavor_id: 2 #m1.small
 gateway_net_id: dda079ce-12cf-4309-879a-8e67aec94de4

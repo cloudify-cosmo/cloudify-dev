@@ -10,11 +10,17 @@ rabbitmq:
   ca_path:
   cluster_members:
     <first rabbitmq instance-name>:
-      default: <first rabbitmq private-ip>
+      node_id:
+      networks:
+        default: <first rabbitmq private-ip>
     <second rabbitmq instance-name>:
-      default: <second rabbitmq private-ip>
+      node_id:
+      networks:
+        default: <first rabbitmq private-ip>
     <third rabbitmq instance-name>:
-      default: <third rabbitmq private-ip>
+      node_id:
+      networks:
+        default: <first rabbitmq private-ip>
 
 postgresql_server:
   ssl_enabled: true
@@ -23,9 +29,15 @@ postgresql_server:
   postgres_password: 'somesecretvalue123!'
   cluster:
     nodes:
-      - <first db private-ip>
-      - <second db private-ip>
-      - <third db private-ip>
+      <first postgresql instance-name>:
+        ip:
+        node_id:
+      <second postgresql instance-name>:
+        ip:
+        node_id:
+      <third postgresql instance-name>:
+        ip:
+        node_id:
 
 postgresql_client:
   ssl_enabled: true

@@ -69,6 +69,19 @@ class VM(object):
     def exec_command(self, command):
         return _blocking_exec_command(self.client, command)
 
+    def _is_cluster_instance(self):
+        cluster_instances = ['postgresql', 'rabbitmq', 'manager']
+        for instance in cluster_instances:
+            if instance in self.name:
+                return True
+        return False
+
+    def get_node_id(self):
+        if not self._is_cluster_instance():
+            return
+        stdin, stdout, stderr = self.exec_command('cfy_manager node get-id')
+        return stdout.read()[16:52]
+
 
 def scp_local_to_remote(key_path, instance, source_path, destination_path):
     os.system('scp -i {key_path} -o StrictHostKeyChecking=no -r '
@@ -86,16 +99,16 @@ def scp_remote_to_local(key_path, instance, source_path, destination_path):
                      destination_path=destination_path))
 
 
-def extend_list_by_order(instances_list, cluster_instances):
-    cluster_instances.sort(key=lambda x: int(x.name.rsplit('_', 1)[1]))
-    instances_list.extend(cluster_instances)
+# def extend_list_by_order(instances_list, cluster_instances):
+#     cluster_instances.sort(key=lambda x: int(x.name.rsplit('_', 1)[1]))
+#     instances_list.extend(cluster_instances)
 
 
 def _create_instances_list(instances_dict, include_load_balancer=True):
     instances_list = []
-    extend_list_by_order(instances_list, instances_dict['postgresql'])
-    extend_list_by_order(instances_list, instances_dict['rabbitmq'])
-    extend_list_by_order(instances_list, instances_dict['manager'])
+    instances = ['postgresql', 'rabbitmq', 'manager']
+    for instance in instances:
+        instances_list.extend(instances_dict[instance])
     if include_load_balancer and 'load_balancer' in instances_dict:
         instances_list.extend(instances_dict['load_balancer'])
     return instances_list
@@ -118,7 +131,7 @@ def _copy_certificates_to_local_directory(factory, key_path):
     os.rmdir(os.path.join(LOCAL_INSTALL_CLUSTER_CERTS, '.cloudify-test-ca'))
 
 
-def _generate_certificates(instances_dict, key_path, download_link, rpm_name):
+def _generate_certs(instances_dict, key_path, download_link, rpm_name):
     logging.info('Generating certificates')
     factory = instances_dict['factory'][0]
     factory.exec_command('curl -O {0}'.format(download_link))
@@ -142,15 +155,25 @@ def _write_crt_to_config(config_file, node_name, config_section):
     return conf_file_name
 
 
+def _get_postgresql_cluster_members(postgresql_instances, include_node_id):
+    postgresql_cluster = {
+        postgresql_instances[j].name: {'ip': postgresql_instances[j].private_ip}
+        for j in range(len(postgresql_instances))}
+    if include_node_id:
+        for j in range(len(postgresql_instances)):
+            postgresql_cluster[postgresql_instances[j].name]['node_id'] = \
+                postgresql_instances[j].get_node_id()
+    return postgresql_cluster
+
+
 def _prepare_postgresql_config_files(instances_dict):
-    cluster_nodes = [instances_dict['postgresql'][j].private_ip for
-                     j in range(3)]
     for node in instances_dict['postgresql']:
         with open('postgresql_config.yaml') as f:
             config_file = yaml.load(f, yaml.Loader)
         conf_file_name = _write_crt_to_config(config_file, node.name,
                                               'postgresql_server')
-        config_file['postgresql_server']['cluster']['nodes'] = cluster_nodes
+        config_file['postgresql_server']['cluster']['nodes'] = \
+            _get_postgresql_cluster_members(instances_dict['postgresql'], False)
         with open(conf_file_name, 'w') as f:
             yaml.dump(config_file, f)
 
@@ -160,10 +183,19 @@ def _rabbitmq_credential_generator():
                    _ in range(6))
 
 
+def _get_rabbitmq_cluster_members(rabbitmq_instances, include_node_id):
+    rabbitmq_cluster = {
+        rabbitmq_instances[j].name: {
+            'networks': {'default': rabbitmq_instances[j].private_ip}
+        }for j in range(len(rabbitmq_instances))}
+    if include_node_id:
+        for j in range(len(rabbitmq_instances)):
+            rabbitmq_cluster[rabbitmq_instances[j].name]['node_id'] = \
+                rabbitmq_instances[j].get_node_id()
+    return rabbitmq_cluster
+
+
 def _prepare_rabbitmq_config_files(instances_dict):
-    cluster_members = {instances_dict['rabbitmq'][j].name: {
-        'default': instances_dict['rabbitmq'][j].private_ip}
-        for j in range(3)}
     first_rabbitmq = instances_dict['rabbitmq'][0]
     rabbitmq_username = _rabbitmq_credential_generator()
     rabbitmq_password = _rabbitmq_credential_generator()
@@ -172,7 +204,8 @@ def _prepare_rabbitmq_config_files(instances_dict):
             config_file = yaml.load(f, yaml.Loader)
         config_file['rabbitmq']['username'] = rabbitmq_username
         config_file['rabbitmq']['password'] = rabbitmq_password
-        config_file['rabbitmq']['cluster_members'] = cluster_members
+        config_file['rabbitmq']['cluster_members'] = \
+            _get_rabbitmq_cluster_members(instances_dict['rabbitmq'], False)
         conf_file_name = _write_crt_to_config(config_file, node.name,
                                               'rabbitmq')
         config_file['rabbitmq']['nodename'] = node.name
@@ -203,11 +236,6 @@ def _create_ssl_inputs(node_name):
 
 
 def _prepare_manager_config_files(instances_dict, rabbitmq_credentials):
-    postgresql_nodes = [instances_dict['postgresql'][j].private_ip for
-                        j in range(3)]
-    rabbitmq_members = {instances_dict['rabbitmq'][j].name: {
-        'default': instances_dict['rabbitmq'][j].private_ip}
-        for j in range(3)}
     ca_path = REMOTE_INSTALL_CLUSTER + '/certs/ca.pem'
     for node in instances_dict['manager']:
         with open('manager_config.yaml') as f:
@@ -215,11 +243,13 @@ def _prepare_manager_config_files(instances_dict, rabbitmq_credentials):
         config_file['manager']['hostname'] = node.name
         config_file['manager']['cloudify_license_path'] = \
             REMOTE_INSTALL_CLUSTER + '/license.yaml'
-        config_file['rabbitmq']['cluster_members'] = rabbitmq_members
+        config_file['rabbitmq']['cluster_members'] = \
+            _get_rabbitmq_cluster_members(instances_dict['rabbitmq'], True)
         config_file['rabbitmq']['username'] = rabbitmq_credentials[0]
         config_file['rabbitmq']['password'] = rabbitmq_credentials[1]
         config_file['rabbitmq']['ca_path'] = ca_path
-        config_file['postgresql_server']['cluster']['nodes'] = postgresql_nodes
+        config_file['postgresql_server']['cluster']['nodes'] = \
+            _get_postgresql_cluster_members(instances_dict['postgresql'], True)
         config_file['postgresql_server']['ca_path'] = ca_path
         if instances_dict['load_balancer']:
             config_file['agent']['networks']['default'] = \
@@ -231,12 +261,12 @@ def _prepare_manager_config_files(instances_dict, rabbitmq_credentials):
             yaml.dump(config_file, f)
 
 
-def _prepare_config_files(instances_dict):
+def _prepare_postgres_rabbit_config_files(instances_dict):
     logging.info('Preparing config files')
     os.mkdir(LOCAL_INSTALL_CLUSTER + '/config_files')
     _prepare_postgresql_config_files(instances_dict)
     rabbitmq_credentials = _prepare_rabbitmq_config_files(instances_dict)
-    _prepare_manager_config_files(instances_dict, rabbitmq_credentials)
+    return rabbitmq_credentials
 
 
 def _download_manager_and_create_license(license_path, download_link):
@@ -246,11 +276,8 @@ def _download_manager_and_create_license(license_path, download_link):
         license_path, os.path.join(LOCAL_INSTALL_CLUSTER, 'license.yaml')))
 
 
-def _install_instances(instances_dict, key_path, rpm_name):
-    logging.info('Installing instances')
-    instances_list = _create_instances_list(instances_dict,
-                                            include_load_balancer=False)
-    for instance in instances_list:
+def _install_cluster_instances(cluster_members, key_path, rpm_name):
+    for instance in cluster_members:
         logging.info('Installing {}'.format(instance.name))
         scp_local_to_remote(key_path, instance, LOCAL_INSTALL_CLUSTER,
                             REMOTE_PARENT_DIRECTORY)
@@ -264,6 +291,14 @@ def _install_instances(instances_dict, key_path, rpm_name):
         stdin, stdout, stderr = instance.exec_command(install_command)
         print(stdout.read())
         time.sleep(0.5)  # Avoiding running over the print by the next logging
+
+
+def _install_instances(instances_dict, key_path, rpm_name, rabbitmq_cred):
+    logging.info('Installing instances')
+    _install_cluster_instances(instances_dict['postgresql'], key_path, rpm_name)
+    _install_cluster_instances(instances_dict['rabbitmq'], key_path, rpm_name)
+    _prepare_manager_config_files(instances_dict, rabbitmq_cred)
+    _install_cluster_instances(instances_dict['manager'], key_path, rpm_name)
 
 
 def _get_vm(instances_details, instance, key_path, vm_username):
@@ -287,6 +322,9 @@ def _get_instances_dict(instances_details, key_path, vm_username):
                               vm_username)
         instance_group = _get_instance_group(instance_name)
         instances_dict[instance_group].append(instance_vm)
+    for _, instance_items in instances_dict.iteritems():
+        if len(instance_items) > 1:
+            instance_items.sort(key=lambda x: int(x.name.rsplit('_', 1)[1]))
     return instances_dict
 
 
@@ -386,17 +424,17 @@ def main():
         clients_list = [server.client for server in _create_instances_list(
             instances_dict, using_load_balancer)]
         connected_to_openstack = True
-        _generate_certificates(instances_dict, key_path, download_link,
-                               rpm_name)
+        _generate_certs(instances_dict, key_path, download_link, rpm_name)
         _delete_factory_vm_from_openstack_env(connection, environment_ids_dict)
-        _prepare_config_files(instances_dict)
-        _install_instances(instances_dict, key_path, rpm_name)
+        rabbitmq_cred = _prepare_postgres_rabbit_config_files(instances_dict)
+        _install_instances(instances_dict, key_path, rpm_name, rabbitmq_cred)
         if using_load_balancer:
             _install_load_balancer(instances_dict, key_path)
             _show_load_balancer_ip(instances_dict['load_balancer'][0].public_ip)
         _show_manager_ips(instances_dict['manager'])
         _close_clients_connection(clients_list)
         end_time = time.time()
+        time.sleep(0.5)
         _show_successful_installation_message(start_time, end_time)
     except Exception:
         if connected_to_openstack:

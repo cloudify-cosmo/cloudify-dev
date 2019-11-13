@@ -4,11 +4,17 @@ rabbitmq:
 
   cluster_members:
     <first rabbitmq instance-name>:
-      default: <first rabbitmq private-ip>
+      node_id:
+      networks:
+        default: <first rabbitmq private-ip>
     <second rabbitmq instance-name>:
-      default: <second rabbitmq private-ip>
+      node_id:
+      networks:
+        default: <first rabbitmq private-ip>
     <third rabbitmq instance-name>:
-      default: <third rabbitmq private-ip>
+      node_id:
+      networks:
+        default: <first rabbitmq private-ip>
 
   cert_path:
   key_path:
