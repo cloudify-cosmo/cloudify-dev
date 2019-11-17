@@ -3,18 +3,18 @@ username:  #from the RC file
 password:  #your password for Openstack
 region_name:  #from the RC file
 tenant_name:  #from the RC file
+network_id:  #the network id you created on Openstack
+key_name:  #the name of the key you created on Openstack
+key_file_path:  #your private key local path, should match the key that you created on Openstack
+cloudify_license_path:  #local path to a valid Cloudify license
 image_id: a1a8b205-cadd-4907-aab4-05bc33e728af #centos-7.6 image_id
 machine_username: centos
 flavor_id: 2 #m1.small
 gateway_net_id: dda079ce-12cf-4309-879a-8e67aec94de4
-network_id:  #the network id you created on Openstack
-key_name:  #the name of the key you created on Openstack
-key_file_path:  #your private key local path, should match the key that you created on Openstack
 using_load_balancer: true
 manager_rpm_download_link: http://cloudify-release-eu.s3.amazonaws.com/cloudify/5.0.5/.dev1-release/cloudify-manager-install-5.0.5-.dev1.x86_64.rpm
 manager_rpm_name: cloudify-manager-install-5.0.5-.dev1.x86_64.rpm
-cloudify_license_path:  #local path to a valid Cloudify license
 number_of_instances:
-  postgresql: 3
-  rabbitmq: 3
-  manager: 3
+  postgresql: 3 # must be greater than or equal to 2
+  rabbitmq: 3 # must be greater than or equal to 1
+  manager: 3 # must be greater than or equal to 1

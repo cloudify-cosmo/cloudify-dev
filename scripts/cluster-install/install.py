@@ -430,11 +430,11 @@ def main():
         _install_instances(instances_dict, key_path, rpm_name, rabbitmq_cred)
         if using_load_balancer:
             _install_load_balancer(instances_dict, key_path)
+            time.sleep(0.5)
             _show_load_balancer_ip(instances_dict['load_balancer'][0].public_ip)
         _show_manager_ips(instances_dict['manager'])
         _close_clients_connection(clients_list)
         end_time = time.time()
-        time.sleep(0.5)
         _show_successful_installation_message(start_time, end_time)
     except Exception:
         if connected_to_openstack:

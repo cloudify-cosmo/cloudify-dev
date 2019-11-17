@@ -118,8 +118,10 @@ def _create_instances_names_list(config):
     instances_names = ['factory']
     instances_count = config['number_of_instances']
     for instance, instances_number in instances_count.iteritems():
-        # if instance == 'postgresql' and instances_number < 2:
-        #     raise Exception('PostgreSQL cluster must be more than 2 instances')
+        if instance == 'postgresql' and instances_number < 2:
+            raise Exception('PostgreSQL cluster must be more than 2 instances')
+        elif instances_number < 1:
+            raise Exception('A cluster must contain at least 1 instance')
         for i in range(instances_number):
             instances_names.append('{0}_{1}'.format(instance, i+1))
     if config['using_load_balancer']:
