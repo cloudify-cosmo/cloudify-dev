@@ -4,7 +4,7 @@ DOCL_IMAGE_BUILDER_SERVER="10.239.1.189"
 
 set +e
 
-rm -f /tmp/docl-image-downloaded
+#rm -f /tmp/docl-image-downloaded
 
 echo "# Checking whether docl image can be downloaded directly from build machine.."
 curl -I http://${DOCL_IMAGE_BUILDER_SERVER}/docl_images/docl-manager.tar.gz | grep 200
