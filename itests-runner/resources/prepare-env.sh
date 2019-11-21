@@ -58,10 +58,6 @@ echo "# Creating a private SSH key.."
 ssh-keygen -t rsa -f ~/.ssh/id_rsa -q -N ''
 cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
 
-echo "# Creating docker images in a sub-process.."
-bash /tmp/create-docker-images.sh
-#create_docker_images_pid=$!
-
 echo "# Downloading and configuring clap..."
 curl https://raw.githubusercontent.com/cloudify-cosmo/cloudify-dev/master/scripts/clap -o /tmp/clap
 chmod +x /tmp/clap
@@ -81,6 +77,10 @@ echo "# Creating clap requirements file..."
 echo "# Cloning/installing required repositories.."
 /tmp/clap setup --requirements=/tmp/clap-requirements.txt
 
+echo "# Creating docker images in a sub-process.."
+nohup bash /tmp/create-docker-images.sh
+create_docker_images_pid=$!
+
 echo "Installing pytest.."
 pip install -q pytest
 
@@ -96,7 +96,7 @@ fi
 docl init --docker-host 172.20.0.1 --source-root=$HOME/dev/repos --ssh-key-path=$HOME/.ssh/id_rsa ${_MANAGER_IMAGE_URL_PARAM}
 
 # If this file wasn't touched, we need to download the image from S3
-if [ ! -f /tmp/docl-image-downloaded ]; then
+if [[ ! -f /tmp/docl-image-downloaded ]]; then
     echo "# Downloading docl image from build server failed. Image will be pulled from S3.."
     echo "# Pulling docl image.."
     docl pull-image --no-progress
@@ -105,8 +105,8 @@ fi
 echo "source ~/venv/bin/activate" >> ~/.bashrc
 echo "export DOCKER_HOST=172.20.0.1" >> ~/.bashrc
 
-#echo "# Waiting for docker images creation..."
-#wait $create_docker_images_pid
-#cat create-docker-images.log
+echo "# Waiting for docker images creation..."
+wait $create_docker_images_pid
+cat create-docker-images.log
 
 echo "# Environment prepared successfully!"
