@@ -59,8 +59,8 @@ ssh-keygen -t rsa -f ~/.ssh/id_rsa -q -N ''
 cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
 
 echo "# Creating docker images in a sub-process.."
-nohup /tmp/create-docker-images.sh > create-docker-images.log 2>&1 &
-create_docker_images_pid=$!
+bash /tmp/create-docker-images.sh
+#create_docker_images_pid=$!
 
 echo "# Downloading and configuring clap..."
 curl https://raw.githubusercontent.com/cloudify-cosmo/cloudify-dev/master/scripts/clap -o /tmp/clap
@@ -105,8 +105,8 @@ fi
 echo "source ~/venv/bin/activate" >> ~/.bashrc
 echo "export DOCKER_HOST=172.20.0.1" >> ~/.bashrc
 
-echo "# Waiting for docker images creation..."
-wait $create_docker_images_pid
-cat create-docker-images.log
+#echo "# Waiting for docker images creation..."
+#wait $create_docker_images_pid
+#cat create-docker-images.log
 
 echo "# Environment prepared successfully!"
