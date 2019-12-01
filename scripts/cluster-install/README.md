@@ -8,10 +8,10 @@ These are the steps to install and use a Cloudify Manager cluster on Openstack:
 1. Before installation, please make sure you have a key and network ready on Openstack. 
 1. Download the OpenStack RC file from Openstack under Access & Security / API access.
 1. Fill in the config_env.yaml file according to the RC file.  
-**NOTICE:** In case you think the manager will need a big memory resource, e.g. for a big snapshot restore - use `flavor_id: 4`.  
+**NOTICE:** In case you think the manager will need a big memory resource, e.g. for a big snapshot restore - use `flavor_name: m1.medium`.  
 1. Run the command `python install.py --config-path <config_env.yaml path>`
 1. Wait until the cluster is fully installed - should be around 20 minutes. 
-1. After the creation of the Openstack environment a file named `environment_ids.yaml` will 
+1. During the creation of the Openstack environment a file named `environment_ids.yaml` will 
 be created. This file includes the IDs of the running VMs and of the security-group for future use of cleaning the environment.  
 1. In case of a failure in the process, the Openstack environment will not be cleaned automatically.
 Alternatively, if you want to clean the environment, you can pass the flag `--clean-on-failure` to the `install` command.  

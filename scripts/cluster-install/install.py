@@ -2,6 +2,7 @@
 from __future__ import print_function
 import os
 import yaml
+import json
 import time
 import string
 import random
@@ -99,11 +100,6 @@ def scp_remote_to_local(key_path, instance, source_path, destination_path):
                      destination_path=destination_path))
 
 
-# def extend_list_by_order(instances_list, cluster_instances):
-#     cluster_instances.sort(key=lambda x: int(x.name.rsplit('_', 1)[1]))
-#     instances_list.extend(cluster_instances)
-
-
 def _create_instances_list(instances_dict, include_load_balancer=True):
     instances_list = []
     instances = ['postgresql', 'rabbitmq', 'manager']
@@ -187,7 +183,7 @@ def _get_rabbitmq_cluster_members(rabbitmq_instances, include_node_id):
     rabbitmq_cluster = {
         rabbitmq_instances[j].name: {
             'networks': {'default': rabbitmq_instances[j].private_ip}
-        }for j in range(len(rabbitmq_instances))}
+        } for j in range(len(rabbitmq_instances))}
     if include_node_id:
         for j in range(len(rabbitmq_instances)):
             rabbitmq_cluster[rabbitmq_instances[j].name]['node_id'] = \
@@ -301,6 +297,52 @@ def _install_instances(instances_dict, key_path, rpm_name, rabbitmq_cred):
     _install_cluster_instances(instances_dict['manager'], key_path, rpm_name)
 
 
+def _get_reporters_tokens(manager):
+    stdin, stdout, stderr = manager.exec_command('cfy_manager status-reporter '
+                                                 'get-tokens --json')
+    reporters_tokens = json.loads(stdout.read())
+    return (reporters_tokens['db_status_reporter'],
+            reporters_tokens['broker_status_reporter'])
+
+
+def _configure_postgresql_status_reporter(postgresql_instances,
+                                          postgresql_reporter_token,
+                                          managers_ips):
+    logging.info('Configuring status_reporter')
+    cmd = 'cfy_manager status-reporter configure --managers-ip {managers_ips}' \
+          ' --token {token} --ca-path {ca_path} --reporting-freq 5 ' \
+          '--user-name db_status_reporter'. \
+        format(managers_ips=managers_ips, token=postgresql_reporter_token,
+               ca_path=REMOTE_INSTALL_CLUSTER + '/certs/ca.pem')
+    for postgresql in postgresql_instances:
+        postgresql.exec_command(cmd)
+
+
+def _configure_rabbitmq_status_reporter(rabbitmq_instances,
+                                        rabbitmq_reporter_token,
+                                        managers_ips):
+    cmd = 'cfy_manager status-reporter configure --managers-ip {managers_ips}' \
+          ' --token {token} --ca-path {ca_path} --reporting-freq 5 ' \
+          '--user-name broker_status_reporter'. \
+        format(managers_ips=managers_ips, token=rabbitmq_reporter_token,
+               ca_path=REMOTE_INSTALL_CLUSTER + '/certs/ca.pem')
+    for rabbitmq in rabbitmq_instances:
+        rabbitmq.exec_command(cmd)
+
+
+def _configure_status_reporter(instances_dict):
+    postgresql_reporter_token, rabbitmq_reporter_token = \
+        _get_reporters_tokens(instances_dict['manager'][0])
+    managers_ips = ''
+    for manager in instances_dict['manager']:
+        managers_ips += manager.private_ip + ' '
+    _configure_postgresql_status_reporter(instances_dict['postgresql'],
+                                          postgresql_reporter_token,
+                                          managers_ips)
+    _configure_rabbitmq_status_reporter(instances_dict['rabbitmq'],
+                                        rabbitmq_reporter_token, managers_ips)
+
+
 def _get_vm(instances_details, instance, key_path, vm_username):
     private_ip = str(instances_details[instance][0])
     public_ip = str(instances_details[instance][1])
@@ -324,7 +366,7 @@ def _get_instances_dict(instances_details, key_path, vm_username):
         instances_dict[instance_group].append(instance_vm)
     for _, instance_items in instances_dict.iteritems():
         if len(instance_items) > 1:
-            instance_items.sort(key=lambda x: int(x.name.rsplit('_', 1)[1]))
+            instance_items.sort(key=lambda x: int(x.name.rsplit('-', 1)[1]))
     return instances_dict
 
 
@@ -376,11 +418,6 @@ def _delete_factory_vm_from_openstack_env(connection, environment_ids_dict):
     del environment_ids_dict['factory']
 
 
-def _create_environment_ids_file(environment_ids_dict):
-    with open('environment_ids.yaml', 'w') as f:
-        yaml.dump(environment_ids_dict, f)
-
-
 def _show_successful_installation_message(start_time, end_time):
     logging.info('Successfully installed an Active-Active cluster in %.2f'
                  ' minutes', ((end_time - start_time) / 60))
@@ -410,7 +447,6 @@ def main():
         config = yaml.load(config_file, yaml.Loader)
     instances_raw_dict, connection, environment_ids_dict = \
         create_openstack_vms(config, logging, clean_openstack_env)
-    _create_environment_ids_file(environment_ids_dict)
     try:
         key_path = config['key_file_path']
         vm_username = config['machine_username']
@@ -428,6 +464,7 @@ def main():
         _delete_factory_vm_from_openstack_env(connection, environment_ids_dict)
         rabbitmq_cred = _prepare_postgres_rabbit_config_files(instances_dict)
         _install_instances(instances_dict, key_path, rpm_name, rabbitmq_cred)
+        _configure_status_reporter(instances_dict)
         if using_load_balancer:
             _install_load_balancer(instances_dict, key_path)
             time.sleep(0.5)
