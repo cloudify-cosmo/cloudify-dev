@@ -25,7 +25,15 @@ DEV_REPOS = [
     'cloudify-dev',
     'cloudify-manager-install'
 ]
-REPOS = CORE_REPOS + DEV_REPOS
+INCUBATOR_REPOS = ['cloudify-utilities-plugin']
+PLUGIN_REPOS = [
+    'cloudify-openstack-plugin',
+    'cloudify-azure-plugin',
+    'cloudify-gcp-plugin',
+    'cloudify-aws-plugin',
+    'cloudify-ansible-plugin'
+] + INCUBATOR_REPOS
+REPOS = CORE_REPOS + DEV_REPOS + PLUGIN_REPOS
 
 
 MASTER = 'master'
@@ -194,6 +202,8 @@ class Git(object):
 
     def _git_clone(self, repo, branch, shallow, ssh):
         base_url = BASE_SSH_GITHUB_URL if ssh else BASE_HTTPS_GITHUB_URL
+        if repo in INCUBATOR_REPOS:
+            base_url = base_url.replace('cloudify-cosmo', 'cloudify-incubator')
         full_url = base_url.format(repo)
         args = [full_url, get_repo_path(repo), '--branch', branch]
         if shallow:
