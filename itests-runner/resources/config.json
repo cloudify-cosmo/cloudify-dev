@@ -1,5 +1,8 @@
 {
     "repositories": {
+        "cloudify-ansible-plugin": "master",
+        "cloudify-openstack-plugin": "master",
+        "cloudify-utilities-plugin": "master",
         "cloudify-common": "master",
         "cloudify-agent": "master",
         "cloudify-cli": "master",
