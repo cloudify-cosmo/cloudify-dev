@@ -33,7 +33,7 @@ PLUGIN_REPOS = [
     'cloudify-aws-plugin',
     'cloudify-ansible-plugin'
 ] + INCUBATOR_REPOS
-REPOS = CORE_REPOS + DEV_REPOS + PLUGIN_REPOS
+REPOS = CORE_REPOS + DEV_REPOS
 
 
 MASTER = 'master'
@@ -221,9 +221,19 @@ class Git(object):
 
 
 class Repos(object):
-    def __init__(self, branch=MASTER, dev=True, requirements=None):
+    def __init__(self,
+                 branch=MASTER,
+                 dev=True,
+                 requirements=None,
+                 plugins=True):
+
         self._branch = branch
-        self._full_repos_list = REPOS if dev else CORE_REPOS
+        if dev:
+            self._full_repos_list = REPOS
+        elif plugins:
+            self._full_repos_list = REPOS + PLUGIN_REPOS
+        else:
+            self._full_repos_list = CORE_REPOS
         if requirements:
             self._repos = self._parse_requirements(requirements)
         else:
@@ -331,9 +341,9 @@ def install(verbose=False):
 
 
 @command
-def checkout(branch, hide_tags=False):
+def checkout(branch, hide_tags=False, plugins=False):
     global repos
-    repos = Repos(branch)
+    repos = Repos(branch, plugins=plugins)
 
     logger.header('Checkout')
     for repo, repo_branch in repos.repos:
@@ -377,11 +387,14 @@ def clone(shallow=False, ssh=True):
 
 
 @command
-def setup(branch=MASTER, requirements=None, dev=False):
+def setup(branch=MASTER, requirements=None, dev=False, plugins=False):
     # Overriding the default repos object, to reflect the
     # branch/requirements file
     global repos
-    repos = Repos(branch=branch, requirements=requirements, dev=dev)
+    repos = Repos(branch=branch,
+                  requirements=requirements,
+                  dev=dev,
+                  plugins=plugins)
 
     clone(shallow=True, ssh=False)
     status()
