@@ -390,7 +390,7 @@ def clone(shallow=False, ssh=True):
 
 
 @command
-def setup(branch=MASTER, requirements=None, dev=False, plugins=False):
+def setup(branch=MASTER, requirements=None, dev=False, plugins=True):
     # Overriding the default repos object, to reflect the
     # branch/requirements file
     global repos
