@@ -278,6 +278,9 @@ class Repos(object):
             packages['cloudify-integration-tests'] = 'cloudify-manager/tests'
             packages['cloudify-system-workflows'] = 'cloudify-manager/workflows'  # NOQA
 
+        logger.red('These packages: {0}'.format(
+            p for p in packages.iteritems()))
+
         return packages.iteritems()
 
 
