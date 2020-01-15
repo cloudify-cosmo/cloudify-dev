@@ -234,6 +234,7 @@ class Repos(object):
             self._full_repos_list = REPOS
         else:
             self._full_repos_list = CORE_REPOS
+
         if requirements:
             self._repos = self._parse_requirements(requirements)
         else:
@@ -277,9 +278,6 @@ class Repos(object):
             packages['cloudify-rest-service'] = 'cloudify-manager/rest-service'
             packages['cloudify-integration-tests'] = 'cloudify-manager/tests'
             packages['cloudify-system-workflows'] = 'cloudify-manager/workflows'  # NOQA
-
-        logger.red('These packages: {0}'.format(
-            p for p in packages.iteritems()))
 
         return packages.iteritems()
 
