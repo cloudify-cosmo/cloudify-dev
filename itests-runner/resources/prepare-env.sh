@@ -79,7 +79,7 @@ echo "# Creating clap requirements file..."
 /tmp/create-clap-requirements.py
 
 echo "# Cloning/installing required repositories.."
-/tmp/clap setup --requirements=/tmp/clap-requirements.txt
+/tmp/clap setup --requirements=/tmp/clap-requirements.txt  --plugins
 
 echo "Installing pytest.."
 pip install -q pytest
