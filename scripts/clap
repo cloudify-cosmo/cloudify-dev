@@ -228,7 +228,7 @@ class Repos(object):
                  plugins=True):
 
         self._branch = branch
-        if dev and plugins:
+        if plugins:
             self._full_repos_list = REPOS + PLUGIN_REPOS
         elif dev:
             self._full_repos_list = REPOS

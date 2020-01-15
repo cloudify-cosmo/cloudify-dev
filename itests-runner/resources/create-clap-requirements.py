@@ -10,7 +10,3 @@ requirements = '\n'.join('{0}@{1}'.format(key, value)
 
 with open('/tmp/clap-requirements.txt', 'w') as f:
     f.write(requirements)
-
-print "#Using this requirements: {0}".format(
-    open('/tmp/clap-requirements.txt', 'r').readlines()
-)
