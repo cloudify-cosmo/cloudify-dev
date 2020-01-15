@@ -329,6 +329,9 @@ def install(verbose=False):
             msg = logger.red('Folder `{0}` does not exist'.format(repo_path))
             logger.log(repo, msg)
             continue
+        if repo in PLUGIN_REPOS:
+            logger.yellow('Skipping install {0}'.format(repo))
+            continue
 
         try:
             output = pip.install('-e', repo_path)
