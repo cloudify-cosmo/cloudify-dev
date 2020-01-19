@@ -177,6 +177,7 @@ resource "openstack_compute_instance_v2" "server{{ loop.index0 }}" {
 {% if 'LDAP_SERVER_IP' in env %}
       "export LDAP_SERVER_IP={{ env['LDAP_SERVER_IP'] }}",
 {% endif %}
+      "export GITHUB_TOKEN={{ env['GITHUB_TOKEN'] }}",
       "python /tmp/run-tests.py --repos ~/dev/repos --group-number {{ loop.index }} --number-of-groups {{ servers|length }} --pattern ${var.tests_pattern} --weights-file /tmp/weights.json --config-file /tmp/config.json"
     ]
     on_failure = "continue"
