@@ -6,7 +6,7 @@
         "cloudify-common": "master",
         "cloudify-agent": "master",
         "cloudify-cli": "master",
-        "cloudify-manager": "master",
+        "cloudify-manager": "update-dockerpy-version",
         "cloudify-manager-blueprints": "master",
         "cloudify-premium": "master",
         "docl": "master"
