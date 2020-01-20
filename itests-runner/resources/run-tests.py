@@ -81,7 +81,19 @@ def get_test_modules_weights(weights_file):
         with open(weights_file, 'r') as f:
             weights = json.loads(f.read())
     return weights
-    
+
+
+def copy_plugins_to_repo_dirs():
+    print("# Copying wagons to plugin dirs")
+    if os.path.exists("/tmp/wagons"):
+        for name in os.listdir("/tmp/wagons"):
+            if name.endswith(".wgn"):
+                plugin_name = name.split('-')[0].replace('_', '-')
+                os.rename(
+                    os.path.join('/tmp/wagons/{0}'.format(name)),
+                    '{0}/dev/repos/{1}/{2}'.format(
+                        os.path.expanduser('~'), plugin_name, name))
+
 
 def run_tests(repos_dir, group_number, number_of_groups, pattern, dry_run, weights_file, config):
 
@@ -91,6 +103,8 @@ def run_tests(repos_dir, group_number, number_of_groups, pattern, dry_run, weigh
         group_number, number_of_groups, pattern, dry_run, weights_file))
 
     test_modules = get_test_modules(config, pattern, repos_dir)
+
+    copy_plugins_to_repo_dirs()
 
     modules_per_group, groups_weight = split_modules_to_groups(test_modules, number_of_groups, test_modules_weights)
 

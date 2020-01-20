@@ -162,6 +162,21 @@ resource "openstack_compute_instance_v2" "server{{ loop.index0 }}" {
     destination = "/tmp/weights.json"
   }
 
+  provisioner "file" {
+    source = "resources/wagons"
+    destination = "/tmp"
+  }
+
+  provisioner "file" {
+    source = "resources/foo.rsa"
+    destination = "/tmp/foo.rsa"
+  }
+
+  provisioner "file" {
+    source = "resources/foo.rsa.pub"
+    destination = "/tmp/foo.rsa.pub"
+  }
+
   provisioner "remote-exec" {
     inline = [
       "source venv/bin/activate",
@@ -178,6 +193,10 @@ resource "openstack_compute_instance_v2" "server{{ loop.index0 }}" {
       "export LDAP_SERVER_IP={{ env['LDAP_SERVER_IP'] }}",
 {% endif %}
       "export GITHUB_TOKEN={{ env['GITHUB_TOKEN'] }}",
+      "export openstack_auth_url={{ env['OS_AUTH_URL'] }}",
+      "export openstack_username={{ env['OS_USERNAME'] }}",
+      "export openstack_password={{ env['OS_PASSWORD'] }}",
+      "export openstack_tenant_name={{ env['OS_PROJECT_NAME'] }}",
       "python /tmp/run-tests.py --repos ~/dev/repos --group-number {{ loop.index }} --number-of-groups {{ servers|length }} --pattern ${var.tests_pattern} --weights-file /tmp/weights.json --config-file /tmp/config.json"
     ]
     on_failure = "continue"
