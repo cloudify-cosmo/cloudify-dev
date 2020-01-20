@@ -178,6 +178,7 @@ resource "openstack_compute_instance_v2" "server{{ loop.index0 }}" {
       "export LDAP_SERVER_IP={{ env['LDAP_SERVER_IP'] }}",
 {% endif %}
       "export GITHUB_TOKEN={{ env['GITHUB_TOKEN'] }}",
+      "export DOCKER_API_VERSION=1.24",
       "python /tmp/run-tests.py --repos ~/dev/repos --group-number {{ loop.index }} --number-of-groups {{ servers|length }} --pattern ${var.tests_pattern} --weights-file /tmp/weights.json --config-file /tmp/config.json"
     ]
     on_failure = "continue"
