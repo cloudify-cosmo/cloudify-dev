@@ -1,7 +1,7 @@
 {
     "repositories": {
         "cloudify-ansible-plugin": "master",
-        "cloudify-openstack-plugin": "master",
+        "cloudify-openstack-plugin": "update-dockerpy-version",
         "cloudify-utilities-plugin": "master",
         "cloudify-common": "master",
         "cloudify-agent": "master",
