@@ -1,12 +1,16 @@
 {
     "repositories": {
         "cloudify-ansible-plugin": "master",
-        "cloudify-openstack-plugin": "update-dockerpy-version-1",
+        "cloudify-aws-plugin": "master",
+        "cloudify-azure-plugin": "master",
+        "cloudify-gcp-plugin": "master",
+        "cloudify-kubernetes-plugin": "master",
+        "cloudify-openstack-plugin": "master",
         "cloudify-utilities-plugin": "master",
         "cloudify-common": "master",
         "cloudify-agent": "master",
         "cloudify-cli": "master",
-        "cloudify-manager": "update-dockerpy-version-1",
+        "cloudify-manager": "master",
         "cloudify-manager-blueprints": "master",
         "cloudify-premium": "master",
         "docl": "master"
