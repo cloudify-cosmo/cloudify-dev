@@ -1,6 +1,10 @@
 {
     "repositories": {
         "cloudify-ansible-plugin": "master",
+        "cloudify-aws-plugin": "master",
+        "cloudify-azure-plugin": "master",
+        "cloudify-gcp-plugin": "master",
+        "cloudify-kubernetes-plugin": "master",
         "cloudify-openstack-plugin": "master",
         "cloudify-utilities-plugin": "master",
         "cloudify-common": "master",

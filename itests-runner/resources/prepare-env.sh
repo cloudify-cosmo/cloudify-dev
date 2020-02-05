@@ -25,6 +25,8 @@ install_package openssl-devel
 install_package openldap-devel
 install_package gcc-c++
 
+export DOCKER_API_VERSION=1.24
+
 echo "# Creating a network bridge.."
 sudo brctl addbr cfy0
 sudo ip addr add 172.20.0.1/24 dev cfy0
