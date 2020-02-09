@@ -197,6 +197,8 @@ resource "openstack_compute_instance_v2" "server{{ loop.index0 }}" {
       "export openstack_username={{ env['OS_USERNAME'] }}",
       "export openstack_password={{ env['OS_PASSWORD'] }}",
       "export openstack_tenant_name={{ env['OS_PROJECT_NAME'] }}",
+      "export aws_access_key_id={{ env['AWS_ACCESS_KEY_ID'] }}",
+      "export aws_secret_access_key={{ env['AWS_ACCESS_KEY'] }}",
       "python /tmp/run-tests.py --repos ~/dev/repos --group-number {{ loop.index }} --number-of-groups {{ servers|length }} --pattern ${var.tests_pattern} --weights-file /tmp/weights.json --config-file /tmp/config.json"
     ]
     on_failure = "continue"
