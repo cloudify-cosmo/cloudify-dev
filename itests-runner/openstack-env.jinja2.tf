@@ -199,6 +199,18 @@ resource "openstack_compute_instance_v2" "server{{ loop.index0 }}" {
       "export openstack_tenant_name={{ env['OS_PROJECT_NAME'] }}",
       "export aws_access_key_id={{ env['AWS_ACCESS_KEY_ID'] }}",
       "export aws_secret_access_key={{ env['AWS_ACCESS_KEY'] }}",
+      "export azure_subscription_id={{ env['AZURE_SUB'] }}",
+      "export azure_tenant_id={{ env['AZURE_TEN'] }}",
+      "export azure_client_id={{ env['AZURE_CLI'] }}",
+      "export azure_client_secret={{ env['AZURE_SEC'] }}",
+      "export gcp_client_x509_cert_url={{ env['GCP_CERT_URL'] }}",
+      "export gcp_client_email={{ env['GCP_EMAIL'] }}",
+      "export gcp_client_id={{ env['GCP_CLI'] }}",
+      "export gcp_project_id={{ env['GCP_PROJ'] }}",
+      "export gcp_private_key_id={{ env['GCP_KEY_ID'] }}",
+      "export gcp_private_key={{ env['GCP_KEY'] }}",
+      "export gcp_region={{ env['GCP_REG'] }}",
+      "export gcp_zone={{ env['GCP_ZONE'] }}",
       "python /tmp/run-tests.py --repos ~/dev/repos --group-number {{ loop.index }} --number-of-groups {{ servers|length }} --pattern ${var.tests_pattern} --weights-file /tmp/weights.json --config-file /tmp/config.json"
     ]
     on_failure = "continue"
