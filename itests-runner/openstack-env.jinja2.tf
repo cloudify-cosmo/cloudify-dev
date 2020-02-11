@@ -177,6 +177,11 @@ resource "openstack_compute_instance_v2" "server{{ loop.index0 }}" {
     destination = "/tmp/foo.rsa.pub"
   }
 
+  provisioner "file" {
+    source = "resources/gcp_private_key"
+    destination = "/tmp/gcp_private_key"
+  }
+
   provisioner "remote-exec" {
     inline = [
       "source venv/bin/activate",
@@ -208,7 +213,6 @@ resource "openstack_compute_instance_v2" "server{{ loop.index0 }}" {
       "export gcp_client_id={{ env['gcp_client_id'] }}",
       "export gcp_project_id={{ env['gcp_project_id'] }}",
       "export gcp_private_key_id={{ env['gcp_private_key_id'] }}",
-      "export gcp_private_key={{ env['gcp_private_key'] }}",
       "export gcp_region={{ env['gcp_region'] }}",
       "export gcp_zone={{ env['gcp_zone'] }}",
       "python /tmp/run-tests.py --repos ~/dev/repos --group-number {{ loop.index }} --number-of-groups {{ servers|length }} --pattern ${var.tests_pattern} --weights-file /tmp/weights.json --config-file /tmp/config.json"
