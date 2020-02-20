@@ -1,16 +1,16 @@
 #! /usr/bin/env python
 from __future__ import print_function
-import yaml
 import json
 import string
 import random
-import logging
 
 from common import *
 
 from openstack_connection import create_openstack_vms
 
-CERT_PATH = '~/.cloudify-test-ca'
+HOME_DIR = os.path.expanduser('~')
+
+CERT_PATH = '{0}/.cloudify-test-ca'.format(HOME_DIR)
 LOCAL_INSTALL_CLUSTER = '/tmp/install_cluster'
 LOCAL_INSTALL_CLUSTER_CERTS = '{}/certs'.format(LOCAL_INSTALL_CLUSTER)
 REMOTE_PARENT_DIRECTORY = '/tmp'
@@ -37,13 +37,12 @@ def _generate_instance_certificate(instance):
 
 
 def _extract_certificates():
-    os.system('mv {0}/.cloudify-test-ca/* {0}'.format(
-        LOCAL_INSTALL_CLUSTER_CERTS))
-    os.rmdir(os.path.join(LOCAL_INSTALL_CLUSTER_CERTS, '.cloudify-test-ca'))
+    os.system('mv {0}/* {1}'.format(CERT_PATH, LOCAL_INSTALL_CLUSTER_CERTS))
+    os.rmdir(CERT_PATH)
 
 
 def _generate_certs(instances_dict, rpm_name):
-    logging.info('Generating certificates')
+    logger.info('Generating certificates')
     os.system('cd {0} && sudo yum install -y {1}'.format(LOCAL_INSTALL_CLUSTER,
                                                          rpm_name))
     instances_list = _create_instances_list(instances_dict)
@@ -58,10 +57,10 @@ def _write_crt_to_config(config_file, node_name, config_section):
         REMOTE_INSTALL_CLUSTER + '/certs/{}_cert.pem'.format(node_name)
     config_file[config_section]['key_path'] = \
         REMOTE_INSTALL_CLUSTER + '/certs/{}_key.pem'.format(node_name)
-    config_file[config_section]['ca_path'] = REMOTE_INSTALL_CLUSTER + \
-                                             '/certs/ca.pem'
-    conf_file_name = LOCAL_INSTALL_CLUSTER + '/config_files/{}_config.yaml' \
-        .format(node_name)
+    config_file[config_section]['ca_path'] = \
+        REMOTE_INSTALL_CLUSTER + '/certs/ca.pem'
+    conf_file_name = \
+        LOCAL_INSTALL_CLUSTER + '/config_files/{}_config.yaml'.format(node_name)
     return conf_file_name
 
 
@@ -172,7 +171,7 @@ def _prepare_manager_config_files(instances_dict, rabbitmq_credentials):
 
 
 def _prepare_postgres_rabbit_config_files(instances_dict):
-    logging.info('Preparing config files')
+    logger.info('Preparing config files')
     os.mkdir(LOCAL_INSTALL_CLUSTER + '/config_files')
     _prepare_postgresql_config_files(instances_dict)
     rabbitmq_credentials = _prepare_rabbitmq_config_files(instances_dict)
@@ -180,6 +179,7 @@ def _prepare_postgres_rabbit_config_files(instances_dict):
 
 
 def _download_manager_and_create_license(license_path, download_link):
+    logger.info('Downloading Cloudify Manager')
     os.system('cd {0} && curl -O {1}'.format(LOCAL_INSTALL_CLUSTER,
                                              download_link))
     os.system('cp {0} {1}'.format(
@@ -188,7 +188,7 @@ def _download_manager_and_create_license(license_path, download_link):
 
 def _install_cluster_instances(cluster_members, rpm_name):
     for instance in cluster_members:
-        logging.info('Installing {}'.format(instance.name))
+        logger.info('Installing {}'.format(instance.name))
         scp_local_to_remote(instance, LOCAL_INSTALL_CLUSTER,
                             REMOTE_PARENT_DIRECTORY)
         instance.exec_command('sudo yum install -y {rpm}'.format(
@@ -198,13 +198,11 @@ def _install_cluster_instances(cluster_members, rpm_name):
                               format(REMOTE_INSTALL_CLUSTER, instance.name))
         install_command = 'cfy_manager install --private-ip {0} --public-ip ' \
                           '{1}'.format(instance.private_ip, instance.public_ip)
-        stdin, stdout, stderr = instance.exec_command(install_command)
-        print(stdout.read())
-        time.sleep(0.5)  # Avoiding running over the print by the next logging
+        instance.exec_command(install_command)
 
 
 def _install_instances(instances_dict, rpm_name, rabbitmq_cred):
-    logging.info('Installing instances')
+    logger.info('Installing instances')
     _install_cluster_instances(instances_dict['postgresql'], rpm_name)
     _install_cluster_instances(instances_dict['rabbitmq'], rpm_name)
     _prepare_manager_config_files(instances_dict, rabbitmq_cred)
@@ -212,9 +210,9 @@ def _install_instances(instances_dict, rpm_name, rabbitmq_cred):
 
 
 def _get_reporters_tokens(manager):
-    stdin, stdout, stderr = manager.exec_command('cfy_manager status-reporter '
-                                                 'get-tokens --json')
-    reporters_tokens = json.loads(stdout.read())
+    stdout = manager.exec_command('cfy_manager status-reporter '
+                                  'get-tokens --json')
+    reporters_tokens = json.loads(stdout)
     return (reporters_tokens['db_status_reporter'],
             reporters_tokens['broker_status_reporter'])
 
@@ -222,7 +220,7 @@ def _get_reporters_tokens(manager):
 def _configure_postgresql_status_reporter(postgresql_instances,
                                           postgresql_reporter_token,
                                           managers_ips):
-    logging.info('Configuring status_reporter')
+    logger.info('Configuring status_reporter')
     cmd = 'cfy_manager status-reporter configure --managers-ip {managers_ips}' \
           ' --token {token} --ca-path {ca_path} --reporting-freq 5 ' \
           '--user-name db_status_reporter'. \
@@ -278,14 +276,14 @@ def _get_instances_dict(instances_details, key_path, vm_username):
                               vm_username)
         instance_group = _get_instance_group(instance_name)
         instances_dict[instance_group].append(instance_vm)
-    for _, instance_items in instances_dict.iteritems():
+    for _, instance_items in instances_dict.items():
         if len(instance_items) > 1:
             instance_items.sort(key=lambda x: int(x.name.rsplit('-', 1)[1]))
     return instances_dict
 
 
 def _install_load_balancer(instances_dict):
-    logging.info('Installing load balancer')
+    logger.info('Installing load balancer')
     load_balancer = instances_dict['load_balancer'][0]
     managers_details = ''
     scp_local_to_remote(load_balancer, LOCAL_INSTALL_CLUSTER_CERTS,
@@ -300,13 +298,11 @@ def _install_load_balancer(instances_dict):
                                          'install_load_balancer.sh'),
                 managers_details=managers_details,
                 directory=REMOTE_PARENT_DIRECTORY)
-    stdin, stdout, stderr = load_balancer.exec_command(install_command)
-    print(stdout.read())
-    return
+    load_balancer.exec_command(install_command)
 
 
 def _create_install_cluster_directory(license_path, download_link):
-    logging.info('Creating `install_cluster` directory')
+    logger.info('Creating `install_cluster` directory')
     os.system('rm -rf {}_old'.format(LOCAL_INSTALL_CLUSTER))
     if os.path.exists(LOCAL_INSTALL_CLUSTER):
         os.system('mv {0} {0}_old'.format(LOCAL_INSTALL_CLUSTER))
@@ -316,22 +312,22 @@ def _create_install_cluster_directory(license_path, download_link):
 
 
 def _show_successful_installation_message(start_time, end_time):
-    logging.info('Successfully installed an Active-Active cluster in %.2f'
-                 ' minutes', ((end_time - start_time) / 60))
+    logger.info('Successfully installed an Active-Active cluster in %.2f'
+                ' minutes', ((end_time - start_time) / 60))
     time.sleep(0.5)
 
 
 def _show_load_balancer_ip(load_balancer_ip):
-    logging.info('In order to connect to the load balancer, use the ip {}'.
-                 format(load_balancer_ip))
+    logger.info('In order to connect to the load balancer, use the ip {}'.
+                format(load_balancer_ip))
 
 
 def _show_manager_ips(manager_nodes):
     managers_str = ''
     for manager in manager_nodes:
         managers_str += '{0}: {1}\n'.format(manager.name, manager.public_ip)
-    logging.info('In order to connect to one of the managers, use one of the '
-                 'following IPs:\n{}'.format(managers_str))
+    logger.info('In order to connect to one of the managers, use one of the '
+                'following IPs:\n{}'.format(managers_str))
 
 
 def _run_cfy_cluster_update_profile(manager_1_ip, vm_username, key_path):
@@ -346,21 +342,22 @@ def _run_cfy_cluster_update_profile(manager_1_ip, vm_username, key_path):
 
 
 def main():
-    logging.basicConfig(level=logging.INFO)
     start_time = time.time()
     connected_to_openstack = False
-    config = get_dict_from_yaml(JUMP_HOST_CONFIG_PATH)
+    os.chdir('{0}/cluster_install'.format(HOME_DIR))
+    config = get_dict_from_yaml('config_env.yaml')
     env_ids = get_dict_from_yaml('environment_ids.yaml')
     sec_group_id = env_ids.get('sec_group')
     try:
         instances_raw_dict, connection, servers_ids_dict = \
-            create_openstack_vms(config, logging, sec_group_id)
-        key_path = JUMP_HOST_SSH_KEY_PATH
+            create_openstack_vms(config, sec_group_id)
+        key_path = '{0}/.ssh/jump_host_key'.format(HOME_DIR)
         vm_username = config.get('machine_username')
         download_link = config.get('manager_rpm_download_link')
         rpm_name = config.get('manager_rpm_name')
         using_load_balancer = config.get('using_load_balancer')
-        _create_install_cluster_directory(JUMP_HOST_LICENSE_PATH, download_link)
+        _create_install_cluster_directory('cloudify_license.yaml',
+                                          download_link)
         instances_dict = _get_instances_dict(instances_raw_dict, key_path,
                                              vm_username)
         connected_to_openstack = True

@@ -3,7 +3,7 @@ import yaml
 import traceback
 import openstack
 
-from common import JUMP_HOST_ENV_IDS, get_dict_from_yaml
+from common import get_dict_from_yaml, logger
 
 
 def _get_resource_config(connection, config, instance_name):
@@ -87,19 +87,19 @@ def _create_server(connection, resource_config, sec_group_id):
     return server
 
 
-def create_vm(connection, sec_group_id, config, instance_name,
-              server_ids_dict, logging):
+def create_vm(connection, sec_group_id, config, instance_name, server_ids_dict):
     resource_config = _get_resource_config(connection, config, instance_name)
     server = _create_server(connection, resource_config, sec_group_id)
     server_id = server.id
     server_ids_dict[instance_name] = (str(server_id))
     resource_config['id'] = server_id
     floating_ip = _create_floating_ip(connection, config, resource_config)
+    time.sleep(2)  # Waiting for the server to connect to the floating_ip
     floating_ip_address = floating_ip.floating_ip_address
     private_ip_address = _get_private_ip(connection, server_id)
-    _add_floating_ip_to_server(connection, server_id, floating_ip_address)
-    logging.info('Created the VM {0} with private-ip: {1}, public-ip: {2}'.
-                 format(instance_name, private_ip_address, floating_ip_address))
+    logger.info('Created the VM {0} with private-ip: {1}, '
+                'public-ip: {2}'.format(instance_name, private_ip_address,
+                                        floating_ip_address))
     return private_ip_address, floating_ip_address
 
 
@@ -107,28 +107,31 @@ def delete_vm(connection, server_id):
     connection.delete_server(server_id, wait=True, delete_ips=True)
 
 
-def clean_openstack(connection, logging):
-    logging.info('Cleaning the Openstack environment')
-    environment_ids_dict = get_dict_from_yaml('environment_ids.yaml')
+def clean_openstack(connection, env_ids_dict=None):
+    logger.info('Cleaning the Openstack environment')
+    environment_ids_dict = (env_ids_dict or
+                            get_dict_from_yaml('environment_ids.yaml'))
     for server, server_id in environment_ids_dict.items():
         if server != 'sec_group':
-            logging.info('deleting the server: {}'.format(server))
+            logger.info('Deleting the server: {}'.format(server))
             delete_vm(connection, server_id)
-    logging.info('deleting the cluster security group')
+    logger.info('Deleting the cluster security group')
     connection.delete_security_group(environment_ids_dict['sec_group'])
-    logging.info('Successfully cleaned the Openstack environment')
+    logger.info('Successfully cleaned the Openstack environment')
 
 
 def _update_environment_ids_file(servers_ids_dict):
-    with open(JUMP_HOST_ENV_IDS, 'a') as f:
-        yaml.dump(servers_ids_dict, f)
+    curr_env_ids = get_dict_from_yaml('environment_ids.yaml')
+    with open('environment_ids.yaml', 'w') as f:
+        curr_env_ids.update(servers_ids_dict)
+        yaml.dump(curr_env_ids, f)
 
 
-def handle_failure(connection, clean_openstack_env, logging):
+def handle_failure(connection, clean_openstack_env):
     traceback.print_exc()
     time.sleep(0.5)
     if clean_openstack_env:
-        clean_openstack(connection, logging)
+        clean_openstack(connection)
 
 
 def create_connection(config):
@@ -146,7 +149,7 @@ def create_connection(config):
 def _create_instances_names_list(config):
     instances_names = []
     instances_count = config['number_of_instances']
-    for instance, instances_number in instances_count.iteritems():
+    for instance, instances_number in instances_count.items():
         if instance == 'postgresql' and instances_number < 2:
             raise Exception('PostgreSQL cluster must be more than 2 instances')
         elif instances_number < 1:
@@ -161,18 +164,18 @@ def _create_instances_names_list(config):
     return instances_names
 
 
-def create_openstack_vms(config, logging, sec_group_id):
-    logging.info('Creating VMs on Openstack')
+def create_openstack_vms(config, sec_group_id):
+    logger.info('Creating VMs on Openstack')
     instances_names = _create_instances_names_list(config)
     instances = {}
     servers_ids_dict = {}
     connection = create_connection(config)
-    logging.warning('The VMs security group opens all ports')
+    logger.warning('The VMs security group opens all ports')
     try:
         for instance in instances_names:
             private_ip_address, floating_ip_address = create_vm(
                 connection, sec_group_id, config, instance,
-                servers_ids_dict, logging)
+                servers_ids_dict)
             instances[instance] = (private_ip_address, floating_ip_address)
     finally:
         _update_environment_ids_file(servers_ids_dict)
