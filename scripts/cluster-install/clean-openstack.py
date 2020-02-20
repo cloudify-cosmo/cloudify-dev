@@ -1,6 +1,5 @@
 #! /usr/bin/env python
 import yaml
-import logging
 import argparse
 from openstack_connection import clean_openstack, create_connection
 
@@ -26,8 +25,7 @@ def main():
     connection = create_connection(config)
     with open(environment_ids_path, 'r') as f:
         environment_ids_dict = yaml.load(f, yaml.Loader)
-    logging.basicConfig(level=logging.INFO)
-    clean_openstack(connection, environment_ids_dict, logging)
+    clean_openstack(connection, environment_ids_dict)
 
 
 if __name__ == "__main__":

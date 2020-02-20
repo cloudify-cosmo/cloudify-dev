@@ -11,10 +11,10 @@ image_name: 'CentOS-7_6-x86_64-GenericCloud'
 machine_username: 'centos' #for rhel use "cloud-user"
 flavor_name: 'm1.small' #for rhel or for big memory consumption, use m1.medium
 gateway_network_name: 'GATEWAY_NET'
-using_load_balancer: true
+using_load_balancer: true # must be false if using only 1 Manager
 manager_rpm_download_link: 'http://cloudify-release-eu.s3.amazonaws.com/cloudify/5.0.5/.dev1-release/cloudify-manager-install-5.0.5-.dev1.x86_64.rpm'
 manager_rpm_name: 'cloudify-manager-install-5.0.5-.dev1.x86_64.rpm'
 number_of_instances:
   postgresql: 3 # must be greater than or equal to 2
   rabbitmq: 3 # must be greater than or equal to 1
-  manager: 3 # must be greater than or equal to 1
+  manager: 3 # must be between 1 to 3
