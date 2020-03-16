@@ -15,8 +15,11 @@ These are the steps to install and use a Cloudify Manager cluster on Openstack:
 be created. This file includes the IDs of the running VMs and of the security-group for future use of cleaning the environment.  
 1. In case of a failure in the process, the Openstack environment will not be cleaned automatically.
 Alternatively, if you want to clean the environment, you can pass the flag `--clean-on-failure` to the `install` command.  
+1. In case you want to use local-host, SCP the ca.pem certificate from the jump-host to your local host.
+This can be done with the following command `scp -i ~/.ssh/jump_key.pem <ssh-user>@<jump-host-ip>:/tmp/install_cluster/certs/ca.pem <destination-local-path>`.
 1. In order to use one of the managers in the CLI you can use the following command:
-`cfy profiles use -u admin -p admin -t default_tenant --ssl --rest-certificate /tmp/install_cluster/certs/ca.crt -s <ssh-user> <public-ip>`.
+`cfy profiles use -u admin -p admin -t default_tenant --ssl --rest-certificate <ca.pem-path> -s <ssh-user> <public-ip>`.  
+The `ca.pem-path` on the jump-host is: `/tmp/install_cluster/certs/ca.pem`
 Switch the `<public-ip>` with the public-ip of one of the managers or the load balancer,
 and the `<ssh-user>` with the ssh user on the host machine, e.g. centos.  
 
