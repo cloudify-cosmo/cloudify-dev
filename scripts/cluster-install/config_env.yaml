@@ -1,20 +1,56 @@
-auth_url: ''  #from the RC file
-username: '' #from the RC file
-password: '' #your password for Openstack
-region_name: '' #from the RC file
-tenant_name: '' #from the RC file
-network_name: '' #the network name you created on Openstack
-key_name: '' #the name of the key you created on Openstack
-key_file_path: '' #your private key local path, should match the key that you created on Openstack
-cloudify_license_path: '' #local path to a valid Cloudify license
-image_name: 'CentOS-7_6-x86_64-GenericCloud'
-machine_username: 'centos' #for rhel use "cloud-user"
-flavor_name: 'm1.small' #for rhel or for big memory consumption, use m1.medium
-gateway_network_name: 'GATEWAY_NET'
-using_load_balancer: true # must be false if using only 1 Manager
-manager_rpm_download_link: 'http://cloudify-release-eu.s3.amazonaws.com/cloudify/5.0.5/.dev1-release/cloudify-manager-install-5.0.5-.dev1.x86_64.rpm'
-manager_rpm_name: 'cloudify-manager-install-5.0.5-.dev1.x86_64.rpm'
 number_of_instances:
   postgresql: 3 # must be greater than or equal to 2
   rabbitmq: 3 # must be greater than or equal to 1
   manager: 3 # must be between 1 to 3
+
+key_name: '' # The name of the key you created on Openstack
+key_file_path: '' # Your private key local path, should match the key that you created on Openstack
+cloudify_license_path: '' # Local path to a valid Cloudify license
+using_load_balancer: true # Must be false if using only 1 Manager
+existing_security_group_id: # The security group ID on Openstack. If left blank, a new security group would be created
+manager_rpm_download_link: 'https://cloudify-release-eu.s3-eu-west-1.amazonaws.com/cloudify/5.0.5/ga-release/cloudify-manager-install-5.0.5-ga.x86_64.rpm'
+manager_rpm_name: 'cloudify-manager-install-5.0.5-ga.x86_64.rpm'
+machine_username: 'centos' # For rhel use "cloud-user"
+
+
+# Fill in this part if you want to use existing VMs. Otherwise, leave it blank and fill in the next part - Openstack connection configuration.
+existing_vms:
+# A jump_host must be specified.
+# The format should be as follows (the order of the instances doesn't matter):
+#  - instance_type: 'jump_host'
+#    private_ip: ''
+#    public_ip: ''
+#
+#  - instance_type: 'load_balancer'
+#    private_ip: ''
+#    public_ip: ''
+#
+#  - instance_type: 'manager'
+#    private_ip: ''
+#    public_ip: ''
+#
+#  - instance_type: 'postgresql'
+#    private_ip: ''
+#    public_ip: ''
+#
+#  - instance_type: 'rabbitmq'
+#    private_ip: ''
+#    public_ip: ''
+#  ...
+#  ...
+#
+# Each list item specifies a VM on Openstack.
+# Make sure the VMs match the information specified in number_of_instances and using_load_balancer.
+
+
+# Openstack connection configuration
+# Fill in this part if you want VMs or security group to be created automatically on Openstack.
+auth_url: ''  # Fill in from the RC file
+username: '' # Fill in from the RC file
+password: '' # Fill in your password for Openstack
+region_name: '' # Fill in from the RC file
+tenant_name: '' # Fill in from the RC file
+network_name: '' # Fill in the network name you created on Openstack
+image_name: 'CentOS-7_6-x86_64-GenericCloud'
+flavor_name: 'm1.small' # For rhel or for big memory consumption, use m1.medium
+gateway_network_name: 'GATEWAY_NET'

@@ -268,6 +268,12 @@ def _get_instance_group(instance_name):
             return group
 
 
+def _sort_instances_dict(instances_dict):
+    for _, instance_items in instances_dict.items():
+        if len(instance_items) > 1:
+            instance_items.sort(key=lambda x: int(x.name.rsplit('-', 1)[1]))
+
+
 def _get_instances_dict(instances_details, key_path, vm_username):
     instances_dict = {'postgresql': [], 'rabbitmq': [],
                       'manager': [], 'load_balancer': []}
@@ -276,9 +282,26 @@ def _get_instances_dict(instances_details, key_path, vm_username):
                               vm_username)
         instance_group = _get_instance_group(instance_name)
         instances_dict[instance_group].append(instance_vm)
-    for _, instance_items in instances_dict.items():
-        if len(instance_items) > 1:
-            instance_items.sort(key=lambda x: int(x.name.rsplit('-', 1)[1]))
+    _sort_instances_dict(instances_dict)
+    return instances_dict
+
+
+def _get_instances_dict_existing_vms(existing_vms_dict, key_path, vm_username):
+    instances_dict = {'postgresql': [], 'rabbitmq': [],
+                      'manager': [], 'load_balancer': []}
+    for instance_type, instances_list in existing_vms_dict.items():
+        if instance_type == 'jump_host':
+            continue
+        for i, instance in enumerate(instances_list):
+            instance_name = instance_type if instance_type == 'load_balancer' \
+                else (instance_type + '-' + str(i+1))
+            instance_vm = VM(instance.get('private_ip'),
+                             instance.get('public_ip'),
+                             instance_name,
+                             key_path,
+                             vm_username)
+            instances_dict.setdefault(instance_type, []).append(instance_vm)
+    _sort_instances_dict(instances_dict)
     return instances_dict
 
 
@@ -349,8 +372,6 @@ def main():
     env_ids = get_dict_from_yaml('environment_ids.yaml')
     sec_group_id = env_ids.get('sec_group')
     try:
-        instances_raw_dict, connection, servers_ids_dict = \
-            create_openstack_vms(config, sec_group_id)
         key_path = '{0}/.ssh/jump_host_key'.format(HOME_DIR)
         vm_username = config.get('machine_username')
         download_link = config.get('manager_rpm_download_link')
@@ -358,8 +379,14 @@ def main():
         using_load_balancer = config.get('using_load_balancer')
         _create_install_cluster_directory('cloudify_license.yaml',
                                           download_link)
-        instances_dict = _get_instances_dict(instances_raw_dict, key_path,
-                                             vm_username)
+        if os.path.exists(EXISTING_VMS_PATH):
+            existing_vms_dict = get_dict_from_yaml(EXISTING_VMS_PATH)
+            instances_dict = _get_instances_dict_existing_vms(
+                existing_vms_dict, key_path, vm_username)
+        else:
+            instances_raw_dict = create_openstack_vms(config, sec_group_id)
+            instances_dict = _get_instances_dict(instances_raw_dict, key_path,
+                                                 vm_username)
         connected_to_openstack = True
         clients_list = [server.client for server in _create_instances_list(
             instances_dict, using_load_balancer)]

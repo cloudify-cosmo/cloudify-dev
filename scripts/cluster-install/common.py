@@ -1,6 +1,7 @@
 import os
 import sys
 import time
+import errno
 import select
 import logging
 
@@ -22,6 +23,7 @@ def init_logger():
 
 logger = init_logger()
 
+EXISTING_VMS_PATH = 'existing_vms.yaml'
 JUMP_HOST_DIR = '/home/{0}/cluster_install'
 JUMP_HOST_SSH_KEY_PATH = '/home/{0}/.ssh/jump_host_key'
 JUMP_HOST_ENV_IDS = JUMP_HOST_DIR + '/environment_ids.yaml'
@@ -32,7 +34,7 @@ JUMP_HOST_INSTALL_PATH = JUMP_HOST_DIR + '/install_from_jump_host.py'
 
 
 def retry_with_sleep(func, *func_args, **kwargs):
-    retry_count = kwargs.get('retry_count', 10)
+    retry_count = kwargs.get('retry_count', 15)
     delay = kwargs.get('delay', 2)
     for i in range(retry_count):
         try:
@@ -167,7 +169,9 @@ def parse_command():
     parser.add_argument('--clean-on-failure', dest='clean',
                         action='store_true', default=False,
                         help='Pass this flag if you want to clean your '
-                             'Openstack environment on failure')
+                             'Openstack environment on failure.\n'
+                             'In the case of using existing VMs, the '
+                             'environment won\'t be deleted.')
     return parser.parse_args()
 
 
@@ -175,3 +179,11 @@ def get_dict_from_yaml(yaml_path):
     with open(yaml_path) as f:
         yaml_dict = yaml.load(f, yaml.Loader)
     return yaml_dict
+
+
+def silent_remove(filename):
+    try:
+        os.remove(filename)
+    except OSError as e:
+        if e.errno != errno.ENOENT:  # errno.ENOENT = no such file or directory
+            raise  # re-raise exception if a different error occurred

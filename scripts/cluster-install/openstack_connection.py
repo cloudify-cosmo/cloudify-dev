@@ -43,6 +43,43 @@ def create_sec_group_and_open_all_ports(connection):
     return sec_group
 
 
+def fine_create_sec_group_and_open_ports(connection):
+    sec_group = connection.network.create_security_group(
+        name='cluster-sec-group')
+    _create_sec_group_rule(connection, sec_group.id, 'tcp', '4369', '4369')
+    _create_sec_group_rule(connection, sec_group.id, 'tcp', '5671', '5672')
+    _create_sec_group_rule(connection, sec_group.id, 'tcp', '25671', '25672')
+    _create_sec_group_rule(connection, sec_group.id, 'tcp', '35672', '35682')
+    _create_sec_group_rule(connection, sec_group.id, 'tcp', '15671', '15672')
+    _create_sec_group_rule(connection, sec_group.id, 'tcp', '61613', '61614')
+    _create_sec_group_rule(connection, sec_group.id, 'tcp', '1883', '1883')
+    _create_sec_group_rule(connection, sec_group.id, 'tcp', '8883', '8883')
+    _create_sec_group_rule(connection, sec_group.id, 'tcp', '15674', '15675')
+    _create_sec_group_rule(connection, sec_group.id, 'tcp', '15692', '15692')
+    _create_sec_group_rule(connection, sec_group.id, 'tcp', '2379', '2380')
+    _create_sec_group_rule(connection, sec_group.id, 'tcp', '5432', '5432')
+    _create_sec_group_rule(connection, sec_group.id, 'tcp', '8008', '8008')
+    _create_sec_group_rule(connection, sec_group.id, 'tcp', '80', '80')
+    _create_sec_group_rule(connection, sec_group.id, 'tcp', '443', '443')
+    _create_sec_group_rule(connection, sec_group.id, 'tcp', '22', '22')
+    _create_sec_group_rule(connection, sec_group.id, 'tcp', '5671', '5671')
+    _create_sec_group_rule(connection, sec_group.id, 'tcp', '53333', '53333')
+    _create_sec_group_rule(connection, sec_group.id, 'tcp', '22000', '22000')
+    return sec_group
+
+
+def _create_sec_group_rule(connection, sec_group_id, protocol, port_range_min,
+                           port_range_max):
+    return connection.network.create_security_group_rule(
+        security_group_id=sec_group_id,
+        direction='ingress',
+        remote_ip_prefix='0.0.0.0/0',
+        protocol=protocol,
+        port_range_min=port_range_min,
+        port_range_max=port_range_max,
+        ethertype='IPv4')
+
+
 def _get_private_ip(connection, server_id):
     tmp_server = connection.get_server(server_id, detailed=True)
     start_time = time.time()
@@ -128,8 +165,6 @@ def _update_environment_ids_file(servers_ids_dict):
 
 
 def handle_failure(connection, clean_openstack_env):
-    traceback.print_exc()
-    time.sleep(0.5)
     if clean_openstack_env:
         clean_openstack(connection)
 
@@ -150,13 +185,6 @@ def _create_instances_names_list(config):
     instances_names = []
     instances_count = config['number_of_instances']
     for instance, instances_number in instances_count.items():
-        if instance == 'postgresql' and instances_number < 2:
-            raise Exception('PostgreSQL cluster must be more than 2 instances')
-        elif instances_number < 1:
-            raise Exception('A cluster must contain at least 1 instance')
-        if config['using_load_balancer'] and \
-                (instance == 'manager' and instances_number == 1):
-            raise Exception('Cannot use a load-balancer with only one Manager')
         for i in range(instances_number):
             instances_names.append('{0}-{1}'.format(instance, i+1))
     if config['using_load_balancer']:
@@ -179,4 +207,4 @@ def create_openstack_vms(config, sec_group_id):
             instances[instance] = (private_ip_address, floating_ip_address)
     finally:
         _update_environment_ids_file(servers_ids_dict)
-    return instances, connection, servers_ids_dict
+    return instances
