@@ -1,0 +1,46 @@
+key_file_path: ''  # The private key local path used to connect to the cluster instances.
+instances_username: '' # e.g. centos
+
+instances:
+  manager:
+    ca_cert_path: ''
+    nodes:
+      - host_ip: ''
+        cert_path: ''
+        key_path: ''
+      - host_ip: ''
+        cert_path: ''
+        key_path: ''
+      - host_ip: ''
+        cert_path: ''
+        key_path: ''
+    external_certificates: # The manager ips must be specified in order to change the external certificates
+      external_cert_path: ''
+      external_key_path: ''
+      external_ca_cert_path: ''
+
+  postgresql:
+    ca_cert_path: ''  # Must fill in the Managers' IPs above in order to replace the ca_certificate
+    nodes:
+      - host_ip: ''
+        cert_path: ''
+        key_path: ''
+      - host_ip: ''
+        cert_path: ''
+        key_path: ''
+      - host_ip: ''
+        cert_path: ''
+        key_path: ''
+
+  rabbitmq:
+    ca_cert_path: ''
+    nodes:
+      - host_ip: ''
+        cert_path: ''
+        key_path: ''
+      - host_ip: ''
+        cert_path: ''
+        key_path: ''
+      - host_ip: ''
+        cert_path: ''
+        key_path: ''
