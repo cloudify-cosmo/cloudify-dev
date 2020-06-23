@@ -150,6 +150,8 @@ def _prepare_manager_config_files(instances_dict, rabbitmq_credentials):
         with open('manager_config.yaml') as f:
             config_file = yaml.load(f, yaml.Loader)
         config_file['manager']['hostname'] = node.name
+        config_file['manager']['private_ip'] = node.private_ip
+        config_file['manager']['public_ip'] = node.public_ip
         config_file['manager']['cloudify_license_path'] = \
             REMOTE_INSTALL_CLUSTER + '/license.yaml'
         config_file['rabbitmq']['cluster_members'] = \

@@ -1,4 +1,6 @@
 manager:
+  private_ip:
+  public_ip:
   hostname: <manager host name, e.g. manager2>
   security:
     ssl_enabled: true
