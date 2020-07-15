@@ -1,20 +1,21 @@
+manager:
+  private_ip: <current rabbitmq private-ip>
+  public_ip: <current rabbitmq private-ip>
+
 rabbitmq:
   username:
   password:
 
   cluster_members:
     <first rabbitmq instance-name>:
-      node_id:
       networks:
         default: <first rabbitmq private-ip>
     <second rabbitmq instance-name>:
-      node_id:
       networks:
-        default: <first rabbitmq private-ip>
+        default: <second rabbitmq private-ip>
     <third rabbitmq instance-name>:
-      node_id:
       networks:
-        default: <first rabbitmq private-ip>
+        default: <third rabbitmq private-ip>
 
   cert_path:
   key_path:
@@ -26,6 +27,11 @@ rabbitmq:
 
 validations:
   minimum_required_total_physical_memory_in_mb: 1024
+
+ssl_inputs:
+  internal_cert_path:
+  internal_key_path:
+  ca_cert_path:
 
 services_to_install:
   - queue_service

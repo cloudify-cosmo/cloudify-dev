@@ -7,20 +7,15 @@ manager:
     admin_password: admin
 
 rabbitmq:
-  username:
-  password:
   ca_path:
   cluster_members:
     <first rabbitmq instance-name>:
-      node_id:
       networks:
         default: <first rabbitmq private-ip>
     <second rabbitmq instance-name>:
-      node_id:
       networks:
         default: <first rabbitmq private-ip>
     <third rabbitmq instance-name>:
-      node_id:
       networks:
         default: <first rabbitmq private-ip>
 
@@ -33,13 +28,10 @@ postgresql_server:
     nodes:
       <first postgresql instance-name>:
         ip:
-        node_id:
       <second postgresql instance-name>:
         ip:
-        node_id:
       <third postgresql instance-name>:
         ip:
-        node_id:
 
 postgresql_client:
   ssl_enabled: true
