@@ -44,3 +44,4 @@ ssl_inputs:
 
 services_to_install:
   - database_service
+  - monitoring_service

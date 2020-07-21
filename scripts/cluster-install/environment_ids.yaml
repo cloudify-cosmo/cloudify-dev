@@ -1,6 +1,6 @@
-{jump-host: de6d287e-4c11-42e0-91c5-280f10067df0, load_balancer: 2dde0db1-2e98-4f08-a734-101dfba4014a,
-  manager-1: b5a65f04-b4dd-4dc6-b21f-74232fbf0d81, manager-2: 94f3965a-13ca-4670-bc5c-8598b9ac2d64,
-  manager-3: 46bc0ad1-9313-4a00-8318-cf3cfb670843, postgresql-1: d0f3fa36-9ebf-41da-9382-f73421857af1,
-  postgresql-2: 52aecc03-41c8-41b9-af32-516b0076bd60, postgresql-3: 2dc9fa5e-dc21-42df-9af7-a34b0e393dae,
-  rabbitmq-1: cacc6900-9f56-4fbb-b67e-788f6e4ae0f9, rabbitmq-2: 94d394ed-f817-42ce-8397-3552e855d034,
-  rabbitmq-3: 3410d1c2-4297-4f54-96da-1e32b16b5e70, sec_group: ac7446a2-50e4-4b15-88f1-0a54de3ea2c5}
+{jump-host: 0e77f615-c682-4af2-ae36-78b18f4a943a, load_balancer: c6bfebb2-a902-4811-ab99-76ff9c525e27,
+  manager-1: 4aa9eb73-12c0-4fd8-bc88-f70e1c0d77ae, manager-2: c1afbd05-35db-4619-bb78-622774dd02d5,
+  manager-3: 6858ca1d-1cf3-4f92-8689-57dedc343171, postgresql-1: b86128ff-e0a5-4526-932c-a35977b254dd,
+  postgresql-2: 31aaeb23-958b-41db-bf5d-09b5dad20c90, postgresql-3: 5eb4cb9f-164d-448f-8d63-6b7251a6082b,
+  rabbitmq-1: 6c8375d6-c990-4385-af12-0c05586d66ef, rabbitmq-2: 5bd1e89e-ef63-42c2-b849-45dd251c21de,
+  rabbitmq-3: 92fdf5e4-42bf-4062-9418-3b505bc8ad49, sec_group: 53242d06-3e29-465d-ae9f-2e4c61018d2c}
