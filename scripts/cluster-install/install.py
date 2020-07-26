@@ -24,6 +24,7 @@ def _prepare_jump_host(jump_host, jump_host_dir, config_path, license_path):
         'sudo yum install -y python-pip',
         'sudo yum groupinstall -y \"Development Tools\"',
         'sudo yum install -y python-devel',
+        'sudo pip install --upgrade pip==9.0.1',
         'sudo pip install -r {0}/requirements.txt'.format(jump_host_dir)
     ]
     scp_files_list = [
