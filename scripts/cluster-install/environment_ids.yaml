@@ -1,6 +1,0 @@
-{jump-host: 0e77f615-c682-4af2-ae36-78b18f4a943a, load_balancer: c6bfebb2-a902-4811-ab99-76ff9c525e27,
-  manager-1: 4aa9eb73-12c0-4fd8-bc88-f70e1c0d77ae, manager-2: c1afbd05-35db-4619-bb78-622774dd02d5,
-  manager-3: 6858ca1d-1cf3-4f92-8689-57dedc343171, postgresql-1: b86128ff-e0a5-4526-932c-a35977b254dd,
-  postgresql-2: 31aaeb23-958b-41db-bf5d-09b5dad20c90, postgresql-3: 5eb4cb9f-164d-448f-8d63-6b7251a6082b,
-  rabbitmq-1: 6c8375d6-c990-4385-af12-0c05586d66ef, rabbitmq-2: 5bd1e89e-ef63-42c2-b849-45dd251c21de,
-  rabbitmq-3: 92fdf5e4-42bf-4062-9418-3b505bc8ad49, sec_group: 53242d06-3e29-465d-ae9f-2e4c61018d2c}

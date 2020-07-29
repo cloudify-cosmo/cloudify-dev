@@ -30,11 +30,18 @@ postgresql_server:
       replicator_password: 'somesecretvalue123!'
 
 prometheus:
+  credentials:
+    username: 'monitoringusername'
+    password: 'longyeteasytorememberstringasapassword'
+
+  cert_path:
+  key_path:
+  ca_path:
   postgres_exporter:
     # `password` is a placeholder and will be updated during config file rendering, based on postgresql_server.postgres_password
     password: ''
     sslmode: require
-
+    
 validations:
   minimum_required_total_physical_memory_in_mb: 1024
 

@@ -59,6 +59,7 @@ def _write_crt_to_config(config_file, node_name, config_section):
         REMOTE_INSTALL_CLUSTER + '/certs/{}_key.pem'.format(node_name)
     config_file[config_section]['ca_path'] = \
         REMOTE_INSTALL_CLUSTER + '/certs/ca.pem'
+    _set_prometheus_inputs(node_name, config_file, config_blackbox_expotter=False)
     config_file['ssl_inputs']['internal_cert_path'] = \
         REMOTE_INSTALL_CLUSTER + '/certs/{}_cert.pem'.format(node_name)
     config_file['ssl_inputs']['internal_key_path'] = \
@@ -145,6 +146,18 @@ def _create_ssl_inputs(node_name):
     return ssl_inputs
 
 
+def _set_prometheus_inputs(node_name, config_file,config_blackbox_expotter=True):
+    config_file['prometheus']['cert_path'] = \
+        REMOTE_INSTALL_CLUSTER + '/certs/{}_cert.pem'.format(node_name)
+    config_file['prometheus']['key_path'] = \
+        REMOTE_INSTALL_CLUSTER + '/certs/{}_key.pem'.format(node_name)
+    config_file['prometheus']['ca_path'] = \
+        REMOTE_INSTALL_CLUSTER + '/certs/ca.pem'
+    if config_blackbox_expotter:
+        config_file['prometheus']['blackbox_exporter']['ca_cert_path'] = \
+            REMOTE_INSTALL_CLUSTER + '/certs/ca.pem'
+
+
 def _prepare_manager_config_files(instances_dict, rabbitmq_credentials):
     ca_path = REMOTE_INSTALL_CLUSTER + '/certs/ca.pem'
     for node in instances_dict['manager']:
@@ -167,6 +180,7 @@ def _prepare_manager_config_files(instances_dict, rabbitmq_credentials):
             config_file['agent']['networks']['default'] = \
                 instances_dict['load_balancer'][0].private_ip
         config_file['ssl_inputs'] = _create_ssl_inputs(node.name)
+        _set_prometheus_inputs(node.name, config_file)
         suffix = '/config_files/{}_config.yaml'.format(node.name)
         conf_file_name = LOCAL_INSTALL_CLUSTER + suffix
         with open(conf_file_name, 'w') as f:

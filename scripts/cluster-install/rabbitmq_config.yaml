@@ -25,6 +25,15 @@ rabbitmq:
 
   erlang_cookie: 'securesharedtoken'
 
+prometheus:
+  credentials:
+    username: 'monitoringusername'
+    password: 'longyeteasytorememberstringasapassword'
+
+  cert_path:
+  key_path:
+  ca_path:
+
 validations:
   minimum_required_total_physical_memory_in_mb: 1024
 

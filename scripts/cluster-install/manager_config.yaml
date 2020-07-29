@@ -5,6 +5,9 @@ manager:
   security:
     ssl_enabled: true
     admin_password: admin
+  monitoring:
+    username: 'monitoringusername'
+    password: 'longyeteasytorememberstringasapassword'
 
 rabbitmq:
   ca_path:
@@ -18,6 +21,9 @@ rabbitmq:
     <third rabbitmq instance-name>:
       networks:
         default: <first rabbitmq private-ip>
+  monitoring:
+    username: 'monitoringusername'
+    password: 'longyeteasytorememberstringasapassword'
 
 postgresql_server:
   ssl_enabled: true
@@ -37,6 +43,9 @@ postgresql_client:
   ssl_enabled: true
   server_password: 'somesecretvalue123!'
   ssl_client_verification: true
+  monitoring:
+    username: 'monitoringusername'
+    password: 'longyeteasytorememberstringasapassword'
 
 validations:
   minimum_required_total_physical_memory_in_mb: 1024
@@ -54,6 +63,18 @@ ssl_inputs:
   external_cert_path:
   external_key_path:
   external_ca_cert_path:
+
+
+prometheus:
+  credentials:
+    username: 'monitoringusername'
+    password: 'longyeteasytorememberstringasapassword'
+  blackbox_exporter:
+    ca_cert_path:
+
+  cert_path:
+  key_path:
+  ca_path:
 
 services_to_install:
   - manager_service
