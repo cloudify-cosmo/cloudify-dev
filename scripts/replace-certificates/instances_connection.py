@@ -1,10 +1,9 @@
 import sys
 import logging
+import subprocess
 from os.path import dirname
 
-from fabric import Connection
-from paramiko import AuthenticationException
-
+import fabric.api as fab
 
 NEW_CERTS_TMP_DIR_PATH = '/tmp/new_cloudify_certs/'
 REMOTE_SCRIPT_PATH = NEW_CERTS_TMP_DIR_PATH + 'replace_certificates.py'
@@ -41,30 +40,17 @@ class Node(object):
         self.node_type = node_type
         self.username = username
         self.key_file_path = key_file_path
-        self.connection = self._create_connection()
+        self.host_string = '{0}@{1}'.format(self.username, self.host_ip)
         self.node_dict = node_dict
         self.verbose = verbose
         self.prepare_env()
-
-    def _create_connection(self):
-        try:
-            return Connection(
-                host=self.host_ip, user=self.username, port=22,
-                connect_kwargs={'key_filename': self.key_file_path})
-
-        except AuthenticationException as e:
-            raise ReplaceCertificatesError(
-                "SSH: could not connect to {host} "
-                "(username: {user}, key: {key}): {exc}".format(
-                    host=self.host_ip, user=self.username,
-                    key=self.key_file_path, exc=e))
 
     def prepare_env(self):
         commands_list = [
             'sudo yum install -y epel-release',
             'sudo yum install -y python-pip',
         ]
-        hide = 'stderr' if self.verbose else 'both'
+        hide = False if self.verbose else True
         logger.info('Preparing env for host %s', self.host_ip)
         self._prepare_new_certs_dir()
         self.put_file('{0}/instance_requirements.txt'.format(
@@ -78,19 +64,40 @@ class Node(object):
         self.run_command('sudo pip install -q -r '
                          '{0}'.format(REMOTE_REQUIREMENTS_PATH), hide=hide)
 
-    def run_command(self, command, hide='stderr'):
+    def run_command(self, command, hide=False):
         logger.debug('Running `%s` on %s', command, self.host_ip)
-        result = self.connection.run(command, warn=True, hide=hide)
-        if result.failed:
-            raise ReplaceCertificatesError(
-                'The command `{0}` on host {1} failed with the error: '
-                '{2}'.format(command, self.host_ip, str(result.stderr)))
-        return result
+
+        def execute():
+            with fab.settings(
+                    host_string=self.host_string,
+                    key_filename=self.key_file_path,
+                    port=22,
+                    warn_only=True):
+                output = fab.run(command)
+                if output.failed:
+                    err_msg = output.stderr if output.stderr else output
+                    raise ReplaceCertificatesError(
+                        'The command `{0}` on host {1} failed with the '
+                        'error: {2}'.format(command, self.host_ip,
+                                            str(err_msg)))
+                return output
+
+        hide_args = (('running', 'stdout', 'stderr', 'warnings') if
+                     hide else ('running', 'stderr', 'warnings'))
+
+        with fab.hide(*hide_args):
+            return execute()
 
     def put_file(self, local_path, remote_path):
         logger.debug('Copying %s to %s on host %s',
                      local_path, remote_path, self.host_ip)
-        self.connection.put(local_path, remote_path)
+        with fab.settings(
+                fab.hide('running', 'stdout'),
+                host_string=self.host_string,
+                key_filename=self.key_file_path,
+                port=22):
+            fab.put(local_path=local_path,
+                    remote_path=remote_path)
 
     def replace_certificates(self):
         logger.info('Replacing certificates on host %s', self.host_ip)
@@ -151,7 +158,6 @@ class ReplaceCertificatesConfig(object):
             try:
                 node.validate_certificates()
             except ReplaceCertificatesError as err:
-                self._close_clients_connection()
                 raise err
 
     def replace_certificates(self):
@@ -160,41 +166,30 @@ class ReplaceCertificatesConfig(object):
             try:
                 node.replace_certificates()
             except ReplaceCertificatesError as err:
-                self._close_clients_connection()
                 raise err
         self._validate_cluster_is_healthy()
-        self._close_clients_connection()
 
-    def _validate_cluster_is_healthy(self):
-        managers = self.relevant_nodes_dict['manager']
-        if managers:
-            manager = managers[0]  # Adding try-except block
-            try:
-                cluster_status_str = manager.run_command(
-                    'cfy cluster status --json', hide='both').stdout
-            except ReplaceCertificatesError:
-                logger.info(
-                    'Please change your CLI CA cert in case you are '
-                    'using this code from a client. You can do this by using '
-                    '`cfy profiles set -c <new-ca-cert-path>`')
-                logger.info('Afterwards, run `cfy cluster status`'
-                            ' and verify it is OK')
-                return
+    @staticmethod
+    def _validate_cluster_is_healthy():
+        try:
+            command = ['cfy', 'cluster', 'status', '--json']
+            cluster_status_str = subprocess.check_output(command)
+        except subprocess.CalledProcessError:
+            logger.info(
+                'Please change your CLI CA cert in case you are '
+                'not using the code from a manager. You can do this by using '
+                '`cfy profiles set -c <new-ca-cert-path>`')
+            logger.info('Afterwards, run `cfy cluster status`'
+                        ' and verify it is OK')
+            return
 
-            if cluster_status_str[12:14] == 'OK':
-                logger.info('Successfully replaced certificates')
-                logger.info(
-                    'You might need to change your CLI CA cert in case you '
-                    'are using this code from a client. You can do this by '
-                    'using `cfy profiles set -c <new-ca-cert-path>`')
-                return
-            else:
-                raise ReplaceCertificatesError(
-                    'Failed replacing certificates. '
-                    'cluster status: {0}'.format(str(cluster_status_str)))
+        if cluster_status_str[12:14] == 'OK':
+            logger.info('Cluster status is OK. '
+                        'Successfully replaced certificates')
         else:
-            logger.info('Please run `cfy cluster status` on one of the '
-                        'managers and verify it is OK')
+            raise ReplaceCertificatesError(
+                'Failed replacing certificates. '
+                'cluster status: {0}'.format(str(cluster_status_str)))
 
     def _create_nodes(self, verbose):
         for instance_type, instance_dict in self.config_dict.items():
@@ -235,7 +230,3 @@ class ReplaceCertificatesConfig(object):
                 node_dict['new_rabbitmq_ca_cert'] = rabbitmq_ca_cert
 
         return node_dict
-
-    def _close_clients_connection(self):
-        for node in self.relevant_nodes:
-            node.connection.close()

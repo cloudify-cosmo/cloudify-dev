@@ -1,4 +1,3 @@
-#! /usr/bin/env python
 from os.path import dirname, exists
 
 import yaml

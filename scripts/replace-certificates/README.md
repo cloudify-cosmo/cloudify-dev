@@ -6,9 +6,8 @@ The replace-certificates script enables users of Cloudify cluster v5.0.5 to repl
 * Please keep all the script's files in the same directory. 
 
 ## Usage
-The script `main.py` can run from one of the managers in the cluster or a different host in the same network as the cluster.  
-These are the steps in order to run it: 
-1. Install all packages specified in `client_requirements.txt`.
+The script `main.py` needs to run from one of the managers in the cluster.  
+These are the steps in order to run it:
 1. Fill in the `replace_certificates_config.yaml` file with the relevant information.
 For each host, specify its host ip and new certificates' paths. A few notes:
     * For each host, either both certificate and key must be provided, or neither.
@@ -16,6 +15,7 @@ For each host, specify its host ip and new certificates' paths. A few notes:
 E.g. if you want to replace the RabbitMQ CA certificate, you will need to specify new certificates for all RabbitMQ hosts.
     * **Special case:** In case  of replacing the "postgresql_server" CA cert, the "manager" hosts' 
 postgresql_client certificates need to be replaced as well.
+1. Run the script using the CLI environment on the manager: `/opt/cfy/embedded/bin/python main.py`.
 1. Optional flags:
     * `--config-path` - The path to the `replace_certificates_config.yaml`. The default path is 
     `./replace_certificates_config.yaml`.
@@ -23,7 +23,7 @@ postgresql_client certificates need to be replaced as well.
 
 ## Notes
 1. The script uses `sudo` commands, therefore, sudo permissions for the ssh user are needed on each one of the hosts.
-1. The script installs the following on all hosts:
+1. The script installs automatically the following on all hosts:
     * `epel-release`
     * `python-pip`
     * `ruamel.yaml==0.15.94` package
