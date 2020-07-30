@@ -1,4 +1,3 @@
-#! /usr/bin/env python
 import os
 import sys
 import csv
@@ -12,6 +11,7 @@ import logging
 import argparse
 import collections
 from tempfile import mkstemp
+from ipaddress import ip_address
 from contextlib import contextmanager
 from getpass import getuser
 from os.path import isfile
@@ -691,6 +691,14 @@ def get_ca_filename(new_ca_location, default_ca_location):
             else default_ca_location)
 
 
+def is_all_in_one_manager():
+    return (
+        MANAGER_SERVICE in config[SERVICES_TO_INSTALL] and
+        DATABASE_SERVICE in config[SERVICES_TO_INSTALL] and
+        QUEUE_SERVICE in config[SERVICES_TO_INSTALL]
+    )
+
+
 class BaseComponent(object):
     def replace_certificates(self):
         pass
@@ -743,9 +751,22 @@ class PostgresqlServer(BaseComponent):
     def replace_certificates(self):
         if (os.path.exists(NEW_POSTGRESQL_CERT_FILE_PATH) or
                 os.path.exists(NEW_POSTGRESQL_CA_CERT_FILE_PATH)):
+            self.validate_new_certs()
             self.log_replacing_certificates()
             self._write_certs_to_config()
-            if config[POSTGRESQL_SERVER]['cluster']['nodes']:  # cluster case
+            if is_all_in_one_manager():
+                if config[POSTGRESQL_SERVER][SSL_ENABLED]:
+                    use_supplied_certificates(
+                        component_name=self.component_name,
+                        cert_destination=PG_SERVER_CERT_PATH,
+                        key_destination=PG_SERVER_KEY_PATH,
+                        ca_destination=PG_CA_CERT_PATH,
+                        owner=POSTGRES_USER,
+                        group=POSTGRES_GROUP,
+                        key_perms='400',
+                        cert_perms='444'
+                    )
+            else:
                 self.handle_cluster_certificates()
                 self._restart_etcd()
                 systemd.restart('patroni', append_prefix=False)
@@ -780,16 +801,28 @@ class PostgresqlServer(BaseComponent):
                 NEW_POSTGRESQL_CA_CERT_FILE_PATH
 
     def validate_new_certs(self):
-        get_and_validate_certs_for_replacement(
-            default_cert_location=ETCD_SERVER_CERT_PATH,
-            default_key_location=ETCD_SERVER_KEY_PATH,
-            default_ca_location=ETCD_CA_PATH,
-            new_cert_location=NEW_POSTGRESQL_CERT_FILE_PATH,
-            new_key_location=NEW_POSTGRESQL_KEY_FILE_PATH,
-            new_ca_location=NEW_POSTGRESQL_CA_CERT_FILE_PATH
-        )
+        if is_all_in_one_manager():
+            if config[POSTGRESQL_SERVER][SSL_ENABLED]:
+                get_and_validate_certs_for_replacement(
+                    default_cert_location=PG_SERVER_CERT_PATH,
+                    default_key_location=PG_SERVER_KEY_PATH,
+                    default_ca_location=PG_CA_CERT_PATH,
+                    new_cert_location=NEW_POSTGRESQL_CERT_FILE_PATH,
+                    new_key_location=NEW_POSTGRESQL_KEY_FILE_PATH,
+                    new_ca_location=NEW_POSTGRESQL_CA_CERT_FILE_PATH
+                )
+        else:
+            get_and_validate_certs_for_replacement(
+                default_cert_location=ETCD_SERVER_CERT_PATH,
+                default_key_location=ETCD_SERVER_KEY_PATH,
+                default_ca_location=ETCD_CA_PATH,
+                new_cert_location=NEW_POSTGRESQL_CERT_FILE_PATH,
+                new_key_location=NEW_POSTGRESQL_KEY_FILE_PATH,
+                new_ca_location=NEW_POSTGRESQL_CA_CERT_FILE_PATH
+            )
 
-    def log_replacing_certificates(self):
+    @staticmethod
+    def log_replacing_certificates():
         logger.info(
             'Replacing certificates on the postgresql_server component')
 
@@ -797,11 +830,14 @@ class PostgresqlServer(BaseComponent):
 class RabbitMQ(BaseComponent):
     @staticmethod
     def handle_certificates():
+        ca_destination = (CA_CERT_PATH if is_all_in_one_manager()
+                          else BROKER_CA_LOCATION)
+
         cert_config = {
             'component_name': 'rabbitmq',
             'cert_destination': BROKER_CERT_LOCATION,
             'key_destination': BROKER_KEY_LOCATION,
-            'ca_destination': BROKER_CA_LOCATION,
+            'ca_destination': ca_destination,
             'owner': 'rabbitmq',
             'group': 'rabbitmq',
             'key_perms': '440',
@@ -813,6 +849,7 @@ class RabbitMQ(BaseComponent):
     def replace_certificates(self):
         if (os.path.exists(NEW_BROKER_CERT_FILE_PATH) or
                 os.path.exists(NEW_BROKER_CA_CERT_FILE_PATH)):
+            self.validate_new_certs()
             logger.info(
                 'Replacing certificates on the rabbitmq component')
             self._write_certs_to_config()
@@ -825,18 +862,29 @@ class RabbitMQ(BaseComponent):
         if os.path.exists(NEW_BROKER_CERT_FILE_PATH):
             config[RABBITMQ]['cert_path'] = NEW_BROKER_CERT_FILE_PATH
             config[RABBITMQ]['key_path'] = NEW_BROKER_KEY_FILE_PATH
-        if os.path.exists(NEW_BROKER_CA_CERT_FILE_PATH):
-            config[RABBITMQ]['ca_path'] = NEW_BROKER_CA_CERT_FILE_PATH
+        if is_all_in_one_manager():
+            if os.path.exists(NEW_INTERNAL_CA_CERT_FILE_PATH):
+                config[RABBITMQ]['ca_path'] = NEW_INTERNAL_CA_CERT_FILE_PATH
+        else:
+            if os.path.exists(NEW_BROKER_CA_CERT_FILE_PATH):
+                config[RABBITMQ]['ca_path'] = NEW_BROKER_CA_CERT_FILE_PATH
 
     def validate_new_certs(self):
-        get_and_validate_certs_for_replacement(
-            default_cert_location=BROKER_CERT_LOCATION,
-            default_key_location=BROKER_KEY_LOCATION,
-            default_ca_location=BROKER_CA_LOCATION,
-            new_cert_location=NEW_BROKER_CERT_FILE_PATH,
-            new_key_location=NEW_BROKER_KEY_FILE_PATH,
-            new_ca_location=NEW_BROKER_CA_CERT_FILE_PATH
-        )
+        if is_all_in_one_manager():
+            if os.path.exists(NEW_INTERNAL_CA_CERT_FILE_PATH):
+                validate_certificates(
+                    cert_filename=NEW_BROKER_CERT_FILE_PATH,
+                    key_filename=NEW_BROKER_KEY_FILE_PATH,
+                    ca_filename=NEW_INTERNAL_CA_CERT_FILE_PATH)
+        else:
+            get_and_validate_certs_for_replacement(
+                default_cert_location=BROKER_CERT_LOCATION,
+                default_key_location=BROKER_KEY_LOCATION,
+                default_ca_location=BROKER_CA_LOCATION,
+                new_cert_location=NEW_BROKER_CERT_FILE_PATH,
+                new_key_location=NEW_BROKER_KEY_FILE_PATH,
+                new_ca_location=NEW_BROKER_CA_CERT_FILE_PATH
+            )
 
 
 class Manager(BaseComponent):
@@ -987,6 +1035,8 @@ class RestService(BaseComponent):
     def _replace_ca_certs_on_db(self):
         if os.path.exists(NEW_INTERNAL_CA_CERT_FILE_PATH):
             self._replace_manager_ca_on_db()
+            if is_all_in_one_manager():
+                self._replace_rabbitmq_ca_on_db()
         if os.path.exists(NEW_BROKER_CA_CERT_FILE_PATH):
             self._replace_rabbitmq_ca_on_db()
 
@@ -1001,8 +1051,10 @@ class RestService(BaseComponent):
 
     def _replace_rabbitmq_ca_on_db(self):
         self._log_replacing_certs_on_db('rabbitmq-ca')
+        cert_path = (NEW_INTERNAL_CA_CERT_FILE_PATH if is_all_in_one_manager()
+                     else NEW_BROKER_CA_CERT_FILE_PATH)
         script_input = {
-            'cert_path': NEW_BROKER_CA_CERT_FILE_PATH,
+            'cert_path': cert_path,
             'name': 'rabbitmq-ca'
         }
         self._run_replace_certs_on_db_script(script_input)
@@ -1463,15 +1515,16 @@ def _replace_certificates():
             run('cfy_manager status-reporter configure --ca-path '
                 '{0}'.format(CA_CERT_PATH))
 
-    if DATABASE_SERVICE in config[SERVICES_TO_INSTALL]:
-        if os.path.exists(NEW_POSTGRESQL_CA_CERT_FILE_PATH):
-            run('cfy_manager status-reporter configure --ca-path '
-                '{0}'.format(ETCD_CA_PATH))
+    if not is_all_in_one_manager():
+        if DATABASE_SERVICE in config[SERVICES_TO_INSTALL]:
+            if os.path.exists(NEW_POSTGRESQL_CA_CERT_FILE_PATH):
+                run('cfy_manager status-reporter configure --ca-path '
+                    '{0}'.format(ETCD_CA_PATH))
 
-    if QUEUE_SERVICE in config[SERVICES_TO_INSTALL]:
-        if os.path.exists(NEW_BROKER_CA_CERT_FILE_PATH):
-            run('cfy_manager status-reporter configure --ca-path '
-                '{0}'.format(BROKER_CA_LOCATION))
+        if QUEUE_SERVICE in config[SERVICES_TO_INSTALL]:
+            if os.path.exists(NEW_BROKER_CA_CERT_FILE_PATH):
+                run('cfy_manager status-reporter configure --ca-path '
+                    '{0}'.format(BROKER_CA_LOCATION))
 
 
 def _only_validate():

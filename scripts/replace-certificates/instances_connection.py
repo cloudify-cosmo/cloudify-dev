@@ -59,6 +59,7 @@ class Node(object):
                       REMOTE_SCRIPT_PATH)
         self.put_file('{0}/replace_certs_on_db.py'.format(dirname(__file__)),
                       NEW_CERTS_TMP_DIR_PATH+'replace_certs_on_db.py')
+        logger.info('Installing packages on host %s', self.host_ip)
         for command in commands_list:
             self.run_command(command, hide=hide)
         self.run_command('sudo pip install -q -r '
@@ -135,14 +136,18 @@ class Node(object):
 
 
 class ReplaceCertificatesConfig(object):
-    def __init__(self, config_dict, verbose):
+    def __init__(self, config_dict, all_in_one, verbose):
         self.config_dict = config_dict
         self.username = config_dict.get('username')
         self.key_file_path = config_dict.get('key_file_path')
+        self.all_in_one = all_in_one
         self.relevant_nodes_dict = {'manager': [],
                                     'postgresql_server': [],
                                     'rabbitmq': []}
-        self._create_nodes(verbose)
+        if all_in_one:
+            self._create_all_in_one_node(verbose)
+        else:
+            self._create_nodes(verbose)
         self.needs_to_replace_certificates = len(self.relevant_nodes) > 0
 
     @property
@@ -184,12 +189,25 @@ class ReplaceCertificatesConfig(object):
             return
 
         if cluster_status_str[12:14] == 'OK':
-            logger.info('Cluster status is OK. '
-                        'Successfully replaced certificates')
+            logger.info('Status is OK. Successfully replaced certificates')
         else:
             raise ReplaceCertificatesError(
                 'Failed replacing certificates. '
                 'cluster status: {0}'.format(str(cluster_status_str)))
+
+    def _create_all_in_one_node(self, verbose):
+        instance_dict = self.config_dict['manager']
+        node_dict = self._create_all_in_one_node_dict()
+        if node_dict:
+            new_node = Node(
+                instance_dict.get('host_ip'),
+                self.username,
+                self.key_file_path,
+                'manager',
+                node_dict,
+                verbose
+            )
+            self.relevant_nodes_dict['manager'].append(new_node)
 
     def _create_nodes(self, verbose):
         for instance_type, instance_dict in self.config_dict.items():
@@ -206,6 +224,24 @@ class ReplaceCertificatesConfig(object):
                         node_dict,
                         verbose)
                     self.relevant_nodes_dict[instance_type].append(new_node)
+
+    def _create_all_in_one_node_dict(self):
+        node_dict = {}
+        for cert_name, cert_path in self.config_dict['manager'].items():
+            if (cert_name == 'host_ip') or (not cert_path):
+                continue
+            node_dict[cert_name] = cert_path
+
+        for instance_name in 'postgresql_server', 'rabbitmq':
+            instance_section = self.config_dict[instance_name]
+            for cert_name, cert_path in instance_section.items():
+                if cert_path:
+                    split_cert_name = cert_name.split('_')
+                    split_cert_name.insert(1, instance_name)
+                    modified_name = '_'.join(split_cert_name)
+                    node_dict[modified_name] = cert_path
+
+        return node_dict
 
     def _create_node_dict(self, node, instance_type):
         node_dict = {}

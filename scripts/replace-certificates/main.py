@@ -1,3 +1,4 @@
+import subprocess
 from os.path import dirname, exists
 
 import yaml
@@ -22,20 +23,59 @@ def raise_errors_list(errors_list):
 
 def _errors_list_str(errors_list):
     err_str = 'Errors:\n'
-    err_lst = '\n'.join([' [{0}] {1}'.format(i+1, err) for i, err
+    err_lst = '\n'.join([' [{0}] {1}'.format(i + 1, err) for i, err
                          in enumerate(errors_list)])
     return err_str + err_lst
 
 
-def validate_config_dict(config_dict):
+def validate_config_dict(config_dict, all_in_one):
     errors_list = []
-    _validate_instances(errors_list, config_dict)
-    _check_path(errors_list, config_dict['manager']['new_ldap_ca_cert'])
+    _assert_username_and_key_file_path(errors_list, config_dict)
+    if all_in_one:
+        validate_all_in_one_config_dict(errors_list, config_dict)
+    else:
+        _validate_instances(errors_list, config_dict)
+        _check_path(errors_list, config_dict['manager']['new_ldap_ca_cert'])
     if errors_list:
         raise_errors_list(errors_list)
 
 
-def _assert_username_and_key_file_path(config_dict, errors_list):
+def validate_all_in_one_config_dict(errors_list, config_dict):
+    manager_section = config_dict['manager']
+    _validate_manager_node_cert_and_key(errors_list, manager_section)
+    err_msg = 'A {0} was specified for manager but a {1} was not specified'
+    if (manager_section.get('new_ca_cert') and
+            (not manager_section.get('new_internal_cert'))):
+        errors_list.append(err_msg.format('new_ca_cert', 'new_internal_cert'))
+
+    if (manager_section.get('new_external_ca_cert') and
+            (not manager_section.get('new_external_cert'))):
+        errors_list.append(err_msg.format('new_external_ca_cert',
+                                          'new_external_cert'))
+
+    if (manager_section.get('new_ca_cert') and
+            (not manager_section.get('new_postgresql_client_cert'))):
+        errors_list.append(err_msg.format('new_ca_cert',
+                                          'new_postgresql_client_cert'))
+
+    postgresql_section = config_dict['postgresql_server']
+    _validate_node_certs(errors_list, postgresql_section,
+                         'new_cert', 'new_key')
+    if (postgresql_section.get('new_ca_cert') and
+            (not postgresql_section.get('new_cert'))):
+        errors_list.append('A new_ca_cert was specified for postgresql_server'
+                           'but a new_cert was not specified')
+
+    rabbitmq_section = config_dict['rabbitmq']
+    _validate_node_certs(errors_list, rabbitmq_section,
+                         'new_cert', 'new_key')
+    if (manager_section.get('new_ca_cert') and
+            (not rabbitmq_section.get('new_cert'))):
+        errors_list.append('A new_ca_cert was specified for manager'
+                           'but a new_cert was not specified for rabbitmq')
+
+
+def _assert_username_and_key_file_path(errors_list, config_dict):
     if ((not config_dict.get('username')) or
             (not config_dict.get('key_file_path'))):
         errors_list.append('Please provide the username and key_file_path')
@@ -100,15 +140,19 @@ def _validate_cert_and_key(errors_list, nodes):
 
 def _validate_manager_cert_and_key(errors_list, nodes):
     for node in nodes:
-        _validate_node_certs(errors_list, node,
-                             'new_internal_cert',
-                             'new_internal_key')
-        _validate_node_certs(errors_list, node,
-                             'new_external_cert',
-                             'new_external_key')
-        _validate_node_certs(errors_list, node,
-                             'new_postgresql_client_cert',
-                             'new_postgresql_client_key')
+        _validate_manager_node_cert_and_key(errors_list, node)
+
+
+def _validate_manager_node_cert_and_key(errors_list, node):
+    _validate_node_certs(errors_list, node,
+                         'new_internal_cert',
+                         'new_internal_key')
+    _validate_node_certs(errors_list, node,
+                         'new_external_cert',
+                         'new_external_key')
+    _validate_node_certs(errors_list, node,
+                         'new_postgresql_client_cert',
+                         'new_postgresql_client_key')
 
 
 def _validate_node_certs(errors_list, certs_dict, new_cert_name, new_key_name):
@@ -131,12 +175,17 @@ def _check_path(errors_list, path):
     return False
 
 
+def is_all_in_one():
+    cluster_status = subprocess.check_output(['cfy', 'cluster', 'status'])
+    if cluster_status[:3] == 'You':
+        return True
+    return False
+
+
 def parse_command():
     parser = argparse.ArgumentParser(description='Replacing certificates on '
                                                  'a cluster')
     parser.add_argument('--config-path', action='store', type=str,
-                        default='{0}/replace_certificates_config.yaml'.format(
-                            dirname(__file__)),
                         help='The replace_certificates_config.yaml file path')
     parser.add_argument('-v', '--verbose', action='store_true', default=False,
                         dest='verbose')
@@ -148,9 +197,22 @@ def main():
     verbose = parse_args.verbose
     if verbose:
         logger.setLevel(logging.DEBUG)
-    config_dict = get_dict_from_yaml(parse_args.config_path)
-    validate_config_dict(config_dict)
-    main_config = ReplaceCertificatesConfig(config_dict, verbose)
+    all_in_one = is_all_in_one()
+    logger.info('Replacing certificates on %s',
+                'an AIO manager' if all_in_one else 'a cluster')
+    if parse_args.config_path:
+        config_path = parse_args.config_path
+    else:
+        if all_in_one:
+            config_path = '{0}/aio_replace_certificates_config.yaml'.format(
+                            dirname(__file__))
+        else:
+            config_path = '{0}/cluster_replace_certificates_config' \
+                          '.yaml'.format(dirname(__file__))
+
+    config_dict = get_dict_from_yaml(config_path)
+    validate_config_dict(config_dict, all_in_one)
+    main_config = ReplaceCertificatesConfig(config_dict, all_in_one, verbose)
     main_config.validate_certificates()
     main_config.replace_certificates()
 

@@ -1,0 +1,25 @@
+username: <e.g. centos>
+key_file_path: <local_key_file_path>
+
+manager:
+  host_ip: ''
+  new_external_cert: ''
+  new_external_key: ''
+  new_internal_cert: ''
+  new_internal_key: ''
+  new_postgresql_client_cert: ''
+  new_postgresql_client_key: ''
+  new_ca_cert: ''
+  new_external_ca_cert: ''
+  new_ldap_ca_cert: ''  # Relevant only if using ldap
+
+# This is section is only relevant if specifying a `new_ca_cert` above
+rabbitmq:
+  new_cert: ''
+  new_key: ''
+
+# This section is only relevant if ssl_enabled=True in the postgresql_server section of the config.yaml
+postgresql_server:
+  new_cert: ''
+  new_key: ''
+  new_ca_cert: ''

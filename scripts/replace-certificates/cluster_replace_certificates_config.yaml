@@ -26,7 +26,7 @@ manager:
     new_postgresql_client_key: ''
   new_ca_cert: ''
   new_external_ca_cert: ''
-  new_ldap_ca_cert: ''
+  new_ldap_ca_cert: '' # Relevant only if using ldap
 postgresql_server:
   cluster_members:
   - host_ip: ''
@@ -38,7 +38,7 @@ postgresql_server:
   - host_ip: ''
     new_cert: ''
     new_key: ''
-  new_ca_cert: ''
+  new_ca_cert: '' # If specified, the postgresql_client certs in the managers need to be replaced as well
 rabbitmq:
   cluster_members:
   - host_ip: ''
