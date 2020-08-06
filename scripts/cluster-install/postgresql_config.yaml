@@ -1,3 +1,7 @@
+manager:
+  private_ip: <current postgresql private-ip>
+  public_ip: <current postgresql private-ip>
+
 postgresql_server:
   cert_path:
   key_path:
@@ -11,13 +15,10 @@ postgresql_server:
     nodes:
       <first postgresql instance-name>:
         ip:
-        node_id:
       <second postgresql instance-name>:
         ip:
-        node_id:
       <third postgresql instance-name>:
         ip:
-        node_id:
 
     etcd:
       cluster_token: 'somesecretvalue123!'
@@ -28,8 +29,26 @@ postgresql_server:
     postgres:
       replicator_password: 'somesecretvalue123!'
 
+prometheus:
+  credentials:
+    username: 'monitoringusername'
+    password: 'longyeteasytorememberstringasapassword'
+
+  cert_path:
+  key_path:
+  ca_path:
+  postgres_exporter:
+    # `password` is a placeholder and will be updated during config file rendering, based on postgresql_server.postgres_password
+    password: ''
+    sslmode: require
+    
 validations:
   minimum_required_total_physical_memory_in_mb: 1024
 
+ssl_inputs:
+  internal_cert_path:
+  internal_key_path:
+
 services_to_install:
   - database_service
+  - monitoring_service

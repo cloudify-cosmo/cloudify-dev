@@ -70,5 +70,7 @@ docs/_build/
 
 .idea/
 
-# cluster-install
-scripts/cluster-install/environment_ids.yaml 
+
+# install cluster
+
+scripts/cluster-install/environment_ids.yaml

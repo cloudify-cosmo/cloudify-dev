@@ -59,20 +59,20 @@ def _write_crt_to_config(config_file, node_name, config_section):
         REMOTE_INSTALL_CLUSTER + '/certs/{}_key.pem'.format(node_name)
     config_file[config_section]['ca_path'] = \
         REMOTE_INSTALL_CLUSTER + '/certs/ca.pem'
+    _set_prometheus_inputs(node_name, config_file, config_blackbox_expotter=False)
+    config_file['ssl_inputs']['internal_cert_path'] = \
+        REMOTE_INSTALL_CLUSTER + '/certs/{}_cert.pem'.format(node_name)
+    config_file['ssl_inputs']['internal_key_path'] = \
+        REMOTE_INSTALL_CLUSTER + '/certs/{}_key.pem'.format(node_name)
     conf_file_name = \
         LOCAL_INSTALL_CLUSTER + '/config_files/{}_config.yaml'.format(node_name)
     return conf_file_name
 
 
-def _get_postgresql_cluster_members(postgresql_instances, include_node_id):
-    postgresql_cluster = {
+def _get_postgresql_cluster_members(postgresql_instances):
+    return {
         postgresql_instances[j].name: {'ip': postgresql_instances[j].private_ip}
         for j in range(len(postgresql_instances))}
-    if include_node_id:
-        for j in range(len(postgresql_instances)):
-            postgresql_cluster[postgresql_instances[j].name]['node_id'] = \
-                postgresql_instances[j].get_node_id()
-    return postgresql_cluster
 
 
 def _prepare_postgresql_config_files(instances_dict):
@@ -82,7 +82,9 @@ def _prepare_postgresql_config_files(instances_dict):
         conf_file_name = _write_crt_to_config(config_file, node.name,
                                               'postgresql_server')
         config_file['postgresql_server']['cluster']['nodes'] = \
-            _get_postgresql_cluster_members(instances_dict['postgresql'], False)
+            _get_postgresql_cluster_members(instances_dict['postgresql'])
+        config_file['manager']['private_ip'] = node.private_ip
+        config_file['manager']['public_ip'] = node.public_ip
         with open(conf_file_name, 'w') as f:
             yaml.dump(config_file, f)
 
@@ -92,16 +94,11 @@ def _rabbitmq_credential_generator():
                    _ in range(6))
 
 
-def _get_rabbitmq_cluster_members(rabbitmq_instances, include_node_id):
-    rabbitmq_cluster = {
+def _get_rabbitmq_cluster_members(rabbitmq_instances):
+    return {
         rabbitmq_instances[j].name: {
             'networks': {'default': rabbitmq_instances[j].private_ip}
         } for j in range(len(rabbitmq_instances))}
-    if include_node_id:
-        for j in range(len(rabbitmq_instances)):
-            rabbitmq_cluster[rabbitmq_instances[j].name]['node_id'] = \
-                rabbitmq_instances[j].get_node_id()
-    return rabbitmq_cluster
 
 
 def _prepare_rabbitmq_config_files(instances_dict):
@@ -114,12 +111,17 @@ def _prepare_rabbitmq_config_files(instances_dict):
         config_file['rabbitmq']['username'] = rabbitmq_username
         config_file['rabbitmq']['password'] = rabbitmq_password
         config_file['rabbitmq']['cluster_members'] = \
-            _get_rabbitmq_cluster_members(instances_dict['rabbitmq'], False)
+            _get_rabbitmq_cluster_members(instances_dict['rabbitmq'])
         conf_file_name = _write_crt_to_config(config_file, node.name,
                                               'rabbitmq')
+        config_file['ssl_inputs']['ca_cert_path'] = \
+            REMOTE_INSTALL_CLUSTER + '/certs/ca.pem'
         config_file['rabbitmq']['nodename'] = node.name
         if i != 0:
             config_file['rabbitmq']['join_cluster'] = first_rabbitmq.name
+
+        config_file['manager']['private_ip'] = node.private_ip
+        config_file['manager']['public_ip'] = node.public_ip
         with open(conf_file_name, 'w') as f:
             yaml.dump(config_file, f, default_flow_style=False)
     return rabbitmq_username, rabbitmq_password
@@ -144,6 +146,18 @@ def _create_ssl_inputs(node_name):
     return ssl_inputs
 
 
+def _set_prometheus_inputs(node_name, config_file,config_blackbox_expotter=True):
+    config_file['prometheus']['cert_path'] = \
+        REMOTE_INSTALL_CLUSTER + '/certs/{}_cert.pem'.format(node_name)
+    config_file['prometheus']['key_path'] = \
+        REMOTE_INSTALL_CLUSTER + '/certs/{}_key.pem'.format(node_name)
+    config_file['prometheus']['ca_path'] = \
+        REMOTE_INSTALL_CLUSTER + '/certs/ca.pem'
+    if config_blackbox_expotter:
+        config_file['prometheus']['blackbox_exporter']['ca_cert_path'] = \
+            REMOTE_INSTALL_CLUSTER + '/certs/ca.pem'
+
+
 def _prepare_manager_config_files(instances_dict, rabbitmq_credentials):
     ca_path = REMOTE_INSTALL_CLUSTER + '/certs/ca.pem'
     for node in instances_dict['manager']:
@@ -155,17 +169,18 @@ def _prepare_manager_config_files(instances_dict, rabbitmq_credentials):
         config_file['manager']['cloudify_license_path'] = \
             REMOTE_INSTALL_CLUSTER + '/license.yaml'
         config_file['rabbitmq']['cluster_members'] = \
-            _get_rabbitmq_cluster_members(instances_dict['rabbitmq'], True)
+            _get_rabbitmq_cluster_members(instances_dict['rabbitmq'])
         config_file['rabbitmq']['username'] = rabbitmq_credentials[0]
         config_file['rabbitmq']['password'] = rabbitmq_credentials[1]
         config_file['rabbitmq']['ca_path'] = ca_path
         config_file['postgresql_server']['cluster']['nodes'] = \
-            _get_postgresql_cluster_members(instances_dict['postgresql'], True)
+            _get_postgresql_cluster_members(instances_dict['postgresql'])
         config_file['postgresql_server']['ca_path'] = ca_path
         if instances_dict['load_balancer']:
             config_file['agent']['networks']['default'] = \
                 instances_dict['load_balancer'][0].private_ip
         config_file['ssl_inputs'] = _create_ssl_inputs(node.name)
+        _set_prometheus_inputs(node.name, config_file)
         suffix = '/config_files/{}_config.yaml'.format(node.name)
         conf_file_name = LOCAL_INSTALL_CLUSTER + suffix
         with open(conf_file_name, 'w') as f:
@@ -395,7 +410,7 @@ def main():
         _generate_certs(instances_dict, rpm_name)
         rabbitmq_cred = _prepare_postgres_rabbit_config_files(instances_dict)
         _install_instances(instances_dict, rpm_name, rabbitmq_cred)
-        _configure_status_reporter(instances_dict)
+        # _configure_status_reporter(instances_dict)
         if using_load_balancer:
             _install_load_balancer(instances_dict)
             time.sleep(0.5)
