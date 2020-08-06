@@ -41,7 +41,9 @@ postgresql_server:
 
 postgresql_client:
   ssl_enabled: true
+  # When using external db, server_password will be overridden.
   server_password: 'somesecretvalue123!'
+  # When using external db, ssl_client_verification will be overridden to false.
   ssl_client_verification: true
   monitoring:
     username: 'monitoringusername'
