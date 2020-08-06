@@ -18,7 +18,8 @@ def _create_jump_host(config, connection, sec_group_id, environment_ids_dict):
                      environment_ids_dict)
 
 
-def _prepare_jump_host(jump_host, jump_host_dir, config_path, license_path):
+def _prepare_jump_host(jump_host, jump_host_dir, config_path, license_path,
+                       external_db_config):
     commands_list = [
         'sudo yum install -y epel-release',
         'sudo yum install -y python-pip',
@@ -52,6 +53,12 @@ def _prepare_jump_host(jump_host, jump_host_dir, config_path, license_path):
     jump_host.exec_command('chmod 400 {0}'.format(jump_host_ssh_key_path))
     scp_local_to_remote(jump_host, config_path, jump_host_config_path)
     scp_local_to_remote(jump_host, license_path, jump_host_license_path)
+    # If using external db we need to copy its CA cert too.
+    if EXTERNAL_DB_CA_PATH_FIELD in external_db_config:
+        scp_local_to_remote(jump_host,
+                            external_db_config.get(EXTERNAL_DB_CA_PATH_FIELD),
+                            jump_host_dir)
+
     for scp_file in scp_files_list:
         scp_local_to_remote(jump_host, scp_file, jump_host_dir)
 
@@ -75,11 +82,16 @@ def _get_openstack_connection(config):
                         'is correct')
 
 
-def _validate_number_of_instances(number_of_instances, using_load_balancer):
+def _validate_number_of_instances(number_of_instances, using_load_balancer,
+                                  external_db_config):
     for instance, instances_number in number_of_instances.items():
-        if instance == 'postgresql' and instances_number < 2:
-            raise Exception('PostgreSQL cluster must be more than 2 instances')
-        elif instances_number < 1:
+        # number of postgres instances is 0 only if using external db
+        if instance == 'postgresql' and instances_number in range(1, 3) and \
+                not external_db_config:
+            raise Exception(
+                'PostgreSQL cluster must be more than 2 instances or 0 if'
+                ' using external db')
+        elif instances_number < 1 and instance != 'postgresql':
             raise Exception('A cluster must contain at least 1 instance')
         if using_load_balancer and \
                 (instance == 'manager' and instances_number == 1):
@@ -136,15 +148,18 @@ def main():
     number_of_instances = config.get('number_of_instances')
     using_load_balancer = config.get('using_load_balancer')
     existing_security_group_id = config.get('existing_security_group_id')
-    _validate_number_of_instances(number_of_instances, using_load_balancer)
+    external_db_config = config.get(EXTERNAL_DB_CA_CONFIGURATION_FIELD)
+    _validate_number_of_instances(number_of_instances, using_load_balancer,
+                                  external_db_config)
     connection = None
     environment_ids_dict = {}
     needs_connection = (not existing_security_group_id) or (not existing_vms)
     if needs_connection:
         connection = _get_openstack_connection(config)
-
-    sec_group_id = (existing_security_group_id if existing_security_group_id
-                    else _create_sec_group(connection, environment_ids_dict))
+    if not existing_vms:
+        sec_group_id = (
+            existing_security_group_id if existing_security_group_id
+            else _create_sec_group(connection, environment_ids_dict))
     silent_remove(EXISTING_VMS_PATH)
     if existing_vms:
         jump_host_private_ip, jump_host_floating_ip = \
@@ -161,7 +176,8 @@ def main():
                    'jump-host', key_path, vm_username)
     jump_host_dir = JUMP_HOST_DIR.format(jump_host.username)
     try:
-        _prepare_jump_host(jump_host, jump_host_dir, config_path, license_path)
+        _prepare_jump_host(jump_host, jump_host_dir, config_path, license_path,
+                           external_db_config)
         _run_install_script(jump_host, jump_host_dir)
     except Exception:
         if needs_connection:

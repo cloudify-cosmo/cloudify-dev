@@ -31,6 +31,8 @@ JUMP_HOST_CONFIG_PATH = JUMP_HOST_DIR + '/config_env.yaml'
 JUMP_HOST_LICENSE_PATH = JUMP_HOST_DIR + '/cloudify_license.yaml'
 JUMP_HOST_PARSED_FLAGS_PATH = JUMP_HOST_DIR + '/parsed_flags.yaml'
 JUMP_HOST_INSTALL_PATH = JUMP_HOST_DIR + '/install_from_jump_host.py'
+EXTERNAL_DB_CA_PATH_FIELD = 'external_db_ca_path'
+EXTERNAL_DB_CA_CONFIGURATION_FIELD = 'external_db_configuration'
 
 
 def retry_with_sleep(func, *func_args, **kwargs):
