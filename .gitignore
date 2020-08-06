@@ -69,3 +69,6 @@ docs/_build/
 *.vagrant/
 
 .idea/
+
+# cluster-install
+scripts/cluster-install/environment_ids.yaml 
