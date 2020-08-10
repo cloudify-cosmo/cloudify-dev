@@ -41,7 +41,7 @@ def _extract_certificates():
     os.rmdir(CERT_PATH)
 
 
-def _generate_certs(instances_dict, rpm_name):
+def _generate_certs(instances_dict, rpm_name,user_config_dict):
     logger.info('Generating certificates')
     os.system('cd {0} && sudo yum install -y {1}'.format(LOCAL_INSTALL_CLUSTER,
                                                          rpm_name))
@@ -146,7 +146,7 @@ def _create_ssl_inputs(node_name):
     return ssl_inputs
 
 
-def _set_prometheus_inputs(node_name, config_file,config_blackbox_expotter=True):
+def _set_prometheus_inputs(node_name, config_file, config_blackbox_expotter=True):
     config_file['prometheus']['cert_path'] = \
         REMOTE_INSTALL_CLUSTER + '/certs/{}_cert.pem'.format(node_name)
     config_file['prometheus']['key_path'] = \
@@ -158,7 +158,28 @@ def _set_prometheus_inputs(node_name, config_file,config_blackbox_expotter=True)
             REMOTE_INSTALL_CLUSTER + '/certs/ca.pem'
 
 
-def _prepare_manager_config_files(instances_dict, rabbitmq_credentials):
+def _using_external_db(config_dict):
+    return config_dict.get(EXTERNAL_DB_CONFIGURATION_FIELD) and config_dict.get(
+        'number_of_instances').get('postgresql') == 0
+
+
+def _prepare_postgresql_client_external_db_conf(config_file, user_config_dict):
+    config_file['postgresql_client'].update(
+        user_config_dict.get(EXTERNAL_DB_CONFIGURATION_FIELD))
+    # We need to set the correct path to the external db ca that the user gave.
+    external_db_ca = os.path.basename(
+        user_config_dict.get(EXTERNAL_DB_CONFIGURATION_FIELD).get(
+            EXTERNAL_DB_CA_PATH_FIELD))
+    config_file['postgresql_client'][EXTERNAL_DB_CA_PATH_FIELD] = os.path.join(
+        REMOTE_INSTALL_CLUSTER, 'certs', external_db_ca)
+    config_file['postgresql_client']['ssl_client_verification'] = False
+    config_file['postgresql_client'].pop('monitoring')
+    # Copy external db ca to /tmp/cluster_install/certs
+    os.system('cp {0} {1}'.format(external_db_ca, LOCAL_INSTALL_CLUSTER_CERTS))
+
+
+def _prepare_manager_config_files(instances_dict, rabbitmq_credentials,
+                                  user_config_dict):
     ca_path = REMOTE_INSTALL_CLUSTER + '/certs/ca.pem'
     for node in instances_dict['manager']:
         with open('manager_config.yaml') as f:
@@ -173,9 +194,17 @@ def _prepare_manager_config_files(instances_dict, rabbitmq_credentials):
         config_file['rabbitmq']['username'] = rabbitmq_credentials[0]
         config_file['rabbitmq']['password'] = rabbitmq_credentials[1]
         config_file['rabbitmq']['ca_path'] = ca_path
-        config_file['postgresql_server']['cluster']['nodes'] = \
-            _get_postgresql_cluster_members(instances_dict['postgresql'])
-        config_file['postgresql_server']['ca_path'] = ca_path
+        if not _using_external_db:
+            config_file['postgresql_server']['cluster']['nodes'] = \
+                _get_postgresql_cluster_members(instances_dict['postgresql'])
+        # in this case we have external db configuration
+            config_file['postgresql_server']['ca_path'] = ca_path
+        else:
+            config_file.pop('postgresql_server')
+            # config_file['postgresql_server']['cluster']['nodes'] = {}
+            _prepare_postgresql_client_external_db_conf(config_file,
+                                                        user_config_dict)
+
         if instances_dict['load_balancer']:
             config_file['agent']['networks']['default'] = \
                 instances_dict['load_balancer'][0].private_ip
@@ -218,11 +247,13 @@ def _install_cluster_instances(cluster_members, rpm_name):
         instance.exec_command(install_command)
 
 
-def _install_instances(instances_dict, rpm_name, rabbitmq_cred):
+def _install_instances(instances_dict, rpm_name, rabbitmq_cred,
+                       config_dict):
     logger.info('Installing instances')
     _install_cluster_instances(instances_dict['postgresql'], rpm_name)
     _install_cluster_instances(instances_dict['rabbitmq'], rpm_name)
-    _prepare_manager_config_files(instances_dict, rabbitmq_cred)
+    _prepare_manager_config_files(instances_dict, rabbitmq_cred,
+                                  config_dict)
     _install_cluster_instances(instances_dict['manager'], rpm_name)
 
 
@@ -245,31 +276,6 @@ def _configure_postgresql_status_reporter(postgresql_instances,
                ca_path=REMOTE_INSTALL_CLUSTER + '/certs/ca.pem')
     for postgresql in postgresql_instances:
         postgresql.exec_command(cmd)
-
-
-def _configure_rabbitmq_status_reporter(rabbitmq_instances,
-                                        rabbitmq_reporter_token,
-                                        managers_ips):
-    cmd = 'cfy_manager status-reporter configure --managers-ip {managers_ips}' \
-          ' --token {token} --ca-path {ca_path} --reporting-freq 5 ' \
-          '--user-name broker_status_reporter'. \
-        format(managers_ips=managers_ips, token=rabbitmq_reporter_token,
-               ca_path=REMOTE_INSTALL_CLUSTER + '/certs/ca.pem')
-    for rabbitmq in rabbitmq_instances:
-        rabbitmq.exec_command(cmd)
-
-
-def _configure_status_reporter(instances_dict):
-    postgresql_reporter_token, rabbitmq_reporter_token = \
-        _get_reporters_tokens(instances_dict['manager'][0])
-    managers_ips = ''
-    for manager in instances_dict['manager']:
-        managers_ips += manager.private_ip + ' '
-    _configure_postgresql_status_reporter(instances_dict['postgresql'],
-                                          postgresql_reporter_token,
-                                          managers_ips)
-    _configure_rabbitmq_status_reporter(instances_dict['rabbitmq'],
-                                        rabbitmq_reporter_token, managers_ips)
 
 
 def _get_vm(instances_details, instance, key_path, vm_username):
@@ -407,10 +413,9 @@ def main():
         connected_to_openstack = True
         clients_list = [server.client for server in _create_instances_list(
             instances_dict, using_load_balancer)]
-        _generate_certs(instances_dict, rpm_name)
+        _generate_certs(instances_dict, rpm_name, config)
         rabbitmq_cred = _prepare_postgres_rabbit_config_files(instances_dict)
-        _install_instances(instances_dict, rpm_name, rabbitmq_cred)
-        # _configure_status_reporter(instances_dict)
+        _install_instances(instances_dict, rpm_name, rabbitmq_cred, config)
         if using_load_balancer:
             _install_load_balancer(instances_dict)
             time.sleep(0.5)

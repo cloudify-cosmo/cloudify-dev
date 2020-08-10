@@ -148,7 +148,7 @@ def main():
     number_of_instances = config.get('number_of_instances')
     using_load_balancer = config.get('using_load_balancer')
     existing_security_group_id = config.get('existing_security_group_id')
-    external_db_config = config.get(EXTERNAL_DB_CA_CONFIGURATION_FIELD)
+    external_db_config = config.get(EXTERNAL_DB_CONFIGURATION_FIELD)
     _validate_number_of_instances(number_of_instances, using_load_balancer,
                                   external_db_config)
     connection = None
