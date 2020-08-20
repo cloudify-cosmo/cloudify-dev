@@ -26,9 +26,10 @@ rabbitmq:
     password: 'longyeteasytorememberstringasapassword'
 
 postgresql_server:
+   # When using external db, ssl_enabled will be poped.
   ssl_enabled: true
   ca_path:
-
+  # When using external db, postgres_password will be poped.
   postgres_password: 'somesecretvalue123!'
   cluster:
     nodes:

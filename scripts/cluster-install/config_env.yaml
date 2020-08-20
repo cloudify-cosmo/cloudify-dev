@@ -1,5 +1,5 @@
 number_of_instances:
-  postgresql: 3 # must be greater than or equal to 2
+  postgresql: 3 # must be greater than or equal to 2 , if using external db it should be 0!
   rabbitmq: 3 # must be greater than or equal to 1
   manager: 3 # must be between 1 to 3
 
@@ -11,6 +11,18 @@ existing_security_group_id: # The security group ID on Openstack. If left blank,
 manager_rpm_download_link: 'http://cloudify-release-eu.s3.amazonaws.com/cloudify/5.1.0/.dev1-release/cloudify-manager-install-5.1.0-.dev1.el7.x86_64.rpm'
 manager_rpm_name: 'cloudify-manager-install-5.1.0-.dev1.el7.x86_64.rpm'
 machine_username: 'centos' # For rhel use "cloud-user"
+
+# External DB configuration
+external_db_configuration:
+#  host: # the host of your external db
+#  ca_path: # CA certificate of external DB
+#  server_db_name: # master db name
+#  server_username: # master username to login external database
+#  server_password: # password of  master username to login external database
+#  cloudify_db_name: cloudify_db
+#  cloudify_username: cloudify
+#  cloudify_password: cloudify1234!
+
 
 
 # Fill in this part if you want to use existing VMs. Otherwise, leave it blank and fill in the next part - Openstack connection configuration.

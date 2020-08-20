@@ -159,21 +159,27 @@ def _set_prometheus_inputs(node_name, config_file, config_blackbox_expotter=True
 
 
 def _using_external_db(config_dict):
-    return config_dict.get(EXTERNAL_DB_CONFIGURATION_FIELD) and config_dict.get(
+    return config_dict.get(
+        EXTERNAL_DB_CONFIGURATION_FIELD) is not None and config_dict.get(
         'number_of_instances').get('postgresql') == 0
 
 
-def _prepare_postgresql_client_external_db_conf(config_file, user_config_dict):
+def _prepare_postgresql_client_and_server_for_external_db_conf(config_file,
+                                                               user_config_dict):
     config_file['postgresql_client'].update(
         user_config_dict.get(EXTERNAL_DB_CONFIGURATION_FIELD))
     # We need to set the correct path to the external db ca that the user gave.
     external_db_ca = os.path.basename(
         user_config_dict.get(EXTERNAL_DB_CONFIGURATION_FIELD).get(
             EXTERNAL_DB_CA_PATH_FIELD))
-    config_file['postgresql_client'][EXTERNAL_DB_CA_PATH_FIELD] = os.path.join(
+    config_file['postgresql_client'].pop(EXTERNAL_DB_CA_PATH_FIELD)
+    config_file['postgresql_server'][EXTERNAL_DB_CA_PATH_FIELD] = os.path.join(
         REMOTE_INSTALL_CLUSTER, 'certs', external_db_ca)
     config_file['postgresql_client']['ssl_client_verification'] = False
     config_file['postgresql_client'].pop('monitoring')
+    config_file['postgresql_server']['cluster']['nodes'] = {}
+    config_file['postgresql_server'].pop('ssl_enabled')
+    config_file['postgresql_server'].pop('postgres_password')
     # Copy external db ca to /tmp/cluster_install/certs
     os.system('cp {0} {1}'.format(external_db_ca, LOCAL_INSTALL_CLUSTER_CERTS))
 
@@ -197,13 +203,12 @@ def _prepare_manager_config_files(instances_dict, rabbitmq_credentials,
         if not _using_external_db:
             config_file['postgresql_server']['cluster']['nodes'] = \
                 _get_postgresql_cluster_members(instances_dict['postgresql'])
-        # in this case we have external db configuration
+            # in this case we have external db configuration
             config_file['postgresql_server']['ca_path'] = ca_path
         else:
-            config_file.pop('postgresql_server')
-            # config_file['postgresql_server']['cluster']['nodes'] = {}
-            _prepare_postgresql_client_external_db_conf(config_file,
-                                                        user_config_dict)
+            _prepare_postgresql_client_and_server_for_external_db_conf(
+                config_file,
+                user_config_dict)
 
         if instances_dict['load_balancer']:
             config_file['agent']['networks']['default'] = \
