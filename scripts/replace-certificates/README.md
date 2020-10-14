@@ -43,7 +43,7 @@ E.g. if you want to replace the Manager CA certificate, you will need to specify
     * `epel-release`
     * `python-pip`
     * `ruamel.yaml==0.15.94` package
-    * `requests==2.7.0` package
+    * `requests>=2.24.0,<2.25` package
     * `retrying==1.3.3` package
 1. In case you replaced the CA certificate on the managers, and you are using a CLI from a different host than a manager, 
 you will need to change its (the CLI) CA certificate configuration. This can be done using the command
