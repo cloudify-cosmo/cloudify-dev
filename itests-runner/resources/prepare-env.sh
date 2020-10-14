@@ -86,8 +86,8 @@ echo "# Cloning/installing required repositories.."
 echo "Installing pytest.."
 pip install -q pytest
 
-echo "# Installing pyaml==3.12.."
-pip install -q pyyaml==3.12 --upgrade
+echo "# Installing pyaml==4.2b4.."
+pip install -q pyyaml==4.2b4 --upgrade
 
 echo "# Initializing docl.."
 if ! [ -z ${DOCL_DEV_IMG_URL} ]
